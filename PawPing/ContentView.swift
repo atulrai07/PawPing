@@ -13,7 +13,7 @@ struct ContentView: View {
             Image(systemName: "dog.fill")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hey Bro this is our PawPing file.")
+            Text("Shailesh")
         }
         .padding()
     }
