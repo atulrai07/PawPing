@@ -13,13 +13,24 @@ struct ContentView: View {
             Image(systemName: "dog.fill")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hey Bro this our Pawping repository")
-            Text("This is the develop branch")
-            Text("This is shailesh editing develop")
-            Text("Shailesh")
+            
+            TabView {
+                Tab("Activity", systemImage: "dog.fill") {
+                    Color.white
+                }
+
+                Tab("Care", systemImage: "pawprint.fill") {
+                    Color.white
+                }
+
+                Tab("Vaccine", systemImage: "syringe.fill") {
+                    Color.white
+                }
+            }
+            .tint(.red)
+
             
         }
-        .padding()
     }
 }
 
