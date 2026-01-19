@@ -10,26 +10,20 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         VStack {
-            Image(systemName: "dog.fill")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            
             TabView {
                 Tab("Activity", systemImage: "dog.fill") {
-                    Color.white
+                    ActivityView()
                 }
 
                 Tab("Care", systemImage: "pawprint.fill") {
-                    Color.white
+                    
                 }
 
                 Tab("Vaccine", systemImage: "syringe.fill") {
-                    Color.white
+
                 }
             }
             .tint(.red)
-
-            
         }
     }
 }
