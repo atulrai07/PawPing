@@ -1,3 +1,4 @@
+
 //
 //  ContentView.swift
 //  PawPing
@@ -8,22 +9,27 @@
 import SwiftUI
 
 struct ContentView: View {
+    // 1. Create the sample data here so it can be passed to the view
+    let sampleProfile = Profile(dogName: "Buddy", breed: "Labrador", gender: "M", age: "2")
+    let sampleActivity = WalkActivity(currentMinutes: 23, goalMinutes: 60)
+    
     var body: some View {
         VStack {
             TabView {
+                // 2. Pass the sample data to ActivityView
                 Tab("Activity", systemImage: "dog.fill") {
-//                    ActivityView(profile: profile, walkActivity: walkactivity())
+                    ActivityView()
                 }
 
                 Tab("Care", systemImage: "pawprint.fill") {
-                    
+                    Text("Care View") // Placeholder
                 }
 
                 Tab("Vaccine", systemImage: "syringe.fill") {
-
+                    Text("Vaccine View") // Placeholder
                 }
             }
-            .tint(.red)
+            .tint(Color("baseRed")) // Make sure this matches your asset color
         }
     }
 }

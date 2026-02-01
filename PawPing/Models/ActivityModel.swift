@@ -12,6 +12,8 @@ struct Profile {
     var gender : String
     var age : String
     var dogImage: String = "profilePhoto"
+    
+    static let sampleProfile : Profile = Profile(dogName: "Buddy", breed: "Labrador", gender: "F", age: "3")
 }
 
 struct WalkActivity {
@@ -23,4 +25,25 @@ struct WalkActivity {
         guard goalMinutes > 0 else { return 0 }
         return Double(currentMinutes) / Double(goalMinutes)
     }
+}
+
+struct Vaccine {
+    var name: String
+    var daysLeft: Int
+    
+    static let sampleVaccines: Vaccine = Vaccine(name: "Rabies Booster", daysLeft: 3)
+}
+
+struct Meal: Identifiable {
+    let id = UUID()
+    var icon: String 
+    var time: String
+    var meridiem: String
+    var isTaken: Bool
+    
+    static let sampleMeals: [Meal] = [
+        Meal(icon: "sun.max", time: "8:00", meridiem: "AM", isTaken: true),
+        Meal(icon: "sunset.fill", time: "12:30", meridiem: "PM", isTaken: false),
+        Meal(icon: "moon", time: "8:00", meridiem: "PM", isTaken: false)
+    ]
 }
