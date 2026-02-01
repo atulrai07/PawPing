@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    // 1. Create the sample data here so it can be passed to the view
     let sampleProfile = Profile(dogName: "Buddy", breed: "Labrador", gender: "M", age: "2")
     let sampleActivity = WalkActivity(currentMinutes: 23, goalMinutes: 60)
     
@@ -22,14 +21,14 @@ struct ContentView: View {
                 }
 
                 Tab("Care", systemImage: "pawprint.fill") {
-                    Text("Care View") // Placeholder
+                    Text("Care View")
                 }
 
                 Tab("Vaccine", systemImage: "syringe.fill") {
-                    Text("Vaccine View") // Placeholder
+                    Text("Vaccine View")
                 }
             }
-            .tint(Color("baseRed")) // Make sure this matches your asset color
+            .tint(Color("baseRed"))
         }
     }
 }
