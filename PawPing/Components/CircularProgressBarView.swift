@@ -7,12 +7,25 @@
 
 import SwiftUI
 
-struct CircularProgressBarView: View {
+struct CircularProgressView: View {
+    var progress: Double
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ZStack {
+            Circle()
+                .stroke(Color("baseRed").opacity(0.2), lineWidth: 15)
+            
+            Circle()
+                .trim(from: 0.0, to: progress)
+                .stroke(
+                    Color("baseRed"),
+                    style: StrokeStyle(lineWidth: 15, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .animation(.easeOut, value: progress)
+        }
     }
 }
-
 #Preview {
-    CircularProgressBarView()
+    CircularProgressView(progress: 23.0)
 }

@@ -12,7 +12,7 @@ struct ContentView: View {
         VStack {
             TabView {
                 Tab("Activity", systemImage: "dog.fill") {
-                    ActivityView()
+//                    ActivityView(profile: profile, walkActivity: walkactivity())
                 }
 
                 Tab("Care", systemImage: "pawprint.fill") {
