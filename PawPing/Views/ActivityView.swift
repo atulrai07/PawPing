@@ -182,14 +182,17 @@ struct ActivityView: View {
                                 }
                             }
                         }
-                        
+                        Spacer()
                         //graph
                         ZStack{
                             RoundedRectangle(cornerRadius: 34)
                                 .fill(.gray.opacity(0.1))
                                 .frame(width:370, height:153)
+                            WalkTimeGraphView()
+                                .scaledToFit()
 
                         }
+                        .frame(width:370, height:153)
                         Spacer()
                     }
                     .padding(.top)
