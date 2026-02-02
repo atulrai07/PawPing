@@ -59,3 +59,31 @@ struct Allergies : Identifiable {
         Allergies(allergyName: "Peanuts")
     ]
 }
+
+struct TimeWalkedData: Identifiable {
+    let id = UUID()
+    let day: String
+    let minutes: Int
+}
+
+struct TimeWalkedGraphModel {
+    let data: [TimeWalkedData]
+    let goalMinutes: Int
+
+    static let sample = TimeWalkedGraphModel(
+        data: [
+            TimeWalkedData(day: "MON", minutes: 10),
+            TimeWalkedData(day: "TUE", minutes: 28),
+            TimeWalkedData(day: "WED", minutes: 18),
+            TimeWalkedData(day: "THU", minutes: 42),
+            TimeWalkedData(day: "FRI", minutes: 38),
+            TimeWalkedData(day: "SAT", minutes: 0),
+            TimeWalkedData(day: "SUN", minutes: 0)
+        ],
+        goalMinutes: 60
+    )
+
+    var maxMinutes: Int {
+        max(goalMinutes, data.map { $0.minutes }.max() ?? 1)
+    }
+}

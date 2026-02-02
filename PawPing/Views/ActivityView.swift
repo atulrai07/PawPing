@@ -188,8 +188,8 @@ struct ActivityView: View {
                             RoundedRectangle(cornerRadius: 34)
                                 .fill(.gray.opacity(0.1))
                                 .frame(width:370, height:153)
+
                         }
-                        
                         Spacer()
                     }
                     .padding(.top)
