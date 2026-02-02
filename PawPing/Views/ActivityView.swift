@@ -15,12 +15,17 @@ struct ActivityView: View {
     
     var vaccine : Vaccine = Vaccine.sampleVaccines
     
+    //Allergies Model
+    var allergies : [Allergies] = Allergies.sampleAllergies
+    
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators:false) {
                 ZStack {
-                    VStack(spacing: 20) {
+                    // MARK: - Main Stack
+                    VStack(spacing: 16) {
                         
+                        // MARK: - Header
                         HStack(alignment: .top) {
                             VStack(alignment: .leading) {
                                 Text("Hello \(profile.dogName)")
@@ -47,10 +52,11 @@ struct ActivityView: View {
                         }
                         .padding(.horizontal)
                         
+                        // MARK: - Walked Card
                         ZStack {
                             RoundedRectangle(cornerRadius: 34)
                                 .fill(.gray.opacity(0.1))
-                                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+                                .frame(width: 370, height: 160)
                             
                             HStack(spacing: 20) {
                                 
@@ -87,17 +93,17 @@ struct ActivityView: View {
                                 Spacer()
                             }
                         }
-                        .frame(height: 190)
+                        .frame(height: 160)
                         .padding(.horizontal)
                         
-                        //vaccine card
+                        // MARK: - Vaccine & Meals Row
                         HStack(spacing:16) {
                             ZStack{
                                 RoundedRectangle(cornerRadius:34)
                                     .fill(.gray.opacity(0.1))
                                     .frame(width: 175, height:190)
                                 VStack(alignment: .leading){
-                                    HStack{
+                                    HStack (spacing:15){
                                         Text("Upcoming")
                                             .font(.system(size: 22,weight: .regular))
                                         Button{
@@ -128,26 +134,67 @@ struct ActivityView: View {
                             MealsCardView()
                         }
                         
-                        //alergies k liye
+                        // MARK: - Allergies Card
                         ZStack{
                             RoundedRectangle(cornerRadius: 23)
                                 .fill(.gray.opacity(0.1))
                                 .frame(width:370, height:95)
+                            HStack(spacing:20){
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
+                                    .frame(width: 78, height: 78)
+                                    .overlay(
+                                        Image("allergiesIcon")
+                                            .resizable()
+                                            .frame(width:66, height: 63)
+                                    )
+                                VStack(alignment:.leading, spacing: 10){
+                                    HStack(spacing:130) {
+                                        Text("Allergies")
+                                            .font(.system(size: 24,weight: .regular))
+                                            .padding(.top,5)
+                                        Button{
+                                            //workflow pending
+                                        }label: {
+                                            Circle()
+                                                .fill(Color("baseRed").opacity(0.2))
+                                                .frame(width:22,height:22)
+                                                .overlay(
+                                                    Image(systemName: "chevron.right")
+                                                        .foregroundStyle(.black)
+                                                        .font(.system(size: 12))
+                                                )
+                                        }
+                                    }
+                                    HStack {
+                                        ForEach(allergies.prefix(3)) { allergy in
+                                            ZStack{
+                                                RoundedRectangle(cornerRadius: 6)
+                                                    .fill(.baseRed)
+                                                    .frame(width:62, height:27)
+                                                RoundedRectangle(cornerRadius: 5)
+                                                    .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
+                                                    .frame(width:60, height:25)
+                                                    .overlay(
+                                                        Text(allergy.allergyName)
+                                                            .font(.system(size: 10,weight: .medium))
+                                                    )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         
-                        //graph
-                        ZStack{
-                            RoundedRectangle(cornerRadius: 34)
-                                .fill(.gray.opacity(0.1))
-                                .frame(width:370, height:153)
-                        }
-                        
-                        Spacer()
+                        // MARK: - Graph Card
+                        WalkTimeGraphView()
                     }
                     .padding(.top)
                 }
             }
+            .background(Color("baseBackground"))
         }
+        
     }
 }
 
