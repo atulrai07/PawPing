@@ -22,8 +22,10 @@ struct ActivityView: View {
         NavigationStack {
             ScrollView(showsIndicators:false) {
                 ZStack {
-                    VStack(spacing: 20) {
+                    // MARK: - Main Stack
+                    VStack(spacing: 16) {
                         
+                        // MARK: - Header
                         HStack(alignment: .top) {
                             VStack(alignment: .leading) {
                                 Text("Hello \(profile.dogName)")
@@ -50,10 +52,11 @@ struct ActivityView: View {
                         }
                         .padding(.horizontal)
                         
+                        // MARK: - Walked Card
                         ZStack {
                             RoundedRectangle(cornerRadius: 34)
                                 .fill(.gray.opacity(0.1))
-                                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+                                .frame(width: 370, height: 160)
                             
                             HStack(spacing: 20) {
                                 
@@ -90,10 +93,10 @@ struct ActivityView: View {
                                 Spacer()
                             }
                         }
-                        .frame(height: 190)
+                        .frame(height: 160)
                         .padding(.horizontal)
                         
-                        //vaccine card
+                        // MARK: - Vaccine & Meals Row
                         HStack(spacing:16) {
                             ZStack{
                                 RoundedRectangle(cornerRadius:34)
@@ -131,7 +134,7 @@ struct ActivityView: View {
                             MealsCardView()
                         }
                         
-                        //alergies
+                        // MARK: - Allergies Card
                         ZStack{
                             RoundedRectangle(cornerRadius: 23)
                                 .fill(.gray.opacity(0.1))
@@ -182,23 +185,16 @@ struct ActivityView: View {
                                 }
                             }
                         }
-                        Spacer()
-                        //graph
-                        ZStack{
-                            RoundedRectangle(cornerRadius: 34)
-                                .fill(.gray.opacity(0.1))
-                                .frame(width:370, height:153)
-                            WalkTimeGraphView()
-                                .scaledToFit()
-
-                        }
-                        .frame(width:370, height:153)
-                        Spacer()
+                        
+                        // MARK: - Graph Card
+                        WalkTimeGraphView()
                     }
                     .padding(.top)
                 }
             }
+            .background(Color("baseBackground"))
         }
+        
     }
 }
 
