@@ -18,7 +18,7 @@ struct MealsCardView: View {
                 .frame(width: 175, height: 190)
             
             VStack(alignment: .leading) {
-                HStack {
+                HStack (spacing:60) {
                     Text("Meals")
                         .font(.system(size: 22, weight: .regular))
                     

@@ -47,3 +47,15 @@ struct Meal: Identifiable {
         Meal(icon: "moon", time: "8:00", meridiem: "PM", isTaken: false)
     ]
 }
+
+struct Allergies : Identifiable {
+    let id = UUID()
+    let allergyName : String
+    
+    static let sampleAllergies: [Allergies] = [
+        Allergies(allergyName: "Gluten"),
+        Allergies(allergyName: "Lactose"),
+        Allergies(allergyName: "Wheat"),
+        Allergies(allergyName: "Peanuts")
+    ]
+}
