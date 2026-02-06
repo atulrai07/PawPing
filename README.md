@@ -1,4 +1,4 @@
-# 🐾 PawPing – Smart Pet Care Companion
+# PawPing – Smart Pet Care Companion
 
 PawPing is a modern iOS application designed to help pet owners **track, manage, and care for their pets’ daily health and activities** in a simple, intuitive, and visually engaging way.
 
@@ -6,21 +6,21 @@ From **daily walks and meals** to **vaccination reminders and medical history**,
 
 ---
 
-## 📱 Features
+## Features
 
-### 🏃 Activity Tracking
+### Activity Tracking
 
 * Track daily walk goals and progress
 * Circular progress visualization
 * Quick activity overview on the home screen
 
-### 🍽 Meals & Care
+### Meals & Care
 
 * Scheduled meals (morning, afternoon, night)
 * Visual indicators for taken / pending meals
 * Simple toggle-based interaction
 
-### 💉 Vaccine Management
+### Vaccine Management
 
 * Dedicated Vaccine tab with 3 sections:
 
@@ -33,7 +33,7 @@ From **daily walks and meals** to **vaccination reminders and medical history**,
 * Stores last taken date and clinic details
 * Export Vaccine Passport (planned)
 
-### 👤 Profile & Authentication
+### Profile & Authentication
 
 * Clean login and account creation UI
 * Email & password authentication UI
@@ -43,7 +43,7 @@ From **daily walks and meals** to **vaccination reminders and medical history**,
   * Continue with Google
 * Designed for easy backend integration (Firebase-ready)
 
-### 🧭 Tab-Based Navigation
+### Tab-Based Navigation
 
 * Activity
 * Care
@@ -52,7 +52,7 @@ From **daily walks and meals** to **vaccination reminders and medical history**,
 
 ---
 
-## 🎨 UI / UX Design
+## UI / UX Design
 
 * Designed using **Figma**
 * Clean, soft card-based layout
@@ -62,7 +62,7 @@ From **daily walks and meals** to **vaccination reminders and medical history**,
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Technology           | Usage                        |
 | -------------------- | ---------------------------- |
@@ -75,7 +75,7 @@ From **daily walks and meals** to **vaccination reminders and medical history**,
 
 ---
 
-## 🧱 Architecture
+## Architecture
 
 The app follows a **clean, beginner-friendly MVC structure**:
 
@@ -104,17 +104,9 @@ PawPing/
 │
 └── PawPingApp.swift
 ```
-
-### Why MVC?
-
-* Clear separation of logic and UI
-* Easy to debug and scale
-* Perfect for student + team projects
-* Ready for backend and persistence integration
-
 ---
 
-## 🔁 Key App Logic
+## Key App Logic
 
 ### Vaccine Flow
 
@@ -131,7 +123,7 @@ Upcoming / Missed
 
 ---
 
-## 🧪 SwiftUI Previews
+## SwiftUI Previews
 
 All major views include SwiftUI previews:
 
@@ -149,18 +141,17 @@ This enables:
 
 ---
 
-## 🚀 Planned Features
+## Planned Features
 
-* 🔐 Firebase Authentication
-* 💾 CoreData / CloudKit persistence
-* 📄 Vaccine Passport PDF export
-* 🔔 Push notifications for upcoming vaccines
-* 🐶 Multi-pet support
-* 🌙 Dark mode support
+* Firebase Authentication
+* CoreData / CloudKit persistence
+* Vaccine Passport PDF export
+* Push notifications for upcoming vaccines
+* Multi-pet support
 
 ---
 
-## 🧑‍💻 Team
+## Team
 
 This project is built collaboratively as part of a **student iOS development team**, focusing on:
 
@@ -171,26 +162,8 @@ This project is built collaboratively as part of a **student iOS development tea
 
 ---
 
-## 📌 Getting Started
 
-1. Clone the repository
-
-   ```bash
-   git clone https://github.com/atulrai07/PawPing.git
-   ```
-
-2. Open in Xcode
-
-   ```bash
-   open PawPing.xcodeproj
-   ```
-
-3. Run on Simulator or Device
-   *(iOS 17+ recommended)*
-
----
-
-## 📄 License
+## License
 
 This project is currently for **educational and learning purposes**.
 License will be added later.
