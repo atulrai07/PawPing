@@ -18,7 +18,7 @@ struct DayCareView: View {
     
     // Data Sources
     let dayCareData = DayCare.sampleDayCare
-    let vetData = VetPlace.sampleVets
+    let vetData = Vet.sampleVets
     
     // Filter Logic for DayCare
     var filteredDayCares: [DayCare] {
@@ -30,11 +30,11 @@ struct DayCareView: View {
     }
     
     // Filter Logic for Vets
-    var filteredVets: [VetPlace] {
+    var filteredVets: [Vet] {
         if searchText.isEmpty {
             return vetData
         } else {
-            return vetData.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return vetData.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
@@ -53,7 +53,7 @@ struct DayCareView: View {
                                 UserAnnotation()
                                 
                                 ForEach(filteredVets) { vet in
-                                    Marker(vet.name, coordinate: vet.coordinate)
+                                    Marker(vet.vetName, coordinate: vet.coordinate)
                                         .tint(Color("baseRed"))
                                 }
                             }
@@ -91,14 +91,15 @@ struct DayCareView: View {
                             // Day Care List
                             LazyVStack(spacing: 16) {
                                 ForEach(filteredDayCares) { item in
-                                    // Inline conversion of DayCare to VetPlace
-                                    VetCardView(vet: VetPlace(
-                                        name: item.name,
-                                        type: item.type,
+                                    // Inline conversion of DayCare to Vet
+                                    VetCardView(vet: Vet(
+                                        id: item.id,
+                                        vetName: item.name,
                                         rating: item.rating,
                                         distance: item.distance,
-                                        imageName: item.imageName,
-                                        coordinate: item.coordinate
+                                        image: item.imageName,
+                                        latitude: item.latitude,
+                                        longitude: item.longitude
                                     ))
                                 }
                             }

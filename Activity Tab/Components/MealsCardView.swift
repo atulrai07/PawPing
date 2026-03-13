@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MealsCardView: View {
     
-    let meals: [Meal] = Meal.sampleMeals
+    let meals: [Meals] = Meals.sampleMeals
     
     var body: some View {
         ZStack {
@@ -38,7 +38,7 @@ struct MealsCardView: View {
                 
                 // Meals
                 HStack(spacing: 11) {
-                    ForEach(meals) { meal in
+                    ForEach(meals, id: \.id) { (meal: Meals) in
                         Capsule()
                             .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
                             .frame(width: 40, height: 105)
@@ -47,7 +47,7 @@ struct MealsCardView: View {
                                     Circle()
                                         .fill(.baseRed)
                                         .overlay(
-                                            Image(systemName: meal.icon)
+                                            Image(systemName: String(meal.icon))
                                                 .foregroundStyle(.white)
                                                 .font(.system(size: 21, weight: .medium))
                                         )
@@ -55,7 +55,7 @@ struct MealsCardView: View {
                                     HStack(alignment: .lastTextBaseline, spacing: 1) {
                                         Text(meal.time)
                                             .font(.system(size: 10, weight: .medium))
-                                        Text(meal.meridiem)
+                                        Text(meal.meridian)
                                             .font(.system(size: 5, weight: .medium))
                                     }
                                     

@@ -18,14 +18,14 @@ struct CareView: View {
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     
     // Data
-    let vets = VetPlace.sampleVets
+    let vets = Vet.sampleVets
     
     // Filter Logic
-    var filteredVets: [VetPlace] {
+    var filteredVets: [Vet] {
         if searchText.isEmpty {
             return vets
         } else {
-            return vets.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return vets.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
@@ -44,7 +44,7 @@ struct CareView: View {
                                 UserAnnotation()
                                 
                                 ForEach(filteredVets) { vet in
-                                    Marker(vet.name, coordinate: vet.coordinate)
+                                    Marker(vet.vetName, coordinate: vet.coordinate)
                                         .tint(Color("baseRed"))
                                 }
                             }
