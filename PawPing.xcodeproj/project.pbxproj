@@ -6,19 +6,24 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		B76FD3332F63F1270073184E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76FD3322F63F1270073184E /* ContentView.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
-		B76A5F482F1DEA7400B89ED9 /* PawPing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PawPing.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B76FD3322F63F1270073184E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B76FD3742F63F2890073184E /* PawPing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PawPing.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B76A5F4A2F1DEA7400B89ED9 /* PawPing */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PawPing;
+			sourceTree = "<group>";
+		};
+		B76FD2B72F63D0AD0073184E /* Activity Tab */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Activity Tab";
+			sourceTree = "<group>";
+		};
+		B76FD2BD2F63DF3B0073184E /* Care Tab */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Care Tab";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -37,18 +42,11 @@
 		B76A5F3F2F1DEA7400B89ED9 = {
 			isa = PBXGroup;
 			children = (
-				B76FD3322F63F1270073184E /* ContentView.swift */,
 				B76A5F4A2F1DEA7400B89ED9 /* PawPing */,
-				B76A5F492F1DEA7400B89ED9 /* Products */,
+				B76FD2B72F63D0AD0073184E /* Activity Tab */,
+				B76FD2BD2F63DF3B0073184E /* Care Tab */,
+				B76FD3742F63F2890073184E /* PawPing.app */,
 			);
-			sourceTree = "<group>";
-		};
-		B76A5F492F1DEA7400B89ED9 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				B76A5F482F1DEA7400B89ED9 /* PawPing.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -68,12 +66,14 @@
 			);
 			fileSystemSynchronizedGroups = (
 				B76A5F4A2F1DEA7400B89ED9 /* PawPing */,
+				B76FD2B72F63D0AD0073184E /* Activity Tab */,
+				B76FD2BD2F63DF3B0073184E /* Care Tab */,
 			);
 			name = PawPing;
 			packageProductDependencies = (
 			);
 			productName = PawPing;
-			productReference = B76A5F482F1DEA7400B89ED9 /* PawPing.app */;
+			productReference = B76FD3742F63F2890073184E /* PawPing.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -88,7 +88,6 @@
 				TargetAttributes = {
 					B76A5F472F1DEA7400B89ED9 = {
 						CreatedOnToolsVersion = 26.2;
-						LastSwiftMigration = 2620;
 					};
 				};
 			};
@@ -102,7 +101,7 @@
 			mainGroup = B76A5F3F2F1DEA7400B89ED9;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = B76A5F492F1DEA7400B89ED9 /* Products */;
+			productRefGroup = B76A5F3F2F1DEA7400B89ED9;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -126,7 +125,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B76FD3332F63F1270073184E /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,7 +257,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5273NF3L3W;
@@ -281,8 +278,6 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "PawPing-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -294,7 +289,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5273NF3L3W;
@@ -316,7 +310,6 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "PawPing-Bridging-Header.h";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
