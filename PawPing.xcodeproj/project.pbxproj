@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		B76FD3742F63F2890073184E /* PawPing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PawPing.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B76FD3972F63F32D0073184E /* PawPing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PawPing.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -45,7 +45,7 @@
 				B76A5F4A2F1DEA7400B89ED9 /* PawPing */,
 				B76FD2B72F63D0AD0073184E /* Activity Tab */,
 				B76FD2BD2F63DF3B0073184E /* Care Tab */,
-				B76FD3742F63F2890073184E /* PawPing.app */,
+				B76FD3972F63F32D0073184E /* PawPing.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -73,7 +73,7 @@
 			packageProductDependencies = (
 			);
 			productName = PawPing;
-			productReference = B76FD3742F63F2890073184E /* PawPing.app */;
+			productReference = B76FD3972F63F32D0073184E /* PawPing.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
