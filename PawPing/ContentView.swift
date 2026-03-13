@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    let sampleProfile = Profile(dogName: "Buddy", breed: "Labrador", gender: "M", age: "2")
+    let sampleProfile = DogProfile(id: UUID(), ownerId: UUID(), dogName: "Buddy", breed: "Labrador", gender: "male", age: "2")
     let sampleActivity = WalkActivity(currentMinutes: 23, goalMinutes: 60)
     
     var body: some View {

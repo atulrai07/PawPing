@@ -7,13 +7,23 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		B76A5F482F1DEA7400B89ED9 /* PawPing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PawPing.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B76A5F482F1DEA7400B89ED9 /* PawPing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = PawPing.app; path = "/Users/atul/Desktop/X Code Programs/PawPing/build/Debug-iphoneos/PawPing.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B76A5F4A2F1DEA7400B89ED9 /* PawPing */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PawPing;
+			sourceTree = "<group>";
+		};
+		B76FD2B72F63D0AD0073184E /* Activity Tab */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Activity Tab";
+			sourceTree = "<group>";
+		};
+		B76FD2BD2F63DF3B0073184E /* Care Tab */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Care Tab";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -33,16 +43,9 @@
 			isa = PBXGroup;
 			children = (
 				B76A5F4A2F1DEA7400B89ED9 /* PawPing */,
-				B76A5F492F1DEA7400B89ED9 /* Products */,
+				B76FD2B72F63D0AD0073184E /* Activity Tab */,
+				B76FD2BD2F63DF3B0073184E /* Care Tab */,
 			);
-			sourceTree = "<group>";
-		};
-		B76A5F492F1DEA7400B89ED9 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				B76A5F482F1DEA7400B89ED9 /* PawPing.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -62,6 +65,8 @@
 			);
 			fileSystemSynchronizedGroups = (
 				B76A5F4A2F1DEA7400B89ED9 /* PawPing */,
+				B76FD2B72F63D0AD0073184E /* Activity Tab */,
+				B76FD2BD2F63DF3B0073184E /* Care Tab */,
 			);
 			name = PawPing;
 			packageProductDependencies = (
@@ -95,7 +100,7 @@
 			mainGroup = B76A5F3F2F1DEA7400B89ED9;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = B76A5F492F1DEA7400B89ED9 /* Products */;
+			productRefGroup = B76A5F3F2F1DEA7400B89ED9;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
