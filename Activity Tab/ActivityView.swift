@@ -7,16 +7,16 @@
 import SwiftUI
 
 struct ActivityView: View {
-    var profile: Profile = Profile.sampleProfile
+    var profile: DogProfile = DogProfile.sampleProfile
     
     var walkActivity: WalkActivity = WalkActivity(currentMinutes: 23, goalMinutes: 60)
     
-    var meals: [Meal] = Meal.sampleMeals
+    var meals: [Meals] = Meals.sampleMeals
     
-    var vaccine : Vaccine = Vaccine.sampleVaccines
+    var vaccine : Vaccines = Vaccines.sampleVaccines
     
     //Allergies Model
-    var allergies : [Allergies] = Allergies.sampleAllergies
+    var allergy : [Allergy] = Allergy.sampleAllergies
     
     var body: some View {
         NavigationStack {
@@ -167,7 +167,7 @@ struct ActivityView: View {
                                         }
                                     }
                                     HStack {
-                                        ForEach(allergies.prefix(3)) { allergy in
+                                        ForEach(allergy.prefix(3)) { allergies in
                                             ZStack{
                                                 RoundedRectangle(cornerRadius: 6)
                                                     .fill(.baseRed)
@@ -176,7 +176,7 @@ struct ActivityView: View {
                                                     .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
                                                     .frame(width:60, height:25)
                                                     .overlay(
-                                                        Text(allergy.allergyName)
+                                                        Text(allergies.allergen ?? "none")
                                                             .font(.system(size: 10,weight: .medium))
                                                     )
                                             }
