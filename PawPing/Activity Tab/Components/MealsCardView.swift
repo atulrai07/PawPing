@@ -38,7 +38,7 @@ struct MealsCardView: View {
                 
                 // Meals
                 HStack(spacing: 11) {
-                    ForEach(store.meals, id: \.id) { (meal: Meals) in
+                    ForEach(store.meals, id: \.id) { (meal: Meal) in
                         Capsule()
                             .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
                             .frame(width: 40, height: 105)
