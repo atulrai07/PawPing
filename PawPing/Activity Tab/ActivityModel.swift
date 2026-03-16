@@ -26,11 +26,20 @@ struct DogProfile: Identifiable {
     var gender: DogGender
     var age: String
     var dogImage: String = "profilePhoto"
+    
+    static let sampleProfile = DogProfile(
+        id: UUID(),
+        ownerId: UUID(),
+        dogName: "Buddy",
+        breed: "Labrador",
+        gender: .male,
+        age: "2"
+    )
 }
 
 enum DogGender: String {
-   case male = "Male"
-   case female = "Female"
+    case male = "Male"
+    case female = "Female"
 }
 
 // MARK: - Activity
@@ -43,7 +52,7 @@ struct Activity: Identifiable {
     var goalMinutes: Int
     var distanceWalked: Double
     var goalDistanceWalked: Double
-
+    
     var progress: Double {
         guard goalMinutes > 0 else { return 0 }
         return Double(currentMinutes) / Double(goalMinutes)
@@ -70,6 +79,19 @@ struct TimeWalkedGraphModel {
     let data: [TimeWalkedData]
     let goalMinutes: Int
 
+    static let sample = TimeWalkedGraphModel(
+        data: [
+            TimeWalkedData(day: "MON", minutes: 10),
+            TimeWalkedData(day: "TUE", minutes: 28),
+            TimeWalkedData(day: "WED", minutes: 18),
+            TimeWalkedData(day: "THU", minutes: 42),
+            TimeWalkedData(day: "FRI", minutes: 38),
+            TimeWalkedData(day: "SAT", minutes: 0),
+            TimeWalkedData(day: "SUN", minutes: 0)
+        ],
+        goalMinutes: 60
+    )
+
     var maxMinutes: Int {
         max(goalMinutes, data.map { $0.minutes }.max() ?? 1)
     }
@@ -87,25 +109,31 @@ struct Meal: Identifiable {
     var mealType: MealType
     var mealName: MealName
     var isTaken: Bool
+    
+    static let sampleMeals: [Meal] = [
+        Meal(id: UUID(), dogId: UUID(), icon: "sun.max", time: "8:00", meridian: "AM", mealType: .breakfast, mealName: .dogFood, isTaken: true),
+        Meal(id: UUID(), dogId: UUID(), icon: "sunset.fill", time: "12:30", meridian: "PM", mealType: .lunch, mealName: .chickenAndRice, isTaken: false),
+        Meal(id: UUID(), dogId: UUID(), icon: "moon", time: "8:30", meridian: "PM", mealType: .dinner, mealName: .eggAndRice, isTaken: false)
+    ]
 }
 
 enum MealType: String {
     case breakfast = "Breakfast"
-    case lunch     = "Lunch"
-    case dinner    = "Dinner"
+    case lunch = "Lunch"
+    case dinner = "Dinner"
 }
 
 enum MealName: String {
-    case eggAndCheese       = "Egg and Cheese"
-    case eggAndRice         = "Egg and Rice"
-    case chickenAndRice     = "Chicken and Rice"
-    case curdAndRice        = "Curd and Rice"
-    case dogFood            = "Dog Food"
+    case eggAndCheese = "Egg and Cheese"
+    case eggAndRice = "Egg and Rice"
+    case chickenAndRice = "Chicken and Rice"
+    case curdAndRice = "Curd and Rice"
+    case dogFood = "Dog Food"
     case dogFoodWithCarrots = "Dog Food with Carrots"
-    case others             = "Others"
+    case others = "Others"
 }
 
-// MARK: - Vaccines (Activity Tab)
+// MARK: - Vaccines
 
 struct Vaccine: Identifiable {
     let id: UUID
@@ -116,13 +144,24 @@ struct Vaccine: Identifiable {
     var frequency: Int
     var frequencyType: VaccineFrequencyType
     var vaccineNotes: String
+    
+    static let sampleVaccines = Vaccine(
+        id: UUID(),
+        dogId: UUID(),
+        name: "Rabies Booster",
+        givenDate: Date(),
+        daysLeft: 3,
+        frequency: 12,
+        frequencyType: .monthly,
+        vaccineNotes: "N/A"
+    )
 }
 
 enum VaccineFrequencyType: String {
-    case days    = "Days"
-    case weekly  = "Weekly"
+    case days = "Days"
+    case weekly = "Weekly"
     case monthly = "Monthly"
-    case yearly  = "Yearly"
+    case yearly = "Yearly"
 }
 
 // MARK: - Allergies
@@ -134,10 +173,15 @@ struct Allergy: Identifiable {
     var allergyType: AllergyType
     var allergyNotes: String
     var allergen: String?
+    
+    static let sampleAllergies: [Allergy] = [
+        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", allergyType: .environmental, allergyNotes: "N/A", allergen: "Gluten"),
+        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", allergyType: .environmental, allergyNotes: "N/A", allergen: "Lactose")
+    ]
 }
 
 enum AllergyType: String {
-    case food          = "Food"
-    case medication    = "Medication"
+    case food = "Food"
+    case medication = "Medication"
     case environmental = "Environmental"
 }
