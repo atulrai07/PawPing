@@ -17,12 +17,11 @@ struct ActivityView: View {
                     // MARK: - Main Stack
                     VStack(spacing: 16) {
                         
-
                         // MARK: - Header
                         HStack(alignment: .top) {
                             VStack(alignment: .leading) {
                                 Text("Hello \(store.dogProfile.dogName)")
-                                    .font(.system(size: 16))
+                                    .font(.system(size: 17, weight: .bold))
                                     .bold()
                                     .foregroundStyle(Color("baseRed"))
                                 
@@ -40,12 +39,11 @@ struct ActivityView: View {
                                         .resizable()
                                         .scaledToFit()
                                         .clipShape(Circle())
-                                        .frame(width: 64, height: 64)
+                                        .frame(width: 55, height: 55)
                                 )
                         }
                         .padding(.horizontal)
                         
-
                         // MARK: - Walked Card
                         ZStack {
                             RoundedRectangle(cornerRadius: 34)
@@ -188,19 +186,8 @@ struct ActivityView: View {
                 }
             }
             .background(Color("baseBackground"))
-            // MARK: - Navigation Title
-            .navigationTitle("Activity")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Image(store.dogProfile.dogImage)  
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 36, height: 36)
-                        .clipShape(Circle())
-                }
-            }
         }
+        
     }
 }
 
