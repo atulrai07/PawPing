@@ -65,7 +65,7 @@ struct DoneVaccineRowView: View {
 }
 
 #Preview {
-    DoneVaccineRowView(record: VaccineRecord.sampleRecords[3])
+    DoneVaccineRowView(record: VaccineStore().vaccineRecords[3])
         .padding()
         .background(Color("baseBackground"))
 }

@@ -5,14 +5,6 @@
 //  Created by SidMoon on 16/03/26.
 //
 
-
-//
-//  ActivityStore.swift
-//  PawPing
-//
-//  Created by Atul on 01/02/26.
-//
-
 import Foundation
 
 @Observable
@@ -54,7 +46,7 @@ class ActivityStore {
             Allergy(id: UUID(), dogId: sampleDogId, allergyName: "Flea Dermatitis", alleryType: .environmental, alleryNotes: "N/A", allergen: "Lactose")
         ]
 
-        walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: 60)
+        walkActivity = WalkActivity(currentMinutes: 23, goalMinutes: 60)
 
         timeWalkedGraph = TimeWalkedGraphModel(
             data: [

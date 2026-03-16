@@ -16,25 +16,24 @@ struct DayCareView: View {
     // Map Position
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     
-    // Data Sources
-    let dayCareData = DayCare.sampleDayCare
-    let vetData = Vet.sampleVets
-    
+    // Store
+    var store: CareStore
+
     // Filter Logic for DayCare
     var filteredDayCares: [DayCare] {
         if searchText.isEmpty {
-            return dayCareData
+            return store.dayCares
         } else {
-            return dayCareData.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return store.dayCares.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
-    
+
     // Filter Logic for Vets
     var filteredVets: [Vet] {
         if searchText.isEmpty {
-            return vetData
+            return store.vets
         } else {
-            return vetData.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
+            return store.vets.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
@@ -119,5 +118,5 @@ struct DayCareView: View {
 }
 
 #Preview {
-    DayCareView()
+    DayCareView(store: CareStore())
 }

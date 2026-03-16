@@ -46,7 +46,7 @@ struct VaccineSummaryCard: View {
 }
 
 #Preview {
-    VaccineSummaryCard(summary: VaccineSummary.sample)
+    VaccineSummaryCard(summary: VaccineStore().summary)
         .padding()
         .background(Color("baseBackground"))
 }
