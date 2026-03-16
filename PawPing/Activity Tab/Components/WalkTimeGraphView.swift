@@ -1,3 +1,10 @@
+//
+//  WalkTimeGraphView.swift
+//  PawPing
+//
+//  Created by SidMoon on 16/03/26.
+//
+
 import SwiftUI
 import Charts
 
