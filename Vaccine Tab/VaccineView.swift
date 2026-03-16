@@ -37,11 +37,12 @@ struct VaccineView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
+                VStack(spacing: 0) {
                     
                     // Summary Card
                     VaccineSummaryCard(summary: summary)
                         .padding(.horizontal)
+                        .padding(.bottom, 24)
                     
                     // Upcoming Vaccines
                     if !upcomingRecords.isEmpty {
@@ -64,6 +65,7 @@ struct VaccineView: View {
                                     .fill(.gray.opacity(0.1))
                             )
                         }
+                        .padding(.bottom, 24)
                     }
                     
                     // Overdue
@@ -87,6 +89,7 @@ struct VaccineView: View {
                                     .fill(.gray.opacity(0.1))
                             )
                         }
+                        .padding(.bottom, 24)
                     }
                     
                     // Done
@@ -108,6 +111,7 @@ struct VaccineView: View {
                                     .fill(.gray.opacity(0.1))
                             )
                         }
+                        .padding(.bottom, 24)
                     }
                     
                     // Export Button
@@ -116,7 +120,7 @@ struct VaccineView: View {
                     }
                     .padding(.horizontal)
                 }
-                .padding(.top, 10)
+                .padding(.top, 16)
                 .padding(.bottom, 80)
             }
             .background(Color("baseBackground"))
@@ -129,19 +133,13 @@ struct VaccineView: View {
                             print("Add vaccine tapped")
                         } label: {
                             Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.primary)
                         }
-                        
-                        Circle()
-                            .fill(.gray.opacity(0.2))
+                        Image(profile.dogImage)
+                            .resizable()
+                            .scaledToFill()
                             .frame(width: 36, height: 36)
-                            .overlay(
-                                Image(profile.dogImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .clipShape(Circle())
-                            )
+                            .clipShape(Circle())
                     }
                 }
             }
@@ -150,12 +148,11 @@ struct VaccineView: View {
     
     // Section builder
     private func vaccineSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(.primary)
+                .font(.title3)
+                .fontWeight(.semibold)
                 .padding(.horizontal)
-            
             content()
                 .padding(.horizontal)
         }

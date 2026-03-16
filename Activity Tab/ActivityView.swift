@@ -25,33 +25,6 @@ struct ActivityView: View {
                     // MARK: - Main Stack
                     VStack(spacing: 16) {
                         
-                        // MARK: - Header
-                        HStack(alignment: .top) {
-                            VStack(alignment: .leading) {
-                                Text("Hello \(profile.dogName)")
-                                    .font(.system(size: 16))
-                                    .bold()
-                                    .foregroundStyle(Color("baseRed"))
-                                
-                                Text("\(profile.breed). \(profile.gender), \(profile.age) years")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            
-                            Circle()
-                                .fill(.gray.opacity(0.2))
-                                .frame(width: 44, height: 44)
-                                .overlay(
-                                    Image(profile.dogImage)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .clipShape(Circle())
-                                        .frame(width: 64, height: 64)
-                                )
-                        }
-                        .padding(.horizontal)
-                        
                         // MARK: - Walked Card
                         ZStack {
                             RoundedRectangle(cornerRadius: 34)
@@ -193,8 +166,19 @@ struct ActivityView: View {
                 }
             }
             .background(Color("baseBackground"))
+            // MARK: - Navigation Title
+            .navigationTitle("Activity")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Image(profile.dogImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 36, height: 36)
+                        .clipShape(Circle())
+                }
+            }
         }
-        
     }
 }
 
