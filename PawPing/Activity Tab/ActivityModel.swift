@@ -23,9 +23,14 @@ struct DogProfile: Identifiable {
     var ownerId: UUID
     var dogName: String
     var breed: String
-    var gender: String
+    var gender: DogGender
     var age: String
     var dogImage: String = "profilePhoto"
+}
+
+enum DogGender: String {
+   case male = "Male"
+   case female = "Female"
 }
 
 // MARK: - Activity
@@ -72,7 +77,7 @@ struct TimeWalkedGraphModel {
 
 // MARK: - Meals
 
-struct Meals: Identifiable {
+struct Meal: Identifiable {
     let id: UUID
     var dogId: UUID
     var icon: String
@@ -85,7 +90,7 @@ struct Meals: Identifiable {
 }
 
 enum MealType: String {
-    case breakFast = "Breakfast"
+    case breakfast = "Breakfast"
     case lunch     = "Lunch"
     case dinner    = "Dinner"
 }
@@ -102,7 +107,7 @@ enum MealName: String {
 
 // MARK: - Vaccines (Activity Tab)
 
-struct Vaccines: Identifiable {
+struct Vaccine: Identifiable {
     let id: UUID
     var dogId: UUID
     var name: String
@@ -126,8 +131,8 @@ struct Allergy: Identifiable {
     let id: UUID
     var dogId: UUID
     var allergyName: String
-    var alleryType: AllergyType
-    var alleryNotes: String
+    var allergyType: AllergyType
+    var allergyNotes: String
     var allergen: String?
 }
 

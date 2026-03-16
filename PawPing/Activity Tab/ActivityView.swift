@@ -25,7 +25,7 @@ struct ActivityView: View {
                                     .bold()
                                     .foregroundStyle(Color("baseRed"))
                                 
-                                Text("\(store.dogProfile.breed). \(store.dogProfile.gender), \(store.dogProfile.age) years")
+                                Text("\(store.dogProfile.breed). \(store.dogProfile.gender.rawValue), \(store.dogProfile.age) years")
                                     .font(.system(size: 12, weight: .semibold))
                                     .foregroundStyle(.secondary)
                             }
@@ -48,7 +48,7 @@ struct ActivityView: View {
                         ZStack {
                             RoundedRectangle(cornerRadius: 34)
                                 .fill(.gray.opacity(0.1))
-                                .frame(width: 370, height: 160)
+                                .frame(height: 160)
                             
                             HStack(spacing: 20) {
                                 
@@ -69,6 +69,7 @@ struct ActivityView: View {
                                     
                                     Button {
                                         print("Start Walk tapped")
+                                        // Add the Physical Activity Screen Here
                                     } label: {
                                         Text("START")
                                             .font(.system(size: 14, weight: .medium))
@@ -99,7 +100,7 @@ struct ActivityView: View {
                                         Text("Upcoming")
                                             .font(.system(size: 22,weight: .regular))
                                         Button{
-                                            
+                                            // workflow pending
                                         }label: {
                                             Circle()
                                                 .fill(Color("baseRed").opacity(0.2))
