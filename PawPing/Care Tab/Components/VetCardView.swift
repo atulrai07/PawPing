@@ -9,13 +9,13 @@ import SwiftUI
 import CoreLocation
 
 struct VetCardView: View {
-    let vet: Vet
+    let vet: CareLocation
     
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .top, spacing: 14) {
                 // Image
-                Image(vet.image)
+                Image(vet.imageName)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 70, height: 70)
@@ -24,7 +24,7 @@ struct VetCardView: View {
                 
                 // Info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(vet.vetName)
+                    Text(vet.name)
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(Color("baseRed"))
                     
@@ -51,7 +51,7 @@ struct VetCardView: View {
             // Buttons Row
             HStack(spacing: 12) {
                 Button {
-                    print("Calling \(vet.vetName)")
+                    print("Calling \(vet.name)")
                 } label: {
                     HStack {
                         Image(systemName: "phone.fill")
@@ -67,7 +67,7 @@ struct VetCardView: View {
                 
                 // Direction Button
                 Button {
-                    print("Directions to \(vet.vetName)")
+                    print("Directions to \(vet.name)")
                 } label: {
                     Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
                         .font(.system(size: 18))
@@ -79,7 +79,7 @@ struct VetCardView: View {
                 
                 // Web Button
                 Button {
-                    print("Website of \(vet.vetName)")
+                    print("Website of \(vet.name)")
                 } label: {
                     Image(systemName: "globe")
                         .font(.system(size: 18))
@@ -99,12 +99,12 @@ struct VetCardView: View {
 }
 
 #Preview {
-    VetCardView(vet: Vet(
+    VetCardView(vet: CareLocation(
         id: UUID(),
-        vetName: "PupiLife Pet Clinic",
+        name: "PupiLife Pet Clinic",
         rating: 4.8,
         distance: 1.2,
-        image: "profilePhoto",
+        imageName: "profilePhoto",
         latitude: 28.6139,
         longitude: 77.2090
     ))

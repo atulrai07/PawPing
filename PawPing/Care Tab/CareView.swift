@@ -21,11 +21,11 @@ struct CareView: View {
     var store: CareStore
 
     // Filter Logic
-    var filteredVets: [Vet] {
+    var filteredVets: [CareLocation] {
         if searchText.isEmpty {
             return store.vets
         } else {
-            return store.vets.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
+            return store.vets.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
@@ -44,7 +44,7 @@ struct CareView: View {
                                 UserAnnotation()
                                 
                                 ForEach(filteredVets) { vet in
-                                    Marker(vet.vetName, coordinate: vet.coordinate)
+                                    Marker(vet.name, coordinate: vet.coordinate)
                                         .tint(Color("baseRed"))
                                 }
                             }
@@ -78,17 +78,7 @@ struct CareView: View {
             // MARK: - Native Search Functionality
             .searchable(text: $searchText, isPresented: $isSearching)
             .toolbar {
-                // 1. Search Button
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        isSearching = true // Triggers the hidden search bar to appear
-                    } label: {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(.primary)
-                    }
-                }
-                
-                // 2. Segmented Picker
+                // Segmented Picker
                 ToolbarItem(placement: .principal) {
                     Picker("Care Type", selection: $selectedCareType) {
                         ForEach(CareType.allCases, id: \.self) { type in
@@ -99,7 +89,7 @@ struct CareView: View {
                     .frame(width: 200)
                 }
                 
-                // 3. Profile Image
+                // Profile Image
                 ToolbarItem(placement: .topBarTrailing) {
                     Circle()
                         .fill(.gray.opacity(0.2))
