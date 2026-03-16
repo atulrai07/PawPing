@@ -193,7 +193,7 @@ struct ActivityView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Image(profile.dogImage) // Fix this place 
+                    Image(store.dogProfile.dogImage)  
                         .resizable()
                         .scaledToFill()
                         .frame(width: 36, height: 36)
