@@ -34,7 +34,7 @@ struct WalkTimeGraphView: View {
                 
                 // Title
                 Text("Time Walked")
-                    .font(.system(size: 16, weight: .bold)) // Reduced font slightly to fit
+                    .font(.system(size: 22, weight: .regular)) // Reduced font slightly to fit
                     .foregroundColor(.black)
                     .padding(.leading, 4) // Align with graph start
                 
