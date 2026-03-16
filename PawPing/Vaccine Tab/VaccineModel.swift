@@ -68,7 +68,6 @@ struct ClinicInfo: Identifiable, Hashable {
 }
 
 // Vaccine Record
-
 struct VaccineRecord: Identifiable {
     let id: UUID
     var dogId: UUID
@@ -147,7 +146,6 @@ struct VaccineRecord: Identifiable {
     }
     
     // Sample Data
-    
     static let sampleRecords: [VaccineRecord] = [
         // Upcoming
         VaccineRecord(
@@ -218,7 +216,7 @@ struct VaccineSummary {
     let upcomingCount: Int
     let overdueCount: Int
     
-    // Compute summary counts from an array of vaccine records.
+    // Computing summary counts from an array of vaccine records.
     init(from records: [VaccineRecord]) {
         self.doneCount     = records.filter { $0.status == .done }.count
         self.upcomingCount = records.filter { $0.status == .upcoming }.count
@@ -229,7 +227,6 @@ struct VaccineSummary {
 }
 
 // Vaccine Report Configuration
-
 struct VaccineReportConfig {
     var includeClinicContactInfo: Bool = true
     var includeMissedAlerts: Bool = true
@@ -239,8 +236,6 @@ struct VaccineReportConfig {
 }
 
 // Clinic Input Mode
-
-// Represents how clinic info is entered during record creation.
 enum ClinicInputMode: String, CaseIterable {
     case manual    = "Enter Manually"
     case vetCenter = "Select from vet center"
