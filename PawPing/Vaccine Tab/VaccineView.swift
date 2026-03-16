@@ -118,14 +118,6 @@ struct VaccineView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
-                        Button {
-                            print("Add vaccine tapped")
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.primary)
-                        }
-                        
                         Circle()
                             .fill(.gray.opacity(0.2))
                             .frame(width: 36, height: 36)

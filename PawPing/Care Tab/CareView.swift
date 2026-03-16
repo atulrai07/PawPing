@@ -32,7 +32,7 @@ struct CareView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
+                VStack(spacing: 10) {
                     
                     // MARK: - Content Switcher
                     switch selectedCareType {
@@ -89,7 +89,7 @@ struct CareView: View {
                     .frame(width: 200)
                 }
                 
-                // 3. Profile Image
+                // Profile Image
                 ToolbarItem(placement: .topBarTrailing) {
                     Circle()
                         .fill(.gray.opacity(0.2))
@@ -102,8 +102,7 @@ struct CareView: View {
                         )
                 }
             }
-            .navigationBarTitleDisplayMode(.large)
-            .navigationTitle("Care")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

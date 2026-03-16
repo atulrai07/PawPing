@@ -21,7 +21,7 @@ struct ActivityView: View {
                         HStack(alignment: .top) {
                             VStack(alignment: .leading) {
                                 Text("Hello \(store.dogProfile.dogName)")
-                                    .font(.system(size: 16))
+                                    .font(.system(size: 18, weight: .bold))
                                     .bold()
                                     .foregroundStyle(Color("baseRed"))
                                 
@@ -69,7 +69,6 @@ struct ActivityView: View {
                                     
                                     Button {
                                         print("Start Walk tapped")
-                                        // Add the Physical Activity Screen Here
                                     } label: {
                                         Text("START")
                                             .font(.system(size: 14, weight: .medium))
