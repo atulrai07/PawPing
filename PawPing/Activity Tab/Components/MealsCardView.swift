@@ -35,7 +35,7 @@ struct MealsCardView: View {
                             )
                     }
                 }
-                
+                .padding(.bottom, 16)
                 // Meals
                 HStack(spacing: 11) {
                     ForEach(store.meals, id: \.id) { (meal: Meals) in
