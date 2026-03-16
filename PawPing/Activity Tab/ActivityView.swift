@@ -143,7 +143,7 @@ struct ActivityView: View {
                                 VStack(alignment:.leading, spacing: 10){
                                     HStack(spacing:130) {
                                         Text("Allergies")
-                                            .font(.system(size: 24,weight: .regular))
+                                            .font(.system(size: 22,weight: .regular))
                                             .padding(.top,5)
                                         Button{
                                             //workflow pending
