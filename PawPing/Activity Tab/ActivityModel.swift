@@ -8,7 +8,8 @@
 import Foundation
 import CoreLocation
 
-// User & Pet
+// MARK: - User & Pet
+
 struct Owner: Identifiable {
     let id: UUID
     var name: String
@@ -26,8 +27,17 @@ struct DogProfile: Identifiable {
     var age: String
     var dogImage: String = "profilePhoto"
     
-    static let sampleProfile : DogProfile = DogProfile(id: UUID(), ownerId: UUID(), dogName: "Buddy", breed: "Labrador", gender: "male", age: "2")
+    static let sampleProfile = DogProfile(
+        id: UUID(),
+        ownerId: UUID(),
+        dogName: "Buddy",
+        breed: "Labrador",
+        gender: "male",
+        age: "2"
+    )
 }
+
+// MARK: - Activity
 
 struct Activity: Identifiable {
     let id: UUID
@@ -35,8 +45,8 @@ struct Activity: Identifiable {
     var date: Date
     var currentMinutes: Int
     var goalMinutes: Int
-    var distanceWalked : Double
-    var goalDistanceWalked : Double
+    var distanceWalked: Double
+    var goalDistanceWalked: Double
     
     var progress: Double {
         guard goalMinutes > 0 else { return 0 }
@@ -44,86 +54,10 @@ struct Activity: Identifiable {
     }
 }
 
-struct Meals: Identifiable {
-    let id: UUID
-    var dogId: UUID
-    var icon : String
-    var time : String
-    var meridian : String
-    var date : Date = Date()
-    var mealType : MealType
-    var mealName : MealName
-    var isTaken: Bool
-    
-    static let sampleMeals: [Meals] = [
-        
-        Meals(id: UUID(), dogId: UUID(), icon: "sun.max", time: "8:00",meridian: "AM", mealType: .breakFast, mealName: .dogFood, isTaken: true),
-        Meals(id: UUID(), dogId: UUID(), icon: "sunset.fill", time: "12:30",meridian: "PM", mealType: .lunch, mealName: .chickenAndRice, isTaken: false),
-        Meals(id: UUID(), dogId: UUID(), icon: "moon", time: "8:30",meridian: "PM", mealType: .dinner, mealName: .eggAndRice, isTaken: false)
-    ]
-}
-
-enum MealType : String {
-    case breakFast = "Breakfast"
-    case lunch     = "Lunch"
-    case dinner    = "Dinner"
-}
-
-enum MealName : String {
-    case eggAndCheese = "Egg and Cheese"
-    case eggAndRice = "Egg and Rice"
-    case chickenAndRice = "Chicken and Rice"
-    case curdAndRice = "Curd and Rice"
-    case dogFood = "Dog Food"
-    case dogFoodWithCarrots = "Dog Food with Carrots"
-    case others = "Others"
-}
-
-struct Vaccines: Identifiable {
-    let id: UUID
-    var dogId: UUID
-    var name: String
-    var givenDate: Date?
-    var daysLeft : Int
-    var frequency : Int
-    var frequencyType : VaccineFrequencyType
-    var vaccineNotes : String
-    
-    static let sampleVaccines: Vaccines = Vaccines(id: UUID(), dogId: UUID(), name: "Rabies Booster", givenDate: Date(), daysLeft: 3, frequency: 12, frequencyType: .monthly, vaccineNotes: "N/A")
-}
-
-enum VaccineFrequencyType : String {
-    case days = "Days"
-    case weekly  = "Weekly"
-    case monthly = "Monthly"
-    case yearly = "Yearly"
-}
-
-struct Allergy: Identifiable {
-    let id: UUID
-    var dogId: UUID
-    var allergyName: String //name of the allergy
-    var alleryType : AllergyType
-    var alleryNotes : String
-    var allergen : String? // what causes the allergy
-    
-    static let sampleAllergies: [Allergy] = [
-        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", alleryType: .environmental, alleryNotes: "N/A",allergen: "Gluten"),
-        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", alleryType: .environmental, alleryNotes: "N/A",allergen: "Lactose")
-    ]
-}
-
-enum AllergyType : String {
-    case food = "Food"
-    case medication = "Medication"
-    case environmental = "Environmental"
-}
-
 struct WalkActivity {
     var currentMinutes: Int
     var goalMinutes: Int
-    
-    // Helper to calculate progress (0.0 to 1.0)
+
     var progress: Double {
         guard goalMinutes > 0 else { return 0 }
         return Double(currentMinutes) / Double(goalMinutes)
@@ -156,4 +90,93 @@ struct TimeWalkedGraphModel {
     var maxMinutes: Int {
         max(goalMinutes, data.map { $0.minutes }.max() ?? 1)
     }
+}
+
+// MARK: - Meals
+
+struct Meals: Identifiable {
+    let id: UUID
+    var dogId: UUID
+    var icon: String
+    var time: String
+    var meridian: String
+    var date: Date = Date()
+    var mealType: MealType
+    var mealName: MealName
+    var isTaken: Bool
+    
+    static let sampleMeals: [Meals] = [
+        Meals(id: UUID(), dogId: UUID(), icon: "sun.max", time: "8:00", meridian: "AM", mealType: .breakFast, mealName: .dogFood, isTaken: true),
+        Meals(id: UUID(), dogId: UUID(), icon: "sunset.fill", time: "12:30", meridian: "PM", mealType: .lunch, mealName: .chickenAndRice, isTaken: false),
+        Meals(id: UUID(), dogId: UUID(), icon: "moon", time: "8:30", meridian: "PM", mealType: .dinner, mealName: .eggAndRice, isTaken: false)
+    ]
+}
+
+enum MealType: String {
+    case breakFast = "Breakfast"
+    case lunch = "Lunch"
+    case dinner = "Dinner"
+}
+
+enum MealName: String {
+    case eggAndCheese = "Egg and Cheese"
+    case eggAndRice = "Egg and Rice"
+    case chickenAndRice = "Chicken and Rice"
+    case curdAndRice = "Curd and Rice"
+    case dogFood = "Dog Food"
+    case dogFoodWithCarrots = "Dog Food with Carrots"
+    case others = "Others"
+}
+
+// MARK: - Vaccines
+
+struct Vaccines: Identifiable {
+    let id: UUID
+    var dogId: UUID
+    var name: String
+    var givenDate: Date?
+    var daysLeft: Int
+    var frequency: Int
+    var frequencyType: VaccineFrequencyType
+    var vaccineNotes: String
+    
+    static let sampleVaccines = Vaccines(
+        id: UUID(),
+        dogId: UUID(),
+        name: "Rabies Booster",
+        givenDate: Date(),
+        daysLeft: 3,
+        frequency: 12,
+        frequencyType: .monthly,
+        vaccineNotes: "N/A"
+    )
+}
+
+enum VaccineFrequencyType: String {
+    case days = "Days"
+    case weekly = "Weekly"
+    case monthly = "Monthly"
+    case yearly = "Yearly"
+}
+
+// MARK: - Allergies
+
+struct Allergy: Identifiable {
+    let id: UUID
+    var dogId: UUID
+    var allergyName: String
+    var alleryType: AllergyType
+    var alleryNotes: String
+    var allergen: String?
+    
+    static let sampleAllergies: [Allergy] = [
+        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", alleryType: .environmental, alleryNotes: "N/A", allergen: "Gluten"),
+        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", alleryType: .environmental, alleryNotes: "N/A", allergen: "Lactose")
+    ]
+}
+
+enum AllergyType: String {
+    case food = "Food"
+    case medication = "Medication"
+    case environmental = "Environmental"
 }
