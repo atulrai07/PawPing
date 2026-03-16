@@ -16,21 +16,6 @@
 			path = PawPing;
 			sourceTree = "<group>";
 		};
-		B76FD2B72F63D0AD0073184E /* Activity Tab */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Activity Tab";
-			sourceTree = "<group>";
-		};
-		B76FD2BD2F63DF3B0073184E /* Care Tab */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Care Tab";
-			sourceTree = "<group>";
-		};
-		B796F6582F6721D500233CB5 /* Vaccine Tab */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Vaccine Tab";
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,10 +32,7 @@
 		B76A5F3F2F1DEA7400B89ED9 = {
 			isa = PBXGroup;
 			children = (
-				B796F6582F6721D500233CB5 /* Vaccine Tab */,
 				B76A5F4A2F1DEA7400B89ED9 /* PawPing */,
-				B76FD2B72F63D0AD0073184E /* Activity Tab */,
-				B76FD2BD2F63DF3B0073184E /* Care Tab */,
 				B796F63D2F6721BC00233CB5 /* PawPing.app */,
 			);
 			sourceTree = "<group>";
@@ -72,9 +54,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				B76A5F4A2F1DEA7400B89ED9 /* PawPing */,
-				B76FD2B72F63D0AD0073184E /* Activity Tab */,
-				B76FD2BD2F63DF3B0073184E /* Care Tab */,
-				B796F6582F6721D500233CB5 /* Vaccine Tab */,
 			);
 			name = PawPing;
 			packageProductDependencies = (

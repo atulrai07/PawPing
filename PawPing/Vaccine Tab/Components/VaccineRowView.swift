@@ -52,10 +52,11 @@ struct VaccineRowView: View {
 }
 
 #Preview {
+    let store = VaccineStore()
     VStack {
-        VaccineRowView(record: VaccineRecord.sampleRecords[0])
+        VaccineRowView(record: store.vaccineRecords[0])
         Divider()
-        VaccineRowView(record: VaccineRecord.sampleRecords[1])
+        VaccineRowView(record: store.vaccineRecords[1])
     }
     .padding()
     .background(Color("baseBackground"))

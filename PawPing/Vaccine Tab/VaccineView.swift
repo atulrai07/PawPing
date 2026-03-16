@@ -8,30 +8,23 @@
 import SwiftUI
 
 struct VaccineView: View {
-    var profile: DogProfile = DogProfile.sampleProfile
-    var records: [VaccineRecord] = VaccineRecord.sampleRecords
+    var store: VaccineStore
+    var profile: DogProfile
 
-    // Filtered lists by closures
     var upcomingRecords: [VaccineRecord] {
-        records.filter {record in
-            record.status == .upcoming
-        }
+        store.vaccineRecords.filter { $0.status == .upcoming }
     }
-    
+
     var overdueRecords: [VaccineRecord] {
-        records.filter { record in
-            record.status == .overdue
-        }
+        store.vaccineRecords.filter { $0.status == .overdue }
     }
-    
+
     var doneRecords: [VaccineRecord] {
-        records.filter { record in
-            record.status == .done
-        }
+        store.vaccineRecords.filter { $0.status == .done }
     }
-    
+
     var summary: VaccineSummary {
-        VaccineSummary(from: records)
+        store.summary
     }
     
     var body: some View {
@@ -160,5 +153,5 @@ struct VaccineView: View {
 }
 
 #Preview {
-    VaccineView()
+    VaccineView(store: VaccineStore(), profile: ActivityStore().dogProfile)
 }
