@@ -7,17 +7,9 @@
 import SwiftUI
 
 struct ActivityView: View {
-    var profile: DogProfile = DogProfile.sampleProfile
-    
-    var walkActivity: WalkActivity = WalkActivity(currentMinutes: 23, goalMinutes: 60)
-    
-    var meals: [Meals] = Meals.sampleMeals
-    
-    var vaccine : Vaccines = Vaccines.sampleVaccines
-    
-    //Allergies Model
-    var allergy : [Allergy] = Allergy.sampleAllergies
-    
+    // Store
+    var store: ActivityStore
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators:false) {
@@ -28,12 +20,12 @@ struct ActivityView: View {
                         // MARK: - Header
                         HStack(alignment: .top) {
                             VStack(alignment: .leading) {
-                                Text("Hello \(profile.dogName)")
+                                Text("Hello \(store.dogProfile.dogName)")
                                     .font(.system(size: 16))
                                     .bold()
                                     .foregroundStyle(Color("baseRed"))
                                 
-                                Text("\(profile.breed). \(profile.gender), \(profile.age) years")
+                                Text("\(store.dogProfile.breed). \(store.dogProfile.gender), \(store.dogProfile.age) years")
                                     .font(.system(size: 12, weight: .semibold))
                                     .foregroundStyle(.secondary)
                             }
@@ -43,7 +35,7 @@ struct ActivityView: View {
                                 .fill(.gray.opacity(0.2))
                                 .frame(width: 44, height: 44)
                                 .overlay(
-                                    Image(profile.dogImage)
+                                    Image(store.dogProfile.dogImage)
                                         .resizable()
                                         .scaledToFit()
                                         .clipShape(Circle())
@@ -60,7 +52,7 @@ struct ActivityView: View {
                             
                             HStack(spacing: 20) {
                                 
-                                CircularProgressView(progress: walkActivity.progress)
+                                CircularProgressView(progress: store.walkActivity.progress)
                                     .frame(width: 100, height: 100)
                                     .padding(.leading, 20)
                                 
@@ -71,7 +63,7 @@ struct ActivityView: View {
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundStyle(Color("baseRed"))
                                     
-                                    Text("\(walkActivity.currentMinutes)/\(walkActivity.goalMinutes)min")
+                                    Text("\(store.walkActivity.currentMinutes)/\(store.walkActivity.goalMinutes)min")
                                         .font(.system(size: 28, weight: .bold))
                                         .foregroundStyle(.primary)
                                     
@@ -123,15 +115,15 @@ struct ActivityView: View {
                                         .foregroundStyle(.baseRed)
                                         .rotationEffect(.degrees(270))
                                         .font(.system(size: 65))
-                                    Text(vaccine.name)
+                                    Text(store.vaccines.first?.name ?? "No vaccine")
                                         .font(.system(size: 18,weight: .medium))
-                                    Text("\(vaccine.daysLeft) days left")
+                                    Text("\(store.vaccines.first?.daysLeft ?? 0) days left")
                                         .font(.system(size: 12,weight:.semibold))
                                 }
                                 .frame(height: 175)
                             }
                             //Meals Card
-                            MealsCardView()
+                            MealsCardView(store: store)
                         }
                         
                         // MARK: - Allergies Card
@@ -167,7 +159,7 @@ struct ActivityView: View {
                                         }
                                     }
                                     HStack {
-                                        ForEach(allergy.prefix(3)) { allergies in
+                                        ForEach(store.allergies.prefix(3)) { allergies in
                                             ZStack{
                                                 RoundedRectangle(cornerRadius: 6)
                                                     .fill(.baseRed)
@@ -187,7 +179,7 @@ struct ActivityView: View {
                         }
                         
                         // MARK: - Graph Card
-                        WalkTimeGraphView()
+                        WalkTimeGraphView(model: store.timeWalkedGraph)
                     }
                     .padding(.top)
                 }
@@ -199,5 +191,5 @@ struct ActivityView: View {
 }
 
 #Preview {
-    ActivityView()
+    ActivityView(store: ActivityStore())
 }

@@ -18,16 +18,16 @@ struct CareView: View {
     
     // Map Position
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
-    
-    // Data
-    let vets = Vet.sampleVets
-    
+
+    // Store
+    var store: CareStore
+
     // Filter Logic
     var filteredVets: [Vet] {
         if searchText.isEmpty {
-            return vets
+            return store.vets
         } else {
-            return vets.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
+            return store.vets.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
@@ -67,7 +67,7 @@ struct CareView: View {
                     case .dayCare:
                         // Day Care Content Placeholder
                         VStack(spacing: 20) {
-                            DayCareView()
+                            DayCareView(store: store)
                         }
                         .frame(maxWidth: .infinity)
                     }
@@ -120,5 +120,5 @@ struct CareView: View {
 }
 
 #Preview {
-    CareView()
+    CareView(store: CareStore())
 }

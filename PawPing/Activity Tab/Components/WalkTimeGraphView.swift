@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WalkTimeGraphView: View {
 
-    var model: TimeWalkedGraphModel = .sample
+    var model: TimeWalkedGraphModel
     
     // MARK: - Dimensions & Config
     // 1. Fixed dimensions to match the outer frame constraint
@@ -183,6 +183,6 @@ struct WalkTimeGraphView: View {
 #Preview {
     ZStack {
         Color.white
-        WalkTimeGraphView()
+        WalkTimeGraphView(model: ActivityStore().timeWalkedGraph)
     }
 }
