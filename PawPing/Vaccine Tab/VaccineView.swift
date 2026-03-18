@@ -10,6 +10,7 @@ import SwiftUI
 struct VaccineView: View {
     var store: VaccineStore
     var profile: DogProfile
+    @State private var showSheet = false
     
     var upcomingRecords: [VaccineRecord] {
         store.vaccineRecords.filter { $0.status == .upcoming }
@@ -120,7 +121,7 @@ struct VaccineView: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         HStack(spacing: 12) {
                             Button {
-                                print("Add Vaccine Record Tapped")
+                                showSheet = true
                             } label: {
                                 Image(systemName: "plus")
                                     .font(.system(size: 16, weight: .semibold))
@@ -142,6 +143,9 @@ struct VaccineView: View {
                                 )
                         }
                     }
+                }
+                .sheet(isPresented: $showSheet) {
+                                AddVaccineSheet()
                 }
             }
         }
