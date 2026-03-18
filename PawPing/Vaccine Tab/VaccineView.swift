@@ -105,7 +105,7 @@ struct VaccineView: View {
                     
                     // Export Button
                     ExportPassportButton {
-                        print("Export vaccine passport tapped")
+                        print("Export vaccine ")
                     }
                     .padding(.horizontal)
                 }
@@ -119,7 +119,7 @@ struct VaccineView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
                         Button {
-                            print("Add vaccine tapped")
+                            print("Add vaccine tapped passport tapped")
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 16, weight: .semibold))
