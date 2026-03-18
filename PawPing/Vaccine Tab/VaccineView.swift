@@ -26,7 +26,7 @@ struct VaccineView: View {
     var summary: VaccineSummary {
         store.summary
     }
-    
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
@@ -36,15 +36,20 @@ struct VaccineView: View {
                     VaccineSummaryCard(summary: summary)
                         .padding(.horizontal)
                     
-                    // Upcoming Vaccines
+                    // MARK: - Upcoming Vaccines
                     if !upcomingRecords.isEmpty {
-                        vaccineSection(title: "Upcoming Vaccines") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Upcoming Vaccines")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(.primary)
+                                .padding(.horizontal)
+
                             VStack(spacing: 0) {
                                 ForEach(Array(upcomingRecords.enumerated()), id: \.element.id) { index, record in
                                     VaccineRowView(record: record) {
                                         print("Mark as done: \(record.displayName)")
                                     }
-                                    
+
                                     if index < upcomingRecords.count - 1 {
                                         Divider()
                                     }
@@ -56,18 +61,24 @@ struct VaccineView: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(.gray.opacity(0.1))
                             )
+                            .padding(.horizontal)
                         }
                     }
-                    
-                    // Overdue
+
+                    // MARK: - Overdue
                     if !overdueRecords.isEmpty {
-                        vaccineSection(title: "Overdue") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Overdue")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(.primary)
+                                .padding(.horizontal)
+
                             VStack(spacing: 0) {
                                 ForEach(Array(overdueRecords.enumerated()), id: \.element.id) { index, record in
                                     VaccineRowView(record: record) {
                                         print("Mark as done: \(record.displayName)")
                                     }
-                                    
+
                                     if index < overdueRecords.count - 1 {
                                         Divider()
                                     }
@@ -79,16 +90,22 @@ struct VaccineView: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(.gray.opacity(0.1))
                             )
+                            .padding(.horizontal)
                         }
                     }
-                    
-                    // Done
+
+                    // MARK: - Done
                     if !doneRecords.isEmpty {
-                        vaccineSection(title: "Done") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Done")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(.primary)
+                                .padding(.horizontal)
+
                             VStack(spacing: 0) {
                                 ForEach(Array(doneRecords.enumerated()), id: \.element.id) { index, record in
                                     DoneVaccineRowView(record: record)
-                                    
+
                                     if index < doneRecords.count - 1 {
                                         Divider()
                                     }
@@ -100,6 +117,7 @@ struct VaccineView: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(.gray.opacity(0.1))
                             )
+                            .padding(.horizontal)
                         }
                     }
                     
@@ -118,14 +136,6 @@ struct VaccineView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
-                        Button {
-                            print("Add vaccine tapped")
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.primary)
-                        }
-                        
                         Circle()
                             .fill(.gray.opacity(0.2))
                             .frame(width: 36, height: 36)
@@ -138,19 +148,6 @@ struct VaccineView: View {
                     }
                 }
             }
-        }
-    }
-    
-    // Section builder
-    private func vaccineSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(.primary)
-                .padding(.horizontal)
-            
-            content()
-                .padding(.horizontal)
         }
     }
 }

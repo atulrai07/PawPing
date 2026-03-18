@@ -28,11 +28,11 @@ enum VaccineName: Hashable {
         case .bordetella:      return "Bordetella"
         case .leptospirosis:   return "Leptospirosis"
         case .deworming:       return "Deworming"
-        case .other(let name): return name
+        case .other(let name): return name // Use hashable and not the Standard String Way to allow inclusion of Custom Vaccine names.
         }
     }
 
-    /// Standard list used for pickers
+    // Standard list used for pickers in Dropdown to be chosen by User as Default
     static let allStandard: [VaccineName] = [
         .rabies, .rabiesBooster, .dhpp, .dhppBooster,
         .bordetella, .leptospirosis, .deworming
