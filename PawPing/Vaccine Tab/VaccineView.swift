@@ -119,7 +119,7 @@ struct VaccineView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
                         Button {
-                            print("Add vaccine tapped passport tapped")
+                            print("Add Vaccine Record Tapped")
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 16, weight: .semibold))
