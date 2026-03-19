@@ -78,17 +78,7 @@ struct CareView: View {
             // MARK: - Native Search Functionality
             .searchable(text: $searchText, isPresented: $isSearching)
             .toolbar {
-                // 1. Search Button
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        isSearching = true // Triggers the hidden search bar to appear
-                    } label: {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(.primary)
-                    }
-                }
-                
-                // 2. Segmented Picker
+                // Segmented Picker
                 ToolbarItem(placement: .principal) {
                     Picker("Care Type", selection: $selectedCareType) {
                         ForEach(CareType.allCases, id: \.self) { type in
@@ -112,11 +102,14 @@ struct CareView: View {
                         )
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("Care")
         }
     }
 }
 
 #Preview {
-    CareView(store: CareStore())
+    NavigationStack {
+        CareView(store: CareStore())
+    }
 }
