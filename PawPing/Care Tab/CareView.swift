@@ -16,7 +16,7 @@ struct CareView: View {
     
     // Map Position
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
-
+    
     // Store
     var store: CareStore
 
@@ -86,7 +86,6 @@ struct CareView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .frame(width: 200)
                 }
                 
                 // Profile Image
