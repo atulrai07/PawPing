@@ -21,7 +21,7 @@ struct ContentView: View {
             }
 
             Tab("Care", systemImage: "pawprint.fill") {
-                CareView(store: careStore)
+                CareView(store: careStore, profile: activityStore.dogProfile)
             }
 
             Tab("Vaccine", systemImage: "syringe.fill") {
