@@ -45,7 +45,7 @@ struct CareView: View {
                                 
                                 ForEach(filteredVets) { vet in
                                     Marker(vet.vetName, coordinate: vet.coordinate)
-                                        .tint(Color("baseRed"))
+                                        .tint(Color("baseColor"))
                                 }
                             }
                             .frame(height: 200)

@@ -33,12 +33,16 @@ struct ActivityView: View {
 
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Walked")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundStyle(Color("baseRed"))
-
-                            Text("\(store.walkActivity.currentMinutes)/\(store.walkActivity.goalMinutes)min")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundStyle(.primary)
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundStyle(Color.black.opacity(0.6))
+                            
+                            HStack (spacing:0){
+                                Text("\(store.walkActivity.currentMinutes)/")
+                                Text("\(store.walkActivity.goalMinutes)min")
+                                    .foregroundStyle(Color("baseColor"))
+                            }
+                            .bold()
+                            .font(.system(size: 28, weight: .bold))
 
                             if store.isWalking {
                                 // Tapping reopens the tracking view (no countdown)
@@ -56,12 +60,12 @@ struct ActivityView: View {
                                 } label: {
                                     Text("START")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Color("baseRed"))
+                                        .foregroundStyle(Color("baseColor"))
                                         .padding(.horizontal, 24)
                                         .padding(.vertical, 8)
                                         .background(
                                             Capsule()
-                                                .stroke(Color("baseRed"), lineWidth: 1.5)
+                                                .stroke(Color("baseColor"), lineWidth: 1.5)
                                         )
                                 }
                                 .padding(.top, 4)
@@ -87,7 +91,7 @@ struct ActivityView: View {
                                     // workflow pending
                                 } label: {
                                     Circle()
-                                        .fill(Color("baseRed").opacity(0.2))
+                                        .fill(Color("baseColor").opacity(0.2))
                                         .frame(width: 22, height: 22)
                                         .overlay(
                                             Image(systemName: "chevron.right")
@@ -97,7 +101,7 @@ struct ActivityView: View {
                                 }
                             }
                             Image(systemName: "syringe")
-                                .foregroundStyle(.baseRed)
+                                .foregroundStyle(Color.base)
                                 .rotationEffect(.degrees(270))
                                 .font(.system(size: 65))
                             Text(store.vaccines.first?.name ?? "No vaccine")
@@ -135,7 +139,7 @@ struct ActivityView: View {
                                     // workflow pending
                                 } label: {
                                     Circle()
-                                        .fill(Color("baseRed").opacity(0.2))
+                                        .fill(Color("baseColor").opacity(0.2))
                                         .frame(width: 22, height: 22)
                                         .overlay(
                                             Image(systemName: "chevron.right")
@@ -148,7 +152,7 @@ struct ActivityView: View {
                                 ForEach(store.allergies.prefix(3)) { allergies in
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 6)
-                                            .fill(.baseRed)
+                                            .fill(Color.base)
                                             .frame(width: 62, height: 27)
                                         RoundedRectangle(cornerRadius: 5)
                                             .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
@@ -243,7 +247,7 @@ private struct WalkingLabel: View {
             .padding(.vertical, 8)
             .background(
                 Capsule()
-                    .fill(Color("baseRed"))
+                    .fill(Color("baseColor"))
             )
             .onReceive(timer) { _ in
                 dotCount = (dotCount + 1) % 3

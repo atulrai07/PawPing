@@ -24,7 +24,7 @@ struct ExportPassportButton: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(Color("baseRed"))
+            .background(Color("baseColor"))
             .clipShape(Capsule())
         }
     }

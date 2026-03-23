@@ -53,7 +53,7 @@ struct DayCareView: View {
                                 
                                 ForEach(filteredVets) { vet in
                                     Marker(vet.vetName, coordinate: vet.coordinate)
-                                        .tint(Color("baseRed"))
+                                        .tint(Color("baseColor"))
                                 }
                             }
                             .frame(height: 200)
@@ -79,7 +79,7 @@ struct DayCareView: View {
                                 
                                 ForEach(filteredDayCares) { dayCare in
                                     Marker(dayCare.name, coordinate: dayCare.coordinate)
-                                        .tint(Color("baseRed"))
+                                        .tint(Color("baseColor"))
                                 }
                             }
                             .frame(height: 200)

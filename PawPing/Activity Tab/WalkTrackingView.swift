@@ -50,23 +50,27 @@ struct WalkTrackingView: View {
                             .foregroundStyle(.secondary)
                             .padding(12)
                             .background(Circle().fill(.ultraThinMaterial))
-                    }
-                    .padding(.leading, 20)
-                    .padding(.top, 10)
-                    Spacer()
                 }
-
+                .padding(.leading, 20)
+                .padding(.top, 10)
                 Spacer()
+            }
 
-                // MARK: - Distance
+            WalkMapView(routeLocations: store.locationManager.routeLocations)
+                .clipShape(RoundedRectangle(cornerRadius: 28))
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
+
+            // MARK: - Distance
                 VStack(alignment: .leading, spacing: 4) {
                     Text("TOTAL DISTANCE")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                         .tracking(1.5)
 
                     Text(distanceText)
-                        .font(.system(size: 80, weight: .black, design: .rounded))
+                        .font(.system(size: 80, weight: .bold))
                         .foregroundStyle(.primary)
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
@@ -83,7 +87,7 @@ struct WalkTrackingView: View {
                             .foregroundStyle(.secondary)
                             .tracking(1)
                         Text("\(store.walkActivity.goalMinutes) MIN")
-                            .font(.system(size: 28, weight: .black, design: .rounded))
+                            .font(.system(size: 28, weight: .bold))
                         Text("GOAL")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.secondary)
@@ -96,7 +100,7 @@ struct WalkTrackingView: View {
                             .foregroundStyle(.secondary)
                             .tracking(1)
                         Text("\(progressPercent)%")
-                            .font(.system(size: 28, weight: .black, design: .rounded))
+                            .font(.system(size: 28, weight: .bold))
                         Text("COMPLETED")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.secondary)
@@ -111,7 +115,7 @@ struct WalkTrackingView: View {
                 VStack(spacing: 20) {
                     Text(timerText)
                         .font(.system(size: 56, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                         .monospacedDigit()
 
                     // Pause/Play + Stop buttons
@@ -136,7 +140,7 @@ struct WalkTrackingView: View {
                             onDismiss()
                         } label: {
                             Circle()
-                                .fill(Color("baseRed"))
+                                .fill(Color("baseColor"))
                                 .frame(width: 64, height: 64)
                                 .overlay(
                                     Image(systemName: "stop.fill")

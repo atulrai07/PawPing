@@ -14,6 +14,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     // MARK: - Public State
     var totalDistance: Double = 0          // metres
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
+    var routeLocations: [CLLocationCoordinate2D] = []
 
     // MARK: - Private
     private let manager = CLLocationManager()
@@ -36,6 +37,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     func startTracking() {
         totalDistance = 0
         lastLocation = nil
+        routeLocations.removeAll()
         manager.startUpdatingLocation()
     }
 
@@ -58,7 +60,10 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
             // ignore unrealistic jumps (> 50 m in one update)
             if delta < 50 {
                 totalDistance += delta
+                routeLocations.append(newLocation.coordinate)
             }
+        } else {
+            routeLocations.append(newLocation.coordinate)
         }
         lastLocation = newLocation
     }

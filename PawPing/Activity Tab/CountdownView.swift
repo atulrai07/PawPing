@@ -31,28 +31,28 @@ struct CountdownView: View {
                 HStack(spacing: -4) {
                     Image(systemName: "figure.walk")
                         .font(.system(size: 36, weight: .bold))
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                     Image(systemName: "dog.fill")
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                 }
 
                 // Circular ring + number
                 ZStack {
                     Circle()
-                        .stroke(Color("baseRed").opacity(0.15), lineWidth: 14)
+                        .stroke(Color("baseColor").opacity(0.15), lineWidth: 14)
 
                     Circle()
                         .trim(from: 0, to: ringProgress)
                         .stroke(
-                            Color("baseRed"),
+                            Color("baseColor"),
                             style: StrokeStyle(lineWidth: 14, lineCap: .round)
                         )
                         .rotationEffect(.degrees(-90))
 
                     Text("\(count)")
                         .font(.system(size: 100, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                         .scaleEffect(numberScale)
                         .opacity(numberOpacity)
                 }

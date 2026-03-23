@@ -31,7 +31,7 @@ struct WalkTimeGraphView: View {
                             y: .value("Minutes", item.minutes)
                         )
                         .interpolationMethod(.catmullRom)
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                         .lineStyle(StrokeStyle(lineWidth: 3))
 
                         AreaMark(
@@ -42,8 +42,8 @@ struct WalkTimeGraphView: View {
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [
-                                    Color("baseRed").opacity(0.4),
-                                    Color("baseRed").opacity(0.05)
+                                    Color("baseColor").opacity(0.4),
+                                    Color("baseColor").opacity(0.05)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
@@ -55,7 +55,7 @@ struct WalkTimeGraphView: View {
                             y: .value("Minutes", item.minutes)
                         )
                         .symbolSize(40)
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                     }
 
                     RuleMark(
@@ -81,7 +81,7 @@ struct WalkTimeGraphView: View {
                                     .padding(.vertical, 4)
                                     .background(
                                         day == currentDay
-                                        ? Color("baseRed")
+                                        ? Color("baseColor")
                                         : Color.clear
                                     )
                                     .clipShape(Capsule())
