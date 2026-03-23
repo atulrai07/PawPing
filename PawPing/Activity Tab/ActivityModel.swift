@@ -26,6 +26,8 @@ struct DogProfile: Identifiable {
     var gender: DogGender
     var age: String
     var dogImage: String = "profilePhoto"
+    var homeLatitude: Double = 37.3346
+    var homeLongitude: Double = -122.0090
     
     static let sampleProfile = DogProfile(
         id: UUID(),
