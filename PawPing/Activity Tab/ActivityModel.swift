@@ -4,11 +4,16 @@
 //
 //  Created by Atul on 01/02/26.
 //
+//  All the data models used by the Activity tab.
+//  These are plain structs — no @Observable needed because
+//  the store holds them as vars and SwiftUI tracks changes at the store level.
+//
 
 import Foundation
 import CoreLocation
 
-// MARK: - User & Pet
+
+// MARK: - Owner
 
 struct Owner: Identifiable {
     let id: UUID
@@ -17,6 +22,8 @@ struct Owner: Identifiable {
     var phone: String?
     var profileImage: String?
 }
+
+// MARK: - Dog Profile
 
 struct DogProfile: Identifiable {
     let id: UUID
@@ -27,54 +34,51 @@ struct DogProfile: Identifiable {
     var age: String
     var dogImage: String = "profilePhoto"
     
+    // Home coordinates — used by the Care tab's map to place the "Home" pin.
+    // Defaults to Delhi/NCR area. Update these when we add real user location.
+    var homeLatitude: Double = 28.535
+    var homeLongitude: Double = 77.240
+    
     static let sampleProfile = DogProfile(
         id: UUID(),
         ownerId: UUID(),
         dogName: "Buddy",
         breed: "Labrador",
         gender: .male,
-        age: "2"
+        age: "2",
+        homeLatitude: 28.535,
+        homeLongitude: 77.240
     )
 }
 
 enum DogGender: String {
-    case male = "Male"
-    case female = "Female"
+   case male = "Male"
+   case female = "Female"
 }
 
-// MARK: - Activity
-
-struct Activity: Identifiable {
-    let id: UUID
-    var dogId: UUID
-    var date: Date
-    var currentMinutes: Int
-    var goalMinutes: Int
-    var distanceWalked: Double
-    var goalDistanceWalked: Double
-    
-    var progress: Double {
-        guard goalMinutes > 0 else { return 0 }
-        return Double(currentMinutes) / Double(goalMinutes)
-    }
-}
+// MARK: - Walk Activity
 
 struct WalkActivity {
     var currentMinutes: Int
     var goalMinutes: Int
 
+    /// 0.0 to 1.0 — used by CircularProgressView
     var progress: Double {
         guard goalMinutes > 0 else { return 0 }
         return Double(currentMinutes) / Double(goalMinutes)
     }
 }
 
+// MARK: - Walk Time Graph
+
+/// A single bar on the weekly graph
 struct TimeWalkedData: Identifiable {
     let id = UUID()
     let day: String
     let minutes: Int
 }
 
+/// The full week's data + the goal line
 struct TimeWalkedGraphModel {
     let data: [TimeWalkedData]
     let goalMinutes: Int
@@ -92,6 +96,7 @@ struct TimeWalkedGraphModel {
         goalMinutes: 60
     )
 
+    /// Used to scale bar heights — whichever is bigger, the goal or the best day
     var maxMinutes: Int {
         max(goalMinutes, data.map { $0.minutes }.max() ?? 1)
     }
@@ -102,9 +107,9 @@ struct TimeWalkedGraphModel {
 struct Meal: Identifiable {
     let id: UUID
     var dogId: UUID
-    var icon: String
+    var icon: String      // SF Symbol name
     var time: String
-    var meridian: String
+    var meridian: String   // "AM" or "PM"
     var date: Date = Date()
     var mealType: MealType
     var mealName: MealName
@@ -119,8 +124,8 @@ struct Meal: Identifiable {
 
 enum MealType: String {
     case breakfast = "Breakfast"
-    case lunch = "Lunch"
-    case dinner = "Dinner"
+    case lunch     = "Lunch"
+    case dinner    = "Dinner"
 }
 
 enum MealName: String {
@@ -133,7 +138,7 @@ enum MealName: String {
     case others = "Others"
 }
 
-// MARK: - Vaccines
+// MARK: - Vaccines (lightweight model for Activity tab's mini-card)
 
 struct Vaccine: Identifiable {
     let id: UUID
@@ -172,7 +177,7 @@ struct Allergy: Identifiable {
     var allergyName: String
     var allergyType: AllergyType
     var allergyNotes: String
-    var allergen: String?
+    var allergen: String?   // the specific substance (e.g. "Gluten", "Lactose")
     
     static let sampleAllergies: [Allergy] = [
         Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", allergyType: .environmental, allergyNotes: "N/A", allergen: "Gluten"),

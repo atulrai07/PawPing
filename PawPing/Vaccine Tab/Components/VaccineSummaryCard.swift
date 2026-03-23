@@ -4,6 +4,8 @@
 //
 //  Created by Atul on 15/03/26.
 //
+//  Top card on the Vaccine tab — shows Done / Upcoming / Overdue counts.
+//
 
 import SwiftUI
 
@@ -12,12 +14,12 @@ struct VaccineSummaryCard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            summaryColumn(title: "Done", count: summary.doneCount, color: Color("baseRed"))
+            summaryColumn(title: "Done", count: summary.doneCount, color: .pawPrimary)
             
             Divider()
                 .frame(height: 40)
             
-            summaryColumn(title: "Upcoming", count: summary.upcomingCount, color: .blue)
+            summaryColumn(title: "Upcoming", count: summary.upcomingCount, color: .pawPrimary)
             
             Divider()
                 .frame(height: 40)
@@ -27,7 +29,7 @@ struct VaccineSummaryCard: View {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(.gray.opacity(0.1))
+                .fill(Color.pawNeutral)
         )
     }
     
@@ -39,7 +41,7 @@ struct VaccineSummaryCard: View {
             
             Text("\(count)")
                 .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(.pawSecondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -48,5 +50,5 @@ struct VaccineSummaryCard: View {
 #Preview {
     VaccineSummaryCard(summary: VaccineStore().summary)
         .padding()
-        .background(Color("baseBackground"))
+        .background(Color.pawNeutral)
 }

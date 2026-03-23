@@ -4,15 +4,23 @@
 //
 //  Created by SidMoon on 16/03/26.
 //
+//  Data source for the Vaccine tab.
+//  Holds all vaccine records and a computed summary (done/upcoming/overdue counts).
+//  Mock data for now — same pattern as ActivityStore and CareStore.
+//
 
 import Foundation
+import Observation
 
+// @Observable — SwiftUI auto-tracks any property we change here
+// and refreshes the views that use it. No @Published needed.
 @Observable
 class VaccineStore {
 
     var vaccineRecords: [VaccineRecord] = []
 
-    /// Computed summary — always reflects the current state of vaccineRecords.
+    /// Computed on the fly — always in sync with vaccineRecords.
+    /// No need to manually update counts when records change.
     var summary: VaccineSummary {
         VaccineSummary(from: vaccineRecords)
     }
@@ -30,7 +38,7 @@ class VaccineStore {
         )
 
         vaccineRecords = [
-            // Upcoming
+            // Upcoming — next dose is in the future
             VaccineRecord(
                 id: UUID(), dogId: sampleDogId,
                 vaccineName: .dhppBooster,
@@ -39,7 +47,7 @@ class VaccineStore {
                 nextDoseDate: Calendar.current.date(byAdding: .weekOfYear, value: 3, to: Date()),
                 notes: ""
             ),
-            // Overdue
+            // Overdue — next dose is in the past
             VaccineRecord(
                 id: UUID(), dogId: sampleDogId,
                 vaccineName: .leptospirosis,
@@ -56,7 +64,7 @@ class VaccineStore {
                 nextDoseDate: Calendar.current.date(byAdding: .month, value: -1, to: Date()),
                 notes: ""
             ),
-            // Done
+            // Done — no nextDoseDate means the vaccine is complete
             VaccineRecord(
                 id: UUID(), dogId: sampleDogId,
                 vaccineName: .rabiesBooster,
@@ -89,8 +97,8 @@ class VaccineStore {
                 nextDoseDate: nil,
                 notes: ""
             )
-        ]
-    }
+        ] // vaccineRecords
+    } // init
 
     // MARK: - Methods
 
@@ -105,4 +113,4 @@ class VaccineStore {
     func deleteRecord(id: UUID) {
         vaccineRecords.removeAll { $0.id == id }
     }
-}
+} // VaccineStore
