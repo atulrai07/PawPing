@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 
+// MARK: - User & Pet
 
 struct Owner: Identifiable {
     let id: UUID
@@ -37,26 +38,26 @@ struct DogProfile: Identifiable {
 }
 
 enum DogGender: String {
-   case male = "Male"
-   case female = "Female"
+    case male = "Male"
+    case female = "Female"
 }
 
 // MARK: - Activity
 
-//struct Activity: Identifiable {
-//    let id: UUID
-//    var dogId: UUID
-//    var date: Date
-//    var currentMinutes: Int
-//    var goalMinutes: Int
-//    var distanceWalked: Double
-//    var goalDistanceWalked: Double
-//    
-//    var progress: Double {
-//        guard goalMinutes > 0 else { return 0 }
-//        return Double(currentMinutes) / Double(goalMinutes)
-//    }
-//}
+struct Activity: Identifiable {
+    let id: UUID
+    var dogId: UUID
+    var date: Date
+    var currentMinutes: Int
+    var goalMinutes: Int
+    var distanceWalked: Double
+    var goalDistanceWalked: Double
+    
+    var progress: Double {
+        guard goalMinutes > 0 else { return 0 }
+        return Double(currentMinutes) / Double(goalMinutes)
+    }
+}
 
 struct WalkActivity {
     var currentMinutes: Int
@@ -118,8 +119,8 @@ struct Meal: Identifiable {
 
 enum MealType: String {
     case breakfast = "Breakfast"
-    case lunch     = "Lunch"
-    case dinner    = "Dinner"
+    case lunch = "Lunch"
+    case dinner = "Dinner"
 }
 
 enum MealName: String {

@@ -20,7 +20,7 @@ struct DayCareView: View {
     var store: CareStore
 
     // Filter Logic for DayCare
-    var filteredDayCares: [DayCare] {
+    var filteredDayCares: [CareLocation] {
         if searchText.isEmpty {
             return store.dayCares
         } else {
@@ -29,11 +29,11 @@ struct DayCareView: View {
     }
 
     // Filter Logic for Vets
-    var filteredVets: [Vet] {
+    var filteredVets: [CareLocation] {
         if searchText.isEmpty {
             return store.vets
         } else {
-            return store.vets.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
+            return store.vets.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
@@ -52,8 +52,8 @@ struct DayCareView: View {
                                 UserAnnotation()
                                 
                                 ForEach(filteredVets) { vet in
-                                    Marker(vet.vetName, coordinate: vet.coordinate)
-                                        .tint(Color("baseColor"))
+                                    Marker(vet.name, coordinate: vet.coordinate)
+                                        .tint(Color("baseRed"))
                                 }
                             }
                             .frame(height: 200)
@@ -79,7 +79,7 @@ struct DayCareView: View {
                                 
                                 ForEach(filteredDayCares) { dayCare in
                                     Marker(dayCare.name, coordinate: dayCare.coordinate)
-                                        .tint(Color("baseColor"))
+                                        .tint(Color("baseRed"))
                                 }
                             }
                             .frame(height: 200)
@@ -90,16 +90,7 @@ struct DayCareView: View {
                             // Day Care List
                             LazyVStack(spacing: 16) {
                                 ForEach(filteredDayCares) { item in
-                                    // Inline conversion of DayCare to Vet
-                                    VetCardView(vet: Vet(
-                                        id: item.id,
-                                        vetName: item.name,
-                                        rating: item.rating,
-                                        distance: item.distance,
-                                        image: item.imageName,
-                                        latitude: item.latitude,
-                                        longitude: item.longitude
-                                    ))
+                                    VetCardView(vet: item)
                                 }
                             }
                             .padding(.horizontal)

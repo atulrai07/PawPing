@@ -16,23 +16,23 @@ struct CareView: View {
     
     // Map Position
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
-    
+
     // Store
     var store: CareStore
 
     // Filter Logic
-    var filteredVets: [Vet] {
+    var filteredVets: [CareLocation] {
         if searchText.isEmpty {
             return store.vets
         } else {
-            return store.vets.filter { $0.vetName.localizedCaseInsensitiveContains(searchText) }
+            return store.vets.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 10) {
+                VStack(spacing: 20) {
                     
                     // MARK: - Content Switcher
                     switch selectedCareType {
@@ -44,8 +44,8 @@ struct CareView: View {
                                 UserAnnotation()
                                 
                                 ForEach(filteredVets) { vet in
-                                    Marker(vet.vetName, coordinate: vet.coordinate)
-                                        .tint(Color("baseColor"))
+                                    Marker(vet.name, coordinate: vet.coordinate)
+                                        .tint(Color("baseRed"))
                                 }
                             }
                             .frame(height: 200)
@@ -86,6 +86,7 @@ struct CareView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                    .frame(width: 200)
                 }
                 
                 // Profile Image
@@ -107,7 +108,5 @@ struct CareView: View {
 }
 
 #Preview {
-    NavigationStack {
-        CareView(store: CareStore())
-    }
+    CareView(store: CareStore())
 }

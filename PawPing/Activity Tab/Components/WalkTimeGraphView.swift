@@ -1,9 +1,10 @@
 //
-//  WalkTimeGraph.swift
+//  WalkTimeGraphView.swift
 //  PawPing
 //
-//  Created by Atul on 01/02/26.
+//  Created by SidMoon on 16/03/26.
 //
+
 import SwiftUI
 import Charts
 
@@ -31,7 +32,7 @@ struct WalkTimeGraphView: View {
                             y: .value("Minutes", item.minutes)
                         )
                         .interpolationMethod(.catmullRom)
-                        .foregroundStyle(Color("baseColor"))
+                        .foregroundStyle(Color("baseRed"))
                         .lineStyle(StrokeStyle(lineWidth: 3))
 
                         AreaMark(
@@ -42,8 +43,8 @@ struct WalkTimeGraphView: View {
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [
-                                    Color("baseColor").opacity(0.4),
-                                    Color("baseColor").opacity(0.05)
+                                    Color("baseRed").opacity(0.4),
+                                    Color("baseRed").opacity(0.05)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
@@ -55,7 +56,7 @@ struct WalkTimeGraphView: View {
                             y: .value("Minutes", item.minutes)
                         )
                         .symbolSize(40)
-                        .foregroundStyle(Color("baseColor"))
+                        .foregroundStyle(Color("baseRed"))
                     }
 
                     RuleMark(
@@ -81,7 +82,7 @@ struct WalkTimeGraphView: View {
                                     .padding(.vertical, 4)
                                     .background(
                                         day == currentDay
-                                        ? Color("baseColor")
+                                        ? Color("baseRed")
                                         : Color.clear
                                     )
                                     .clipShape(Capsule())
