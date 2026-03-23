@@ -22,16 +22,21 @@ struct AddVaccineSheet: View {
                     Button(action: {
                         dismiss()}) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
-                            .padding(10)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                            )
-                            .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2)
+//                            .font(.system(size: 16, weight: .semibold))
+//                            .foregroundColor(.black)
+//                            .frame(width: 36, height: 36)
+//                            .background(.ultraThinMaterial)
+//                            .clipShape(Circle())
+//                            .overlay(
+//                                Circle()
+//                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+//                            )
+//                            .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2)
+                                .foregroundColor(.black)
+                                .font(.system(size: 15, weight: .semibold))
+                                .frame(width: 36, height: 36)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Circle())
                     }
                 }
             }
