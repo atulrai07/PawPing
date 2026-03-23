@@ -33,11 +33,13 @@ struct DogProfile: Identifiable {
     var gender: DogGender
     var age: String
     var dogImage: String = "profilePhoto"
+    var homeLatitude: Double = 37.3346
+    var homeLongitude: Double = -122.0090
     
     // Home coordinates — used by the Care tab's map to place the "Home" pin.
-    // Defaults to Delhi/NCR area. Update these when we add real user location.
-    var homeLatitude: Double = 28.535
-    var homeLongitude: Double = 77.240
+//    // Defaults to Delhi/NCR area. Update these when we add real user location.
+//    var homeLatitude: Double = 28.535
+//    var homeLongitude: Double = 77.240
     
     static let sampleProfile = DogProfile(
         id: UUID(),

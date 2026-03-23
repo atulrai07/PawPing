@@ -2,11 +2,6 @@
 //  SimpleCareCardView.swift
 //  PawPing
 //
-//  Created by SidMoon on 23/03/26.
-//
-//  The unified card used in the Care tab list — works for both vets and day cares.
-//  Shows the location image, name, rating, and distance.
-//
 
 import SwiftUI
 
@@ -26,7 +21,7 @@ struct SimpleCareCardView: View {
                 // Name
                 Text(item.name)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.pawPrimary)
+                    .foregroundStyle(.pawPrimary)   // ✅ kept your version
                 
                 // Subtype & Rating
                 Text("\(item.subType ?? "Veterinary Clinic") • \(String(format: "%.1f", item.rating))★")
@@ -46,7 +41,7 @@ struct SimpleCareCardView: View {
                 .foregroundStyle(.gray.opacity(0.5))
         }
         .padding(12)
-        .background(Color.pawNeutral)
+        .background(Color.pawNeutral)   // ✅ kept your version
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
