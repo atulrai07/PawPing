@@ -17,14 +17,6 @@ struct CareView: View {
     // @State = this view owns these values and SwiftUI watches them.
     @State private var selectedCareType: CareType = .vet
     @State private var searchText: String = ""
-<<<<<<< HEAD
-    @State private var isSearching: Bool = false
-    
-    // Map Position
-    @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
-
-    // Store
-=======
 
     // .automatic tells MapKit to frame all annotations automatically
     @State private var position: MapCameraPosition = .automatic
@@ -32,61 +24,22 @@ struct CareView: View {
     @State private var selectedLocation: CareLocation?
 
     // Passed in from ContentView — we don't own these, just read them
->>>>>>> develop-atul
     var store: CareStore
     var profile: DogProfile
 
-<<<<<<< HEAD
-    // Filter Logic
-    var filteredVets: [CareLocation] {
-=======
     // Switches between vets and dayCares based on the selected segment,
     // then filters by search text if the user typed something
     var filteredLocations: [CareLocation] {
         let sourceList = selectedCareType == .vet ? store.vets : store.dayCares
->>>>>>> develop-atul
         if searchText.isEmpty {
             return sourceList
         } else {
-<<<<<<< HEAD
-            return store.vets.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
-=======
             return sourceList.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
->>>>>>> develop-atul
         }
     }
 
     var body: some View {
         NavigationStack {
-<<<<<<< HEAD
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
-                    
-                    // MARK: - Content Switcher
-                    switch selectedCareType {
-                    case .vet:
-                        // Vet Content (Map + List)
-                        VStack(spacing: 20) {
-                            // Map View
-                            Map(position: $position) {
-                                UserAnnotation()
-                                
-                                ForEach(filteredVets) { vet in
-                                    Marker(vet.name, coordinate: vet.coordinate)
-                                        .tint(Color("baseRed"))
-                                }
-                            }
-                            .frame(height: 200)
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 5)
-                            .padding(.horizontal)
-                            
-                            // Vet List
-                            LazyVStack(spacing: 16) {
-                                ForEach(filteredVets) { vet in
-                                    VetCardView(vet: vet)
-                                }
-=======
             VStack(spacing: 20) {
                 customSegmentedControl
                 mapSection
@@ -120,7 +73,7 @@ struct CareView: View {
                 } label: {
                     Text(type.rawValue)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(selectedCareType == type ? .white : Color("baseColor").opacity(0.8))
+                        .foregroundStyle(selectedCareType == type ? .white : Color.pawPrimary.opacity(0.8))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background {
@@ -128,36 +81,15 @@ struct CareView: View {
                                 // matchedGeometryEffect makes this capsule animate
                                 // smoothly from one tab to the other
                                 Capsule()
-                                    .fill(Color("baseColor"))
+                                    .fill(Color.pawPrimary)
                                     .matchedGeometryEffect(id: "SegmentIndicator", in: animationNamespace)
->>>>>>> develop-atul
                             }
                         }
                 }
             }
-<<<<<<< HEAD
-            .background(Color("baseBackground"))
-            
-            // MARK: - Native Search Functionality
-            .searchable(text: $searchText, isPresented: $isSearching)
-            .toolbar {
-                // Segmented Picker
-                ToolbarItem(placement: .principal) {
-                    Picker("Care Type", selection: $selectedCareType) {
-                        ForEach(CareType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 200)
-                }
-                
-                // Profile Image
-                ToolbarItem(placement: .topBarTrailing) {
-=======
         } // HStack — segment buttons
         .padding(4)
-        .background(Color("baseColor").opacity(0.15))
+        .background(Color.pawPrimary.opacity(0.15))
         .clipShape(Capsule())
         .padding(.horizontal, 40)
         .padding(.top, 10)
@@ -171,21 +103,20 @@ struct CareView: View {
             // "Home" pin — pulls lat/lng from the dog's profile
             Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: profile.homeLatitude, longitude: profile.homeLongitude)) {
                 ZStack {
->>>>>>> develop-atul
                     Circle()
                         .fill(Color.white)
                         .frame(width: 30, height: 30)
                         .shadow(color: .black.opacity(0.15), radius: 3)
                     Image(systemName: "house.fill")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(Color("baseColor"))
+                        .foregroundStyle(.pawTertiary)
                 } // ZStack — home pin
             }
 
             // Drop a marker for each vet/daycare in the filtered list
             ForEach(filteredLocations) { item in
                 Marker(item.name, coordinate: item.coordinate)
-                    .tint(Color("baseColor"))
+                    .tint(.pawPrimary)
             }
         } // Map
         .frame(height: 180)
@@ -197,7 +128,7 @@ struct CareView: View {
             } label: {
                 Image(systemName: "location.fill")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color("baseColor"))
+                    .foregroundStyle(.pawSecondary)
                     .padding(12)
                     .background(Color.white)
                     .clipShape(Circle())
@@ -219,7 +150,7 @@ struct CareView: View {
         } // HStack — search bar
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(Color(.systemGray6))
+        .background(Color.pawNeutral)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .padding(.horizontal)
     }
@@ -240,9 +171,5 @@ struct CareView: View {
 } // CareView
 
 #Preview {
-<<<<<<< HEAD
-    CareView(store: CareStore())
-=======
     CareView(store: CareStore(), profile: DogProfile.sampleProfile)
->>>>>>> develop-atul
 }

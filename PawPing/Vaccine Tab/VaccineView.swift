@@ -4,153 +4,119 @@
 //
 //  Created by Atul on 15/03/26.
 //
+//  The Vaccine tab — shows a summary card + grouped lists of
+//  upcoming, overdue, and completed vaccines.
+//
 
 import SwiftUI
 
+// MARK: - VaccineView
+
 struct VaccineView: View {
+
+    // Passed in from ContentView — we don't own these
     var store: VaccineStore
     var profile: DogProfile
 
-    var upcomingRecords: [VaccineRecord] {
-        store.vaccineRecords.filter { $0.status == .upcoming }
-    }
+    // MARK: Derived collections
+    // These are computed each render — no stale data possible.
+    var upcomingRecords: [VaccineRecord] { store.vaccineRecords.filter { $0.status == .upcoming } }
+    var overdueRecords:  [VaccineRecord] { store.vaccineRecords.filter { $0.status == .overdue  } }
+    var doneRecords:     [VaccineRecord] { store.vaccineRecords.filter { $0.status == .done     } }
+    var summary: VaccineSummary { store.summary }
 
-    var overdueRecords: [VaccineRecord] {
-        store.vaccineRecords.filter { $0.status == .overdue }
-    }
-
-    var doneRecords: [VaccineRecord] {
-        store.vaccineRecords.filter { $0.status == .done }
-    }
-
-    var summary: VaccineSummary {
-        store.summary
-    }
+    // MARK: Body
 
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
-                    
-                    // Summary Card
-                    VaccineSummaryCard(summary: summary)
-                        .padding(.horizontal)
-                    
-                    // MARK: - Upcoming Vaccines
-                    if !upcomingRecords.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Upcoming Vaccines")
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundStyle(.primary)
-                                .padding(.horizontal)
+            VStack(spacing: 20) {
 
-                            VStack(spacing: 0) {
-                                ForEach(Array(upcomingRecords.enumerated()), id: \.element.id) { index, record in
-                                    VaccineRowView(record: record) {
-                                        print("Mark as done: \(record.displayName)")
-                                    }
-
-                                    if index < upcomingRecords.count - 1 {
-                                        Divider()
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(.gray.opacity(0.1))
-                            )
-                            .padding(.horizontal)
-                        }
-                    }
-
-                    // MARK: - Overdue
-                    if !overdueRecords.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Overdue")
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundStyle(.primary)
-                                .padding(.horizontal)
-
-                            VStack(spacing: 0) {
-                                ForEach(Array(overdueRecords.enumerated()), id: \.element.id) { index, record in
-                                    VaccineRowView(record: record) {
-                                        print("Mark as done: \(record.displayName)")
-                                    }
-
-                                    if index < overdueRecords.count - 1 {
-                                        Divider()
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(.gray.opacity(0.1))
-                            )
-                            .padding(.horizontal)
-                        }
-                    }
-
-                    // MARK: - Done
-                    if !doneRecords.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Done")
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundStyle(.primary)
-                                .padding(.horizontal)
-
-                            VStack(spacing: 0) {
-                                ForEach(Array(doneRecords.enumerated()), id: \.element.id) { index, record in
-                                    DoneVaccineRowView(record: record)
-
-                                    if index < doneRecords.count - 1 {
-                                        Divider()
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(.gray.opacity(0.1))
-                            )
-                            .padding(.horizontal)
-                        }
-                    }
-                    
-                    // Export Button
-                    ExportPassportButton {
-                        print("Export vaccine passport tapped")
-                    }
+                // Top card with done/upcoming/overdue counts
+                VaccineSummaryCard(summary: summary)
                     .padding(.horizontal)
-                }
-                .padding(.top, 10)
-                .padding(.bottom, 80)
-            }
-            .background(Color("baseBackground"))
-            .navigationTitle("Vaccine")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 12) {
-                        Circle()
-                            .fill(.gray.opacity(0.2))
-                            .frame(width: 36, height: 36)
-                            .overlay(
-                                Image(profile.dogImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .clipShape(Circle())
-                            )
+
+                // Upcoming Vaccines
+                if !upcomingRecords.isEmpty {
+                    vaccineSection(title: "Upcoming Vaccines") {
+                        recordList(upcomingRecords) { record in
+                            VaccineRowView(record: record) {
+                                print("Mark as done: \(record.displayName)")
+                            }
+                        }
                     }
                 }
-            }
-        }
+
+                // Overdue
+                if !overdueRecords.isEmpty {
+                    vaccineSection(title: "Overdue") {
+                        recordList(overdueRecords) { record in
+                            VaccineRowView(record: record) {
+                                print("Mark as done: \(record.displayName)")
+                            }
+                        }
+                    }
+                }
+
+                // Done
+                if !doneRecords.isEmpty {
+                    vaccineSection(title: "Done") {
+                        recordList(doneRecords) { record in
+                            DoneVaccineRowView(record: record)
+                        }
+                    }
+                }
+
+                // Export Button
+                ExportPassportButton {
+                    print("Export vaccine passport tapped")
+                }
+                .padding(.horizontal)
+            } // VStack — main content
+            .padding(.top, 10)
+            .padding(.bottom, 80)
+            .customNavigationScroll(title: "Vaccine", profileImage: profile.dogImage)
+        } // NavigationStack
     }
-}
+
+    // MARK: - Helpers
+
+    /// Wraps a section with a bold title.
+    /// @ViewBuilder lets us pass SwiftUI views as a trailing closure.
+    private func vaccineSection<Content: View>(
+        title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(.pawSecondary)
+                .padding(.horizontal)
+
+            content()
+                .padding(.horizontal)
+        } // VStack — section
+    }
+
+    /// Renders a list of records inside a white rounded card,
+    /// with dividers between each row. Uses generics so it works
+    /// with both VaccineRowView and DoneVaccineRowView.
+    private func recordList<R: Identifiable, Row: View>(
+        _ records: [R],
+        @ViewBuilder row: @escaping (R) -> Row
+    ) -> some View {
+        VStack(spacing: 0) {
+            ForEach(Array(records.enumerated()), id: \.offset) { index, record in
+                row(record)
+                if index < records.count - 1 { Divider() }
+            }
+        } // VStack — record list
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color.pawNeutral))
+    }
+} // VaccineView
+
+// MARK: - Preview
 
 #Preview {
     VaccineView(store: VaccineStore(), profile: ActivityStore().dogProfile)

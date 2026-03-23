@@ -4,27 +4,25 @@
 //
 //  Created by Atul on 19/03/26.
 //
-//  Wraps any View in a scroll view with a collapsing large-title header.
+//  A reusable scroll wrapper that gives us a collapsing large-title header
+//  (similar to Apple's native nav bar) without fighting with NavigationView.
 //
-//  USAGE:
-//  ──────
-//  VStack(spacing: 20) {
-//      // your scrollable content
-//  }
-//  .customNavigationScroll(title: "Vaccine")
+//  HOW TO USE:
+//  ──────────
+//  Just slap .customNavigationScroll(title: "Activity") on any VStack/content.
+//  It wraps everything in a ScrollView with a sticky header that transitions
+//  from a big title to a compact centered title as you scroll.
 //
 //  With a profile avatar:
 //  .customNavigationScroll(title: "Vaccine", profileImage: profile.dogImage)
 //
-//  Custom collapse threshold:
-//  .customNavigationScroll(title: "Vaccine", collapseThreshold: 60)
 
 import SwiftUI
 
 // MARK: - StickyNavHeader
+// The actual header bar that sits above the scroll content.
+// It cross-fades between a large left-aligned title and a compact centered one.
 
-/// The pinned header rendered above the scroll view.
-/// Transitions between a large left-aligned title and a compact centred title.
 private struct StickyNavHeader: View {
 
     let title: String
@@ -39,7 +37,7 @@ private struct StickyNavHeader: View {
                 HStack {
                     Spacer()
                     Circle()
-                        .fill(.gray.opacity(0.2))
+                        .fill(Color.pawNeutral)
                         .frame(width: 36, height: 36)
                         .overlay(
                             Image(img)
@@ -47,13 +45,13 @@ private struct StickyNavHeader: View {
                                 .scaledToFill()
                                 .clipShape(Circle())
                         )
-                }
+                } // HStack — avatar
             }
 
             // ── Large title (fades out on scroll) ─────────────────────
             Text(title)
                 .font(.system(size: 34, weight: .bold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(.pawSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .opacity(isCollapsed ? 0 : 1)
                 .scaleEffect(isCollapsed ? 0.9 : 1.0, anchor: .leading)
@@ -61,18 +59,20 @@ private struct StickyNavHeader: View {
             // ── Inline title (fades in on scroll) ─────────────────────
             Text(title)
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(.pawSecondary)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .opacity(isCollapsed ? 1 : 0)
-        }
+        } // ZStack — header content
         .padding(.horizontal, 16)
         .padding(.top, isCollapsed ? -8 : 8)
         .padding(.bottom, isCollapsed ? 12 : 6)
 
         // ── Background gradient ────────────────────────────────────────
+        // Fades from solid to transparent at the bottom so text beneath
+        // doesn't get a hard edge.
         .background {
             Rectangle()
-                .fill(Color("baseBackground"))
+                .fill(Color.pawBackground)
                 .opacity(isCollapsed ? 1 : 0.8)
                 .mask {
                     LinearGradient(
@@ -88,19 +88,22 @@ private struct StickyNavHeader: View {
                 .ignoresSafeArea(edges: .top)
         }
 
-        // ── Hairline separator (visible only when collapsed) ──────────
+        // ── Hairline separator (currently hidden) ─────────────────────
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(.red)
+                .fill(.pawPrimary)
                 .frame(height: 0.5)
                 .opacity(isCollapsed ? 0 : 0)
         }
 
         .animation(.spring(response: 0.15, dampingFraction: 0.9), value: isCollapsed)
     }
-}
+} // StickyNavHeader
 
 // MARK: - CustomNavigationScrollModifier
+// This is a ViewModifier — think of it like a reusable "plugin" you can
+// attach to any view. It wraps the content in a ScrollView and tracks
+// scroll position using GeometryReader to toggle the header state.
 
 private struct CustomNavigationScrollModifier: ViewModifier {
 
@@ -108,14 +111,16 @@ private struct CustomNavigationScrollModifier: ViewModifier {
     var profileImage: String?
     var collapseThreshold: CGFloat
 
+    // @State because only this modifier cares about scroll tracking
     @State private var scrollOffset: CGFloat = 0
     @State private var isCollapsed = false
 
     func body(content: Content) -> some View {
         ScrollView(showsIndicators: false) {
             content
-                // Attach the geometry reader to the content so its minY in
-                // the named coordinate space gives us the raw scroll offset.
+                // GeometryReader gives us the content's position relative
+                // to the named coordinate space ("_customNavScroll").
+                // As the user scrolls, minY goes negative → we invert it.
                 .background(
                     GeometryReader { geo in
                         let minY = geo.frame(in: .named("_customNavScroll")).minY
@@ -130,12 +135,13 @@ private struct CustomNavigationScrollModifier: ViewModifier {
                             }
                     }
                 )
-        }
+        } // ScrollView
         .coordinateSpace(name: "_customNavScroll")
-        .background(Color("baseBackground"))
-        // Hide the system nav bar — the modifier supplies its own header.
+        .background(Color.pawBackground)
+        // We hide the system nav bar since we're rendering our own
         .toolbar(.hidden, for: .navigationBar)
-        // Pin the header above the scroll content without participating in scrolling.
+        // safeAreaInset pins the header above the scroll content —
+        // it doesn't scroll with the content, it stays fixed.
         .safeAreaInset(edge: .top, spacing: 0) {
             StickyNavHeader(
                 title: title,
@@ -144,9 +150,10 @@ private struct CustomNavigationScrollModifier: ViewModifier {
             )
         }
     }
-}
+} // CustomNavigationScrollModifier
 
 // MARK: - View Extension
+// This is what makes .customNavigationScroll(...) available on any View.
 
 extension View {
 

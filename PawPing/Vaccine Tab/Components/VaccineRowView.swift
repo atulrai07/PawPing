@@ -4,6 +4,9 @@
 //
 //  Created by Atul on 15/03/26.
 //
+//  A single row for an upcoming or overdue vaccine.
+//  Shows the vaccine name, time remaining, last taken date, and a "Mark as Done" button.
+//
 
 import SwiftUI
 
@@ -16,13 +19,13 @@ struct VaccineRowView: View {
             HStack {
                 Text(record.displayName)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.pawSecondary)
                 
                 Spacer()
                 
                 Text(record.timeRemainingText)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(record.status == .overdue ? .red : .blue)
+                    .foregroundStyle(record.status == .overdue ? .red : .pawPrimary)
             }
             
             HStack {
@@ -37,12 +40,12 @@ struct VaccineRowView: View {
                 } label: {
                     Text("Mark as Done")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color("baseColor"))
+                        .foregroundStyle(.pawPrimary)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(
                             Capsule()
-                                .stroke(Color("baseColor"), lineWidth: 1.2)
+                                .stroke(Color.pawPrimary, lineWidth: 1.2)
                         )
                 }
             }
@@ -59,5 +62,5 @@ struct VaccineRowView: View {
         VaccineRowView(record: store.vaccineRecords[1])
     }
     .padding()
-    .background(Color("baseBackground"))
+    .background(Color.pawNeutral)
 }

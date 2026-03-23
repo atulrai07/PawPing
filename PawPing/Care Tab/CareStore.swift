@@ -24,18 +24,6 @@ class CareStore {
         // MARK: - Mock Vets
         vets = [
             CareLocation(
-<<<<<<< HEAD
-                id: UUID(), name: "Pupi Pet Life", rating: 4.3, distance: 2.3,
-                imageName: "profileImage", latitude: 28.522211, longitude: 77.215489,
-                contactNumber: "6430297691", email: "samplemails@gmail.com",
-                address: "n/a", openingTime: "10:30AM", closingTime: "10:30PM"
-            ),
-            CareLocation(
-                id: UUID(), name: "Vet 2", rating: 3.3, distance: 1.3,
-                imageName: "profileImage", latitude: 28.79222, longitude: 76.2123334,
-                contactNumber: "3430212391", email: "samplemails@gmail.com",
-                address: "n/a", openingTime: "10:30AM", closingTime: "10:30PM"
-=======
                 id: UUID(), name: "PupiLife Pet Clinic",
                 subType: nil, // Defaults to "Veterinary Clinic" in the UI
                 rating: 4.8, distance: 1.2, imageName: "profilePhoto",
@@ -84,27 +72,12 @@ class CareStore {
                 openingTime: "24 Hours", closingTime: "24 Hours",
                 petSeen: "3k+", experience: "25 Years",
                 about: "Atulya's Care is the only 24/7 multispecialty animal hospital in the region. We are equipped with advanced life support and intensive care units for critical care."
->>>>>>> develop-atul
             )
         ] // vets
 
         // MARK: - Mock Day Cares
         dayCares = [
             CareLocation(
-<<<<<<< HEAD
-                id: UUID(), name: "Mamoon's Day Care", subType: "Pet Restraunt",
-                rating: 4.6, distance: 1.2, imageName: "profileImage",
-                latitude: 28.5222111, longitude: 77.2122322, contactNumber: "01712345678",
-                email: "mamoon@example.com", address: "123 Main St, Anytown, USA",
-                openingTime: "09:00 AM", closingTime: "05:00 PM"
-            ),
-            CareLocation(
-                id: UUID(), name: "Paws & Claws", subType: "Pet Shelter",
-                rating: 4.0, distance: 2.5, imageName: "profileImage",
-                latitude: 28.1211, longitude: 76.6767, contactNumber: "01712345678",
-                email: "paws@example.com", address: "456 Elm St, Anytown, USA",
-                openingTime: "08:00 AM", closingTime: "06:00 PM"
-=======
                 id: UUID(), name: "Paw's Dayout",
                 subType: "Pet Boarding Service",
                 rating: 4.8, distance: 2.0, imageName: "profilePhoto",
@@ -143,7 +116,6 @@ class CareStore {
                 openingTime: "24 Hours", closingTime: "24 Hours",
                 petSeen: "100+", experience: "1 Year",
                 about: "Scooter's HomeCare provides a safe and quiet haven for pets who prefer a calm environment. Our home-based setting is perfect for older pets or those needing one-on-one attention."
->>>>>>> develop-atul
             )
         ] // dayCares
     } // init

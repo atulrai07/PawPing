@@ -26,7 +26,7 @@ struct SimpleCareCardView: View {
                 // Name
                 Text(item.name)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color("baseColor"))
+                    .foregroundStyle(.pawPrimary)
                 
                 // Subtype & Rating
                 Text("\(item.subType ?? "Veterinary Clinic") • \(String(format: "%.1f", item.rating))★")
@@ -46,7 +46,7 @@ struct SimpleCareCardView: View {
                 .foregroundStyle(.gray.opacity(0.5))
         }
         .padding(12)
-        .background(Color(.systemGray6))
+        .background(Color.pawNeutral)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }

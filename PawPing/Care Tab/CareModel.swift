@@ -4,11 +4,8 @@
 //
 //  Created by Atul on 03/02/26.
 //
-<<<<<<< HEAD
-=======
 //  Data models for the Care tab — used by both vet clinics and day cares.
 //
->>>>>>> develop-atul
 
 import Foundation
 import CoreLocation
@@ -22,15 +19,9 @@ enum CareType: String, CaseIterable {
 }
 
 // MARK: - Unified Care Location
-<<<<<<< HEAD
-// Represents both vet clinics and day care facilities.
-// `subType` is nil for vets; for day cares it holds a descriptor
-// like "Pet Restaurant" or "Pet Shelter".
-=======
 // One struct for both vets and day cares.
 // subType is nil for vets (defaults to "Veterinary Clinic" in the UI).
 // For day cares it holds something like "Pet Boarding Service" or "Pet DayCare".
->>>>>>> develop-atul
 
 struct CareLocation: Identifiable {
     let id: UUID
