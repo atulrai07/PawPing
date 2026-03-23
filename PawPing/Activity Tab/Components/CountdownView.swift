@@ -10,23 +10,19 @@
 //
 
 import SwiftUI
-import Combine  // for Timer.publish
+import Combine
 import UIKit
 
 struct CountdownView: View {
 
-    // Closures passed from the parent — called when countdown finishes or user cancels
     var onComplete: () -> Void
     var onCancel: () -> Void
 
-    // @State = local animation state, only this view needs to know about these
     @State private var count = 3
     @State private var ringProgress: CGFloat = 0
     @State private var numberScale: CGFloat = 0.5
     @State private var numberOpacity: Double = 0
 
-    // Combine timer — fires every second on the main run loop.
-    // .autoconnect() starts it immediately when the view appears.
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -35,43 +31,45 @@ struct CountdownView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 30) {
+                
                 // Walking dog icon
                 HStack(spacing: -4) {
                     Image(systemName: "figure.walk")
                         .font(.system(size: 36, weight: .bold))
-                        .foregroundStyle(Color.pawTertiary)
+                        .foregroundStyle(Color("baseColor"))
+
                     Image(systemName: "dog.fill")
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(Color.pawTertiary)
-                } // HStack — walking icons
+                        .foregroundStyle(Color("baseColor"))
+                }
 
-                // Circular ring that fills as the countdown progresses
+                // Circular ring
                 ZStack {
                     Circle()
-                        .stroke(Color.pawTertiary.opacity(0.15), lineWidth: 14)
+                        .stroke(Color("baseColor").opacity(0.15), lineWidth: 14)
 
                     Circle()
                         .trim(from: 0, to: ringProgress)
                         .stroke(
-                            Color.pawTertiary,
+                            Color("baseColor"),
                             style: StrokeStyle(lineWidth: 14, lineCap: .round)
                         )
-                        .rotationEffect(.degrees(-90)) // start from 12 o'clock
+                        .rotationEffect(.degrees(-90))
 
                     Text("\(count)")
                         .font(.system(size: 100, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.pawTertiary)
+                        .foregroundStyle(Color("baseColor"))
                         .scaleEffect(numberScale)
                         .opacity(numberOpacity)
-                } // ZStack — countdown ring
+                }
                 .frame(width: 220, height: 220)
 
                 Text("Starting Walk")
                     .font(.system(size: 24, weight: .semibold))
                     .foregroundStyle(.pawSecondary)
-            } // VStack — countdown content
+            }
 
-            // Cancel (X) button in the top-left corner
+            // Cancel button
             VStack {
                 HStack {
                     Button(action: onCancel) {
@@ -84,15 +82,14 @@ struct CountdownView: View {
                     .padding(.leading, 20)
                     .padding(.top, 10)
                     Spacer()
-                } // HStack — cancel button
+                }
                 Spacer()
-            } // VStack — cancel overlay
-        } // ZStack — full screen
+            }
+        }
         .onAppear {
             animateNumber()
             animateRing(for: count)
         }
-        // .onReceive listens to the Combine timer publisher
         .onReceive(timer) { _ in
             if count > 1 {
                 count -= 1
@@ -106,7 +103,6 @@ struct CountdownView: View {
 
     // MARK: - Animations
 
-    /// Spring animation that makes each number "pop" into view
     private func animateNumber() {
         numberScale = 0.5
         numberOpacity = 0
@@ -116,14 +112,13 @@ struct CountdownView: View {
         }
     }
 
-    /// Smoothly fills the ring from 0 → 1 over the 3 seconds
     private func animateRing(for remaining: Int) {
         let target: CGFloat = CGFloat(4 - remaining) / 3.0
         withAnimation(.easeInOut(duration: 0.9)) {
             ringProgress = target
         }
     }
-} // CountdownView
+}
 
 #Preview {
     CountdownView(onComplete: {}, onCancel: {})

@@ -16,15 +16,15 @@ struct CircularProgressView: View {
     
     var body: some View {
         ZStack {
-            // Background track ring (faint blue)
+            // Background track ring (faint)
             Circle()
-                .stroke(Color.pawPrimary.opacity(0.2), lineWidth: 15)
+                .stroke(Color("baseColor").opacity(0.2), lineWidth: 15)
             
             // Progress arc — .trim clips the stroke to the progress %
             Circle()
                 .trim(from: 0.0, to: progress)
                 .stroke(
-                    Color.pawPrimary,
+                    Color("baseColor"),
                     style: StrokeStyle(lineWidth: 15, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90)) // start from 12 o'clock position
@@ -34,5 +34,5 @@ struct CircularProgressView: View {
 } // CircularProgressView
 
 #Preview {
-    CircularProgressView(progress: 23.0)
+    CircularProgressView(progress: 0.38)
 }

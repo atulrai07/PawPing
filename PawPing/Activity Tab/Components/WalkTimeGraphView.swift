@@ -6,16 +6,16 @@
 //
 //  A weekly walk graph using Swift Charts.
 //  Shows a filled area + line + dots for each day, with a dashed goal line.
-//  The current day gets a highlighted blue capsule label on the X axis.
+//  The current day gets a highlighted capsule label on the X axis.
 //
 
 import SwiftUI
-import Charts   // Apple's native Charts framework (iOS 16+)
+import Charts
 
 struct WalkTimeGraphView: View {
 
     var model: TimeWalkedGraphModel
-    let currentDay = "FRI"   // highlight this day on the X axis
+    let currentDay = "FRI"
 
     var body: some View {
         ZStack {
@@ -30,16 +30,16 @@ struct WalkTimeGraphView: View {
                 Chart {
                     ForEach(model.data) { item in
 
-                        // Smooth line connecting the daily values
+                        // Line
                         LineMark(
                             x: .value("Day", item.day),
                             y: .value("Minutes", item.minutes)
                         )
-                        .interpolationMethod(.catmullRom)   // smooth curves instead of straight lines
-                        .foregroundStyle(Color.pawPrimary)
+                        .interpolationMethod(.catmullRom)
+                        .foregroundStyle(Color("baseColor"))
                         .lineStyle(StrokeStyle(lineWidth: 3))
 
-                        // Gradient fill under the line
+                        // Area
                         AreaMark(
                             x: .value("Day", item.day),
                             y: .value("Minutes", item.minutes)
@@ -48,34 +48,34 @@ struct WalkTimeGraphView: View {
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [
-                                    Color.pawPrimary.opacity(0.4),
-                                    Color.pawPrimary.opacity(0.05)
+                                    Color("baseColor").opacity(0.4),
+                                    Color("baseColor").opacity(0.05)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
                         )
 
-                        // Dot on each data point
+                        // Points
                         PointMark(
                             x: .value("Day", item.day),
                             y: .value("Minutes", item.minutes)
                         )
                         .symbolSize(40)
-                        .foregroundStyle(Color.pawPrimary)
+                        .foregroundStyle(Color("baseColor"))
                     }
 
-                    // Dashed horizontal line showing the daily goal
+                    // Goal line
                     RuleMark(
                         y: .value("Goal", model.goalMinutes)
                     )
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4,4]))
                     .foregroundStyle(Color.gray)
-                } // Chart
+                }
 
-                // Custom X-axis labels — highlights today with a blue pill
+                // X Axis
                 .chartXAxis {
-                    AxisMarks(values: model.data.map{$0.day}) { value in
+                    AxisMarks(values: model.data.map { $0.day }) { value in
                         AxisGridLine()
                         AxisTick()
 
@@ -88,7 +88,7 @@ struct WalkTimeGraphView: View {
                                     .padding(.vertical, 4)
                                     .background(
                                         day == currentDay
-                                        ? Color.pawPrimary
+                                        ? Color("baseColor")
                                         : Color.clear
                                     )
                                     .clipShape(Capsule())
@@ -102,13 +102,13 @@ struct WalkTimeGraphView: View {
                 }
 
                 .frame(height: 100)
-            } // VStack — chart + title
+            }
             .padding()
-        } // ZStack — card
+        }
         .frame(height: 153)
         .padding(.horizontal)
     }
-} // WalkTimeGraphView
+}
 
 #Preview {
     WalkTimeGraphView(model: ActivityStore().timeWalkedGraph)

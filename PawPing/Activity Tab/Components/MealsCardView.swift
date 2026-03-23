@@ -29,7 +29,7 @@ struct MealsCardView: View {
                         // TODO: navigate to meal detail/logging
                     } label: {
                         Circle()
-                            .fill(Color.pawPrimary.opacity(0.15))
+                            .fill(Color("baseColor").opacity(0.2))
                             .frame(width: 22, height: 22)
                             .overlay(
                                 Image(systemName: "chevron.right")
@@ -48,7 +48,7 @@ struct MealsCardView: View {
                             .overlay(
                                 VStack {
                                     Circle()
-                                        .fill(.pawPrimary)
+                                        .fill(Color("baseColor"))
                                         .overlay(
                                             Image(systemName: String(meal.icon))
                                                 .foregroundStyle(.white)

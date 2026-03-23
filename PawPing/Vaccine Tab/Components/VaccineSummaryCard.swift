@@ -2,10 +2,6 @@
 //  VaccineSummaryCard.swift
 //  PawPing
 //
-//  Created by Atul on 15/03/26.
-//
-//  Top card on the Vaccine tab — shows Done / Upcoming / Overdue counts.
-//
 
 import SwiftUI
 
@@ -14,7 +10,7 @@ struct VaccineSummaryCard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            summaryColumn(title: "Done", count: summary.doneCount, color: .pawPrimary)
+            summaryColumn(title: "Done", count: summary.doneCount, color: .pawPrimary)   // ✅ kept original
             
             Divider()
                 .frame(height: 40)
