@@ -6,9 +6,13 @@
 //
 
 import SwiftUI
+import Combine
 
 struct ActivityView: View {
     var store: ActivityStore
+
+    @State private var showWalkFlow = false
+    @State private var countdownFinished = false
 
     var body: some View {
         NavigationStack {
@@ -36,20 +40,32 @@ struct ActivityView: View {
                                 .font(.system(size: 28, weight: .bold))
                                 .foregroundStyle(.primary)
 
-                            Button {
-                                print("Start Walk tapped")
-                            } label: {
-                                Text("START")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(Color("baseRed"))
-                                    .padding(.horizontal, 24)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        Capsule()
-                                            .stroke(Color("baseRed"), lineWidth: 1.5)
-                                    )
+                            if store.isWalking {
+                                // Tapping reopens the tracking view (no countdown)
+                                Button {
+                                    countdownFinished = true
+                                    showWalkFlow = true
+                                } label: {
+                                    WalkingLabel()
+                                }
+                                .padding(.top, 4)
+                            } else {
+                                Button {
+                                    countdownFinished = false
+                                    showWalkFlow = true
+                                } label: {
+                                    Text("START")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundStyle(Color("baseRed"))
+                                        .padding(.horizontal, 24)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            Capsule()
+                                                .stroke(Color("baseRed"), lineWidth: 1.5)
+                                        )
+                                }
+                                .padding(.top, 4)
                             }
-                            .padding(.top, 4)
                         }
                         Spacer()
                     }
@@ -155,6 +171,96 @@ struct ActivityView: View {
             .padding(.bottom, 80)
             .customNavigationScroll(title: "Activity", profileImage: store.dogProfile.dogImage)
         }
+        .fullScreenCover(isPresented: $showWalkFlow) {
+            WalkFlowContainer(
+                store: store,
+                startWithTracking: countdownFinished,
+                onDismiss: {
+                    showWalkFlow = false
+                }
+            )
+        }
+    }
+}
+
+// MARK: - Walk Flow Container (Countdown → Tracking)
+
+private struct WalkFlowContainer: View {
+    var store: ActivityStore
+    var startWithTracking: Bool
+    var onDismiss: () -> Void
+
+    @State private var showTracking: Bool
+
+    init(store: ActivityStore, startWithTracking: Bool, onDismiss: @escaping () -> Void) {
+        self.store = store
+        self.startWithTracking = startWithTracking
+        self.onDismiss = onDismiss
+        _showTracking = State(initialValue: startWithTracking)
+    }
+
+    var body: some View {
+        if showTracking {
+            WalkTrackingView(store: store, onDismiss: onDismiss)
+                .transition(.opacity)
+        } else {
+            CountdownView(
+                onComplete: {
+                    store.startWalk()
+                    withAnimation {
+                        showTracking = true
+                    }
+                },
+                onCancel: {
+                    store.isWalking = false
+                    onDismiss()
+                }
+            )
+            .transition(.opacity)
+        }
+    }
+}
+
+// MARK: - Animated "WALKING..." Label (fixed width)
+
+private struct WalkingLabel: View {
+    @State private var dotCount = 0
+    private let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+
+    private var dots: String {
+        String(repeating: ".", count: dotCount + 1)
+    }
+
+    // Invisible text to reserve the maximum width
+    private var hiddenText: String { "WALKING..." }
+
+    var body: some View {
+        Text("WALKING\(dots)")
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(.white)
+            .frame(width: textWidth(hiddenText))
+            .padding(.horizontal, 24)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(Color("baseRed"))
+            )
+            .onReceive(timer) { _ in
+                dotCount = (dotCount + 1) % 3
+            }
+    }
+
+    /// Measures the width of the longest possible text to keep the button size static.
+    private func textWidth(_ text: String) -> CGFloat {
+        let font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        let attributes: [NSAttributedString.Key: Any] = [.font: font]
+        let size = (text as NSString).boundingRect(
+            with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
+            options: .usesLineFragmentOrigin,
+            attributes: attributes,
+            context: nil
+        ).size
+        return ceil(size.width)
     }
 }
 
