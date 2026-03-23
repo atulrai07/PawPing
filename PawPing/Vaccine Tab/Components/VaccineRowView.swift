@@ -37,12 +37,12 @@ struct VaccineRowView: View {
                 } label: {
                     Text("Mark as Done")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(
                             Capsule()
-                                .stroke(Color("baseRed"), lineWidth: 1.2)
+                                .stroke(Color("baseColor"), lineWidth: 1.2)
                         )
                 }
             }

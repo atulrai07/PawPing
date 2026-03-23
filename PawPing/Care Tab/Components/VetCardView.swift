@@ -26,7 +26,7 @@ struct VetCardView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(vet.vetName)
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(Color("baseRed"))
+                        .foregroundStyle(Color("baseColor"))
                     
                     HStack(spacing: 6) {
                         Image(systemName: "star.fill")

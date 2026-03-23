@@ -13,12 +13,12 @@ struct CircularProgressView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color("baseRed").opacity(0.2), lineWidth: 15)
+                .stroke(Color("baseColor").opacity(0.2), lineWidth: 15)
             
             Circle()
                 .trim(from: 0.0, to: progress)
                 .stroke(
-                    Color("baseRed"),
+                    Color("baseColor"),
                     style: StrokeStyle(lineWidth: 15, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))

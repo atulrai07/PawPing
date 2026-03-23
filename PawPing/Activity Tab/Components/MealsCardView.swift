@@ -26,7 +26,7 @@ struct MealsCardView: View {
                         
                     } label: {
                         Circle()
-                            .fill(Color("baseRed").opacity(0.2))
+                            .fill(Color("baseColor").opacity(0.2))
                             .frame(width: 22, height: 22)
                             .overlay(
                                 Image(systemName: "chevron.right")
@@ -45,7 +45,7 @@ struct MealsCardView: View {
                             .overlay(
                                 VStack {
                                     Circle()
-                                        .fill(.baseRed)
+                                        .fill(Color.base)
                                         .overlay(
                                             Image(systemName: String(meal.icon))
                                                 .foregroundStyle(.white)

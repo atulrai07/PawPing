@@ -28,10 +28,12 @@ struct ContentView: View {
                 VaccineView(store: vaccineStore, profile: activityStore.dogProfile)
             }
         }
-        .tint(Color("baseRed"))
+        .tint(Color("baseColor"))
     }
 }
 
 #Preview {
-    ContentView()
+    NavigationStack {
+        ContentView()
+    }
 }

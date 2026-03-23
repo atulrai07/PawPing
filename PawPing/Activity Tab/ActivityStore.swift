@@ -17,6 +17,13 @@ class ActivityStore {
     var walkActivity: WalkActivity
     var timeWalkedGraph: TimeWalkedGraphModel
 
+    // MARK: - Walk Session (persists across view appearances)
+    var isWalking: Bool = false
+    var elapsedSeconds: TimeInterval = 0
+    var isPaused: Bool = false
+    var locationManager = LocationManager()
+    private var walkTimer: Timer?
+
     init() {
 
         let sampleDogId = UUID()
@@ -115,5 +122,50 @@ class ActivityStore {
             ],
             goalMinutes: 60
         )
+    }
+
+    // MARK: - Walk Session Controls
+
+    func startWalk() {
+        isWalking = true
+        isPaused = false
+        elapsedSeconds = 0
+        locationManager.requestPermission()
+        locationManager.startTracking()
+        startTimer()
+    }
+
+    func stopWalk() {
+        walkTimer?.invalidate()
+        walkTimer = nil
+        locationManager.stopTracking()
+
+        let walkedMinutes = Int(elapsedSeconds / 60)
+        walkActivity.currentMinutes += walkedMinutes
+
+        isWalking = false
+        isPaused = false
+        elapsedSeconds = 0
+        locationManager.totalDistance = 0
+    }
+
+    func togglePause() {
+        isPaused.toggle()
+        if isPaused {
+            walkTimer?.invalidate()
+            walkTimer = nil
+            locationManager.stopTracking()
+        } else {
+            locationManager.startTracking()
+            startTimer()
+        }
+    }
+
+    private func startTimer() {
+        walkTimer?.invalidate()
+        walkTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            self.elapsedSeconds += 0.01
+        }
     }
 }
