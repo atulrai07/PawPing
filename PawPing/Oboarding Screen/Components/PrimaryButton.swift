@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-/// A custom stylized button used for main actions like "Next" or "Get Started"
 struct PrimaryButton: View {
     let title: String
     let action: () -> Void

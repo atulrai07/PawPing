@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var showSplash = true
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var hasCompletedOnboarding = false
 
     // MARK: - Stores (single source of truth for the whole app)
     // @State here because ContentView OWNS these stores.

@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-/// The main entry point for the onboarding flow.
-/// It manages the current page state and handles user ̦̦gestures.
 struct OnboardingView: View {
     var onCompletion: () -> Void
     
@@ -28,10 +26,7 @@ struct OnboardingView: View {
                 onCompletion()
             }
         )
-        // Background color ensures the screen is never empty during shifts
         .background(OnboardingLayout.backgroundColor)
-        
-        // Custom Drag Gesture to allow manual swiping between pages
         .gesture(
             DragGesture()
                 .onEnded { value in
@@ -55,8 +50,6 @@ struct OnboardingView: View {
         )
     }
 }
-
-// Preview provider for Xcode Canvas
 #Preview {
     OnboardingView(onCompletion: {})
 }

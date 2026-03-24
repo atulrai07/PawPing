@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-
-/// A component that displays a series of dots to indicate current page progress
 struct PageIndicator: View {
     let total: Int          // Total number of pages
     let current: Int        // The index of the currently active page
