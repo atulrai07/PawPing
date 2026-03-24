@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var showSplash = true
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     // MARK: - Stores (single source of truth for the whole app)
     // @State here because ContentView OWNS these stores.
@@ -20,22 +22,32 @@ struct ContentView: View {
     @State private var vaccineStore  = VaccineStore()
 
     var body: some View {
-        TabView {
-            Tab("Activity", systemImage: "dog.fill") {
-                ActivityView(store: activityStore)
-            }
+        if showSplash {
+            SplashView(showSplash: $showSplash)
+        } else if !hasCompletedOnboarding {
+            OnboardingView(onCompletion: {
+                withAnimation {
+                    hasCompletedOnboarding = true
+                }
+            })
+        } else {
+            TabView {
+                Tab("Activity", systemImage: "dog.fill") {
+                    ActivityView(store: activityStore)
+                }
 
-            Tab("Care", systemImage: "pawprint.fill") {
-                // CareView also needs the dog profile (for the Home pin on the map),
-                // so we grab it from activityStore which owns the profile data.
-                CareView(store: careStore, profile: activityStore.dogProfile)
-            }
+                Tab("Care", systemImage: "pawprint.fill") {
+                    // CareView also needs the dog profile (for the Home pin on the map),
+                    // so we grab it from activityStore which owns the profile data.
+                    CareView(store: careStore, profile: activityStore.dogProfile)
+                }
 
-            Tab("Vaccine", systemImage: "syringe.fill") {
-                VaccineView(store: vaccineStore, profile: activityStore.dogProfile)
-            }
-        } // TabView
-        .tint(.pawPrimary) // brand-blue highlight for the active tab
+                Tab("Vaccine", systemImage: "syringe.fill") {
+                    VaccineView(store: vaccineStore, profile: activityStore.dogProfile)
+                }
+            } // TabView
+            .tint(.pawPrimary) // brand-blue highlight for the active tab
+        }
     }
 }
 
