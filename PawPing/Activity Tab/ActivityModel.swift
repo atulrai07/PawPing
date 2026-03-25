@@ -33,8 +33,8 @@ struct DogProfile: Identifiable {
     var gender: DogGender
     var age: String
     var dogImage: String = "profilePhoto"
-    var homeLatitude: Double = 37.3346
-    var homeLongitude: Double = -122.0090
+    var homeLatitude: Double = 28.4210   // Dankaur, Gautam Buddh Nagar, UP
+    var homeLongitude: Double = 77.5340  // Dankaur, Gautam Buddh Nagar, UP
     
     // Home coordinates — used by the Care tab's map to place the "Home" pin.
 //    // Defaults to Delhi/NCR area. Update these when we add real user location.
@@ -58,8 +58,11 @@ enum DogGender: String {
    case female = "Female"
 }
 
+<<<<<<< HEAD
 // MARK: - Walk Activity
 
+=======
+>>>>>>> 1627ffb (changed the Latitude and Longitude Values to be more apt)
 struct WalkActivity {
     var currentMinutes: Int
     var goalMinutes: Int
