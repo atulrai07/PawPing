@@ -12,7 +12,9 @@ import SwiftUI
 struct VaccineView: View {
 
     var store: VaccineStore
-    var profile: DogProfile
+    var activityStore: ActivityStore
+
+    @State private var showProfile = false
 
     // MARK: Derived collections
 
@@ -70,7 +72,14 @@ struct VaccineView: View {
             }
             .padding(.top, 10)
             .padding(.bottom, 80)
-            .customNavigationScroll(title: "Vaccine", profileImage: profile.dogImage)
+            .customNavigationScroll(
+                title: "Vaccine",
+                profileImage: activityStore.dogProfile.dogImage,
+                onProfileTap: { showProfile = true }
+            )
+            .navigationDestination(isPresented: $showProfile) {
+                ProfileView(store: activityStore)
+            }
         }
     }
 
@@ -113,6 +122,6 @@ struct VaccineView: View {
 
 #Preview {
     NavigationStack {
-        VaccineView(store: VaccineStore(), profile: ActivityStore().dogProfile)
+        VaccineView(store: VaccineStore(), activityStore: ActivityStore())
     }
 }

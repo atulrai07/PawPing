@@ -24,24 +24,29 @@ private struct StickyNavHeader: View {
 
     let title: String
     var profileImage: String?
+    var onProfileTap: (() -> Void)?
     let isCollapsed: Bool
 
     var body: some View {
         ZStack {
-
-            // ── Trailing profile avatar (always visible)
+            // MARK: Profile View is in Activity View
+            // Trailing profile avatar (always visible)
             if let img = profileImage {//if let because profile image is option (?) value.
                 HStack {
                     Spacer()
-                    Circle()
-                        .fill(.gray.opacity(0.2))
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Image(img)
-                                .resizable()
-                                .scaledToFill()
-                                .clipShape(Circle())
-                        )
+                    Button {
+                        onProfileTap?()
+                    } label: {
+                        Circle()
+                            .fill(.gray.opacity(0.2))
+                            .frame(width: 36, height: 36)
+                            .overlay(
+                                Image(img)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .clipShape(Circle())
+                            )
+                    }
                 }
             }
 
@@ -96,10 +101,10 @@ private struct StickyNavHeader: View {
 
 // CustomNavigationScrollModifier
 
-private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, so that we can it as .Nav...(__)
-
+private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, so that we can it as .Nav...(__)\n
     let title: String
     var profileImage: String?
+    var onProfileTap: (() -> Void)?
     var collapseThreshold: CGFloat
 
     @State private var scrollOffset: CGFloat = 0
@@ -134,6 +139,7 @@ private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, 
             StickyNavHeader(
                 title: title,
                 profileImage: profileImage,
+                onProfileTap: onProfileTap,
                 isCollapsed: isCollapsed
             )
         }
@@ -153,11 +159,13 @@ extension View {
     func customNavigationScroll(
         title: String,
         profileImage: String? = nil,
+        onProfileTap: (() -> Void)? = nil,
         collapseThreshold: CGFloat = 50
     ) -> some View {
         modifier(CustomNavigationScrollModifier(
             title: title,
             profileImage: profileImage,
+            onProfileTap: onProfileTap,
             collapseThreshold: collapseThreshold
         ))
     }

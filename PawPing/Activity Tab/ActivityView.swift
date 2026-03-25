@@ -13,6 +13,7 @@ struct ActivityView: View {
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
+    @State private var showProfile = false
 
     var body: some View {
         NavigationStack {
@@ -173,7 +174,14 @@ struct ActivityView: View {
             }
             .padding(.top, 10)
             .padding(.bottom, 80)
-            .customNavigationScroll(title: "Activity", profileImage: store.dogProfile.dogImage)
+            .customNavigationScroll(
+                title: "Activity",
+                profileImage: store.dogProfile.dogImage,
+                onProfileTap: { showProfile = true }
+            )
+            .navigationDestination(isPresented: $showProfile) {
+                ProfileView(store: store)
+            }
         }
         .fullScreenCover(isPresented: $showWalkFlow) {
             WalkFlowContainer(

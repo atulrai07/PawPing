@@ -22,10 +22,11 @@ struct CareView: View {
     @State private var position: MapCameraPosition = .automatic
     // When a user taps a card, we store the location here to trigger the detail sheet
     @State private var selectedLocation: CareLocation?
+    @State private var showProfile = false;
 
     // Passed in from ContentView — we don't own these, just read them
     var store: CareStore
-    var profile: DogProfile
+    var activityStore: ActivityStore
 
     // Switches between vets and dayCares based on the selected segment,
     // then filters by search text if the user typed something
@@ -48,7 +49,14 @@ struct CareView: View {
             } // VStack — main content
             .padding(.top, 10)
             .padding(.bottom, 80)
-            .customNavigationScroll(title: "Care", profileImage: profile.dogImage)
+            .customNavigationScroll(
+                title: "Care",
+                profileImage: activityStore.dogProfile.dogImage,
+                onProfileTap: {showProfile = true}
+            )
+            .navigationDestination(isPresented: $showProfile) {
+                ProfileView(store: activityStore)
+            }
             // .sheet presents VetClinicDetails as a half-sheet when a card is tapped.
             // `item:` binding means the sheet shows whenever selectedLocation != nil.
             .sheet(item: $selectedLocation) { location in
@@ -101,7 +109,7 @@ struct CareView: View {
             UserAnnotation()
 
             // "Home" pin — pulls lat/lng from the dog's profile
-            Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: profile.homeLatitude, longitude: profile.homeLongitude)) {
+            Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: activityStore.dogProfile.homeLatitude, longitude: activityStore.dogProfile.homeLongitude)) {
                 ZStack {
                     Circle()
                         .fill(Color.white)
@@ -124,7 +132,7 @@ struct CareView: View {
         .overlay(alignment: .bottomTrailing) {
             // Recenter button — snaps the map back to the pet's home area
             Button {
-                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: profile.homeLatitude, longitude: profile.homeLongitude), latitudinalMeters: 3000, longitudinalMeters: 3000))
+                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: activityStore.dogProfile.homeLatitude, longitude: activityStore.dogProfile.homeLongitude), latitudinalMeters: 3000, longitudinalMeters: 3000))
             } label: {
                 Image(systemName: "location.fill")
                     .font(.system(size: 16, weight: .bold))
@@ -171,5 +179,5 @@ struct CareView: View {
 } // CareView
 
 #Preview {
-    CareView(store: CareStore(), profile: DogProfile.sampleProfile)
+    CareView(store: CareStore(), activityStore: ActivityStore())
 }
