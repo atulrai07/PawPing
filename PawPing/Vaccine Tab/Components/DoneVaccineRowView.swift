@@ -18,7 +18,7 @@ struct DoneVaccineRowView: View {
             // Vaccine Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(record.displayName)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.pawSecondary)
                 
                 Text("Last Taken : \(record.formattedDateGiven)")
@@ -26,7 +26,7 @@ struct DoneVaccineRowView: View {
                     .foregroundStyle(.secondary)
                 
                 if let clinic = record.clinicInfo {
-                    Text("Clinic: \(clinic.clinicName)")
+                    Text("Clinic : \(clinic.clinicName)")
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }

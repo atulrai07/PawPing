@@ -75,13 +75,11 @@ struct VaccineView: View {
             .padding(.top, 10)
             .padding(.bottom, 80)
             .customNavigationScroll(title: "Vaccine", profileImage: profile.dogImage)
+            
         } // NavigationStack
     }
 
     // MARK: - Helpers
-
-    /// Wraps a section with a bold title.
-    /// @ViewBuilder lets us pass SwiftUI views as a trailing closure.
     private func vaccineSection<Content: View>(
         title: String,
         @ViewBuilder content: () -> Content
@@ -114,7 +112,7 @@ struct VaccineView: View {
         .padding(.vertical, 6)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color.pawNeutral))
     }
-} // VaccineView
+}
 
 // MARK: - Preview
 
