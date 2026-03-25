@@ -2,16 +2,9 @@
 //  ActivityModel.swift
 //  PawPing
 //
-//  Created by Atul on 01/02/26.
-//
-//  All the data models used by the Activity tab.
-//  These are plain structs — no @Observable needed because
-//  the store holds them as vars and SwiftUI tracks changes at the store level.
-//
 
 import Foundation
 import CoreLocation
-
 
 // MARK: - Owner
 
@@ -33,14 +26,9 @@ struct DogProfile: Identifiable {
     var gender: DogGender
     var age: String
     var dogImage: String = "profilePhoto"
-    var homeLatitude: Double = 28.4210   // Dankaur, Gautam Buddh Nagar, UP
-    var homeLongitude: Double = 77.5340  // Dankaur, Gautam Buddh Nagar, UP
-    
-    // Home coordinates — used by the Care tab's map to place the "Home" pin.
-//    // Defaults to Delhi/NCR area. Update these when we add real user location.
-//    var homeLatitude: Double = 28.535
-//    var homeLongitude: Double = 77.240
-    
+    var homeLatitude: Double = 28.4210
+    var homeLongitude: Double = 77.5340
+
     static let sampleProfile = DogProfile(
         id: UUID(),
         ownerId: UUID(),
@@ -54,16 +42,16 @@ struct DogProfile: Identifiable {
 }
 
 enum DogGender: String {
-   case male = "Male"
-   case female = "Female"
+    case male = "Male"
+    case female = "Female"
 }
+
 // MARK: - Walk Activity
 
 struct WalkActivity {
     var currentMinutes: Int
     var goalMinutes: Int
 
-    /// 0.0 to 1.0 — used by CircularProgressView
     var progress: Double {
         guard goalMinutes > 0 else { return 0 }
         return Double(currentMinutes) / Double(goalMinutes)
@@ -72,14 +60,12 @@ struct WalkActivity {
 
 // MARK: - Walk Time Graph
 
-/// A single bar on the weekly graph
 struct TimeWalkedData: Identifiable {
     let id = UUID()
     let day: String
     let minutes: Int
 }
 
-/// The full week's data + the goal line
 struct TimeWalkedGraphModel {
     let data: [TimeWalkedData]
     let goalMinutes: Int
@@ -97,7 +83,6 @@ struct TimeWalkedGraphModel {
         goalMinutes: 60
     )
 
-    /// Used to scale bar heights — whichever is bigger, the goal or the best day
     var maxMinutes: Int {
         max(goalMinutes, data.map { $0.minutes }.max() ?? 1)
     }
@@ -108,9 +93,9 @@ struct TimeWalkedGraphModel {
 struct Meal: Identifiable {
     let id: UUID
     var dogId: UUID
-    var icon: String      // SF Symbol name
+    var icon: String
     var time: String
-    var meridian: String   // "AM" or "PM"
+    var meridian: String
     var date: Date = Date()
     var mealType: MealType
     var mealName: MealName
@@ -125,21 +110,21 @@ struct Meal: Identifiable {
 
 enum MealType: String {
     case breakfast = "Breakfast"
-    case lunch     = "Lunch"
-    case dinner    = "Dinner"
+    case lunch = "Lunch"
+    case dinner = "Dinner"
 }
 
 enum MealName: String {
-    case eggAndCheese = "Egg and Cheese"
-    case eggAndRice = "Egg and Rice"
-    case chickenAndRice = "Chicken and Rice"
-    case curdAndRice = "Curd and Rice"
-    case dogFood = "Dog Food"
-    case dogFoodWithCarrots = "Dog Food with Carrots"
-    case others = "Others"
+    case eggAndCheese
+    case eggAndRice
+    case chickenAndRice
+    case curdAndRice
+    case dogFood
+    case dogFoodWithCarrots
+    case others
 }
 
-// MARK: - Vaccines (lightweight model for Activity tab's mini-card)
+// MARK: - Vaccines
 
 struct Vaccine: Identifiable {
     let id: UUID
@@ -150,24 +135,13 @@ struct Vaccine: Identifiable {
     var frequency: Int
     var frequencyType: VaccineFrequencyType
     var vaccineNotes: String
-    
-    static let sampleVaccines = Vaccine(
-        id: UUID(),
-        dogId: UUID(),
-        name: "Rabies Booster",
-        givenDate: Date(),
-        daysLeft: 3,
-        frequency: 12,
-        frequencyType: .monthly,
-        vaccineNotes: "N/A"
-    )
 }
 
 enum VaccineFrequencyType: String {
-    case days = "Days"
-    case weekly = "Weekly"
-    case monthly = "Monthly"
-    case yearly = "Yearly"
+    case days
+    case weekly
+    case monthly
+    case yearly
 }
 
 // MARK: - Allergies
@@ -178,16 +152,11 @@ struct Allergy: Identifiable {
     var allergyName: String
     var allergyType: AllergyType
     var allergyNotes: String
-    var allergen: String?   // the specific substance (e.g. "Gluten", "Lactose")
-    
-    static let sampleAllergies: [Allergy] = [
-        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", allergyType: .environmental, allergyNotes: "N/A", allergen: "Gluten"),
-        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", allergyType: .environmental, allergyNotes: "N/A", allergen: "Lactose")
-    ]
+    var allergen: String?
 }
 
 enum AllergyType: String {
-    case food = "Food"
-    case medication = "Medication"
-    case environmental = "Environmental"
+    case food
+    case medication
+    case environmental
 }
