@@ -254,7 +254,6 @@ private struct WalkingLabel: View {
             }
     }
 
-    /// Measures the width of the longest possible text to keep the button size static.
     private func textWidth(_ text: String) -> CGFloat {
         let font = UIFont.systemFont(ofSize: 14, weight: .medium)
         let attributes: [NSAttributedString.Key: Any] = [.font: font]

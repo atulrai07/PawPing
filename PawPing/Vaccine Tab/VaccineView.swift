@@ -70,7 +70,6 @@ struct VaccineView: View {
             }
             .padding(.top, 10)
             .padding(.bottom, 80)
-            // ── One line replaces all scroll tracking + header boilerplate ──
             .customNavigationScroll(title: "Vaccine", profileImage: profile.dogImage)
         }
     }
@@ -113,5 +112,7 @@ struct VaccineView: View {
 // MARK: - Preview
 
 #Preview {
-    VaccineView(store: VaccineStore(), profile: ActivityStore().dogProfile)
+    NavigationStack {
+        VaccineView(store: VaccineStore(), profile: ActivityStore().dogProfile)
+    }
 }
