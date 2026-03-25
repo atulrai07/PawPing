@@ -4,12 +4,13 @@
 //
 //  Created by Atul on 15/03/26.
 //
+//  A row for a completed vaccine — shows the vaccine name, date taken,
+//  clinic info, and action buttons (Call / Navigate).
+//
 
 import SwiftUI
 
 struct DoneVaccineRowView: View {
-    @State private var showAddClinicSheet = false
-    
     let record: VaccineRecord
     
     var body: some View {
@@ -17,8 +18,8 @@ struct DoneVaccineRowView: View {
             // Vaccine Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(record.displayName)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.pawSecondary)
                 
                 Text("Last Taken : \(record.formattedDateGiven)")
                     .font(.system(size: 12))
@@ -48,30 +49,26 @@ struct DoneVaccineRowView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(Color.green)
+                        .background(Color.pawPrimary)
                         .clipShape(Capsule())
                     }
                 }
                 
                 Button {
-                    showAddClinicSheet = true
+                    print("Navigate to clinic")
                 } label: {
                     Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
                         .font(.system(size: 14))
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.pawSecondary)
                 }
             }
         }
         .padding(.vertical, 8)
-        .sheet(isPresented: $showAddClinicSheet) {
-            AddClinicSheet()
-                .presentationDetents([.medium, .large])
-        }
     }
 }
 
 #Preview {
     DoneVaccineRowView(record: VaccineStore().vaccineRecords[3])
         .padding()
-        .background(Color("baseBackground"))
+        .background(Color.pawNeutral)
 }

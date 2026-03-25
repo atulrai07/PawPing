@@ -248,6 +248,8 @@
 				DEVELOPMENT_TEAM = 5273NF3L3W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "PawPing needs location access to track walks even in background.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "PawPing needs your location to track walk distance.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -280,6 +282,8 @@
 				DEVELOPMENT_TEAM = 5273NF3L3W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "PawPing needs location access to track walks even in background.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "PawPing needs your location to track walk distance.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
