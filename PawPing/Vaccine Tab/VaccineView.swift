@@ -16,7 +16,9 @@ struct VaccineView: View {
 
     // Passed in from ContentView — we don't own these
     var store: VaccineStore
-    var profile: DogProfile
+    var activityStore: ActivityStore
+
+    @State private var showProfile = false
 
     // MARK: Derived collections
     // These are computed each render — no stale data possible.
@@ -74,8 +76,20 @@ struct VaccineView: View {
             } // VStack — main content
             .padding(.top, 10)
             .padding(.bottom, 80)
+<<<<<<< HEAD
             .customNavigationScroll(title: "Vaccine", profileImage: profile.dogImage)
         } // NavigationStack
+=======
+            .customNavigationScroll(
+                title: "Vaccine",
+                profileImage: activityStore.dogProfile.dogImage,
+                onProfileTap: { showProfile = true }
+            )
+            .navigationDestination(isPresented: $showProfile) {
+                ProfileView(store: activityStore)
+            }
+        }
+>>>>>>> ac4dd0f (added profile section)
     }
 
     // MARK: - Helpers
@@ -120,6 +134,6 @@ struct VaccineView: View {
 
 #Preview {
     NavigationStack {
-        VaccineView(store: VaccineStore(), profile: ActivityStore().dogProfile)
+        VaccineView(store: VaccineStore(), activityStore: ActivityStore())
     }
 }

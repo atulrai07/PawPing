@@ -14,7 +14,7 @@ struct CareView: View {
     @State private var selectedLocation: CareLocation?
 
     var store: CareStore
-    var profile: DogProfile
+    var activityStore: ActivityStore
 
     var filteredLocations: [CareLocation] {
         let sourceList = selectedCareType == .vet ? store.vets : store.dayCares
@@ -35,10 +35,13 @@ struct CareView: View {
             }
             .padding(.top, 10)
             .padding(.bottom, 80)
-            .customNavigationScroll(title: "Care", profileImage: profile.dogImage)
-            .sheet(item: $selectedLocation) { location in
-                VetClinicDetails(item: location)
-            }
+//            .customNavigationScroll(
+//                title: "Care",
+//                profileImage: activityStore.dogProfile.dogImage
+//            )
+//            .sheet(item: $selectedLocation) { location in
+//                VetClinicDetails(item: location)
+//            }
         }
     }
 
@@ -48,9 +51,7 @@ struct CareView: View {
         HStack(spacing: 0) {
             ForEach(CareType.allCases, id: \.self) { type in
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedCareType = type
-                    }
+                    selectedCareType = type
                 } label: {
                     Text(type.rawValue)
                         .font(.system(size: 16, weight: .semibold))
@@ -61,7 +62,6 @@ struct CareView: View {
                             if selectedCareType == type {
                                 Capsule()
                                     .fill(Color.pawPrimary)
-                                    .matchedGeometryEffect(id: "SegmentIndicator", in: animationNamespace)
                             }
                         }
                 }
@@ -71,78 +71,39 @@ struct CareView: View {
         .background(Color.pawPrimary.opacity(0.15))
         .clipShape(Capsule())
         .padding(.horizontal, 40)
-        .padding(.top, 10)
     }
 
     private var mapSection: some View {
         Map(position: $position) {
             UserAnnotation()
 
-            Annotation("Home", coordinate: CLLocationCoordinate2D(
-                latitude: profile.homeLatitude,
-                longitude: profile.homeLongitude)
+            Annotation(
+                "Home",
+                coordinate: CLLocationCoordinate2D(
+                    latitude: activityStore.dogProfile.homeLatitude,
+                    longitude: activityStore.dogProfile.homeLongitude
+                )
             ) {
-                ZStack {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 30, height: 30)
-                        .shadow(color: .black.opacity(0.15), radius: 3)
-
-                    Image(systemName: "house.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.pawTertiary)
-                }
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 30, height: 30)
             }
 
             ForEach(filteredLocations) { item in
                 Marker(item.name, coordinate: item.coordinate)
-                    .tint(.pawPrimary)
             }
         }
         .frame(height: 180)
         .clipShape(RoundedRectangle(cornerRadius: 24))
-        .overlay(alignment: .bottomTrailing) {
-            Button {
-                position = .region(
-                    MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(
-                            latitude: profile.homeLatitude,
-                            longitude: profile.homeLongitude
-                        ),
-                        latitudinalMeters: 3000,
-                        longitudinalMeters: 3000
-                    )
-                )
-            } label: {
-                Image(systemName: "location.fill")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.pawSecondary)
-                    .padding(12)
-                    .background(Color.white)
-                    .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.15), radius: 4)
-            }
-            .padding(12)
-        }
         .padding(.horizontal)
     }
 
     private var searchBarSection: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.gray)
-
-            TextField("Search", text: $searchText)
-                .font(.system(size: 16))
-
-            Image(systemName: "mic.fill")
-                .foregroundStyle(.gray)
-        }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 16)
-        .background(Color.pawNeutral)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .padding(.horizontal)
+        TextField("Search", text: $searchText)
+            .padding()
+            .background(Color.pawNeutral)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .padding(.horizontal)
     }
 
     private var cardsList: some View {
@@ -153,7 +114,6 @@ struct CareView: View {
                 } label: {
                     SimpleCareCardView(item: item)
                 }
-                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal)
@@ -161,5 +121,5 @@ struct CareView: View {
 }
 
 #Preview {
-    CareView(store: CareStore(), profile: DogProfile.sampleProfile)
+    CareView(store: CareStore(), activityStore: ActivityStore())
 }

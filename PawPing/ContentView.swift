@@ -18,11 +18,11 @@ struct ContentView: View {
             }
 
             Tab("Care", systemImage: "pawprint.fill") {
-                CareView(store: careStore, profile: activityStore.dogProfile)
+                CareView(store: careStore, activityStore: activityStore)
             }
 
             Tab("Vaccine", systemImage: "syringe.fill") {
-                VaccineView(store: vaccineStore, profile: activityStore.dogProfile)
+                VaccineView(store: vaccineStore, activityStore: activityStore)
             }
         } // TabView
         .tint(.pawPrimary) // ✅ kept original
