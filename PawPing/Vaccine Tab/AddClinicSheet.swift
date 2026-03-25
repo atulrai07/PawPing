@@ -2,7 +2,7 @@
 //  AddClinicSheet.swift
 //  PawPing
 //
-//  Created by GU on 23/03/26.
+//  Created by Shubhi on 23/03/26.
 //
 import SwiftUI
 
@@ -10,9 +10,13 @@ struct AddClinicSheet: View {
     
     @Environment(\.dismiss) var dismiss
     
-       init() {
-           UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(named: "baseRed")
-       }
+    init() {
+        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(named: "baseRed")
+        UISegmentedControl.appearance().setTitleTextAttributes(
+                [.foregroundColor: UIColor.white],
+                for: .selected
+            )
+    }
     @State private var isManual = true
     
     @State private var vetName = ""

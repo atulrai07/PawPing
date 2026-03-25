@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct DoneVaccineRowView: View {
+    @State private var showAddClinicSheet = false
+    
     let record: VaccineRecord
     
     var body: some View {
@@ -15,7 +17,7 @@ struct DoneVaccineRowView: View {
             // Vaccine Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(record.displayName)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
                 
                 Text("Last Taken : \(record.formattedDateGiven)")
@@ -52,15 +54,19 @@ struct DoneVaccineRowView: View {
                 }
                 
                 Button {
-                    print("Navigate to clinic")
+                    showAddClinicSheet = true
                 } label: {
                     Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
                         .font(.system(size: 14))
-                        .foregroundStyle(.primary)
+                        .foregroundColor(.blue)
                 }
             }
         }
         .padding(.vertical, 8)
+        .sheet(isPresented: $showAddClinicSheet) {
+            AddClinicSheet()
+                .presentationDetents([.medium, .large])
+        }
     }
 }
 
