@@ -104,7 +104,7 @@ struct AddVaccineSheet: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color("baseRed"))
+                    .background(Color.pawPrimary)
                     .cornerRadius(25)
             }
             .padding()

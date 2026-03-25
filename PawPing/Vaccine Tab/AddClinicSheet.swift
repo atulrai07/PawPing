@@ -11,7 +11,7 @@ struct AddClinicSheet: View {
     @Environment(\.dismiss) var dismiss
     
     init() {
-        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(named: "baseRed")
+        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(Color.pawPrimary)
         UISegmentedControl.appearance().setTitleTextAttributes(
                 [.foregroundColor: UIColor.white],
                 for: .selected
@@ -60,15 +60,10 @@ struct AddClinicSheet: View {
                     .foregroundStyle(.primary)
                     .fontWeight(.semibold)
                 
-                //Segmented Picker
-                Picker("", selection: $isManual) {
-                    Text("Enter Manually").tag(true)
-                    Text("Select from Vet Center").tag(false)
-                }
-                .pickerStyle(.segmented)
-                .tint(Color("baseRed"))
+
+                CustomSegmentedControl(isManual: $isManual)
                 
-                //Switch Views
+                // Switch Views
                 if isManual {
                     ManualView(
                         vetName: $vetName,
@@ -92,7 +87,7 @@ struct AddClinicSheet: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color("baseRed"))
+                    .background(Color.pawPrimary)
                     .cornerRadius(25)
             }
             .padding()
@@ -101,7 +96,51 @@ struct AddClinicSheet: View {
     }
 }
 
-
+//CustomSegmentedControl
+struct CustomSegmentedControl: View {
+    
+    @Binding var isManual: Bool
+    @Namespace private var animation
+    
+    var body: some View {
+        HStack {
+            
+            segment(title: "Enter Manually", isSelected: isManual)
+                .onTapGesture {
+                    withAnimation(.spring()) {
+                        isManual = true
+                    }
+                }
+            
+            segment(title: "Select from Vet Center", isSelected: !isManual)
+                .onTapGesture {
+                    withAnimation(.spring()) {
+                        isManual = false
+                    }
+                }
+        }
+        .padding(2)
+        .frame(height: 40)
+        .background(Color.pawPrimary.opacity(0.2))
+        .clipShape(Capsule())
+    }
+    
+    private func segment(title: String, isSelected: Bool) -> some View {
+        ZStack {
+            if isSelected {
+                Capsule()
+                    .fill(Color.pawPrimary)
+                    .matchedGeometryEffect(id: "SEGMENT", in: animation)
+            }
+            
+            Text(title)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(isSelected ? .white : Color.pawPrimary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical,1)
+        }
+    }
+}
 //Manual View
 struct ManualView: View {
     
@@ -131,7 +170,7 @@ struct VetCenterView: View {
             
             Image(systemName: "location.fill")
                 .font(.system(size: 40))
-                .foregroundColor(Color("baseRed"))
+                .foregroundColor(Color.pawPrimary)
             
             Text("Select your clinic from our vet care list to automatically add clinics")
                 .font(.subheadline)
@@ -144,7 +183,7 @@ struct VetCenterView: View {
             .padding(10)
             .padding(.horizontal,20)
             .frame(maxWidth: .infinity)
-            .background(Color("baseRed"))
+            .background(Color.pawPrimary)
             .foregroundColor(.white)
             .cornerRadius(20)
             
