@@ -10,7 +10,7 @@ struct VaccineSummaryCard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            summaryColumn(title: "Done", count: summary.doneCount, color: .pawPrimary)   // ✅ kept original
+            summaryColumn(title: "Done", count: summary.doneCount, color: Color.green) // ✅ FIXED
             
             Divider()
                 .frame(height: 40)

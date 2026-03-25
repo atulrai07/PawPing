@@ -57,12 +57,8 @@ enum DogGender: String {
    case male = "Male"
    case female = "Female"
 }
-
-<<<<<<< HEAD
 // MARK: - Walk Activity
 
-=======
->>>>>>> 1627ffb (changed the Latitude and Longitude Values to be more apt)
 struct WalkActivity {
     var currentMinutes: Int
     var goalMinutes: Int

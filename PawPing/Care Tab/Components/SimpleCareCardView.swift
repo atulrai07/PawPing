@@ -10,18 +10,11 @@ struct SimpleCareCardView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Image from assets
-            Image(item.imageName)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            
             VStack(alignment: .leading, spacing: 4) {
                 // Name
                 Text(item.name)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.pawPrimary)   // ✅ kept your version
+                    .foregroundStyle(Color.primary)   // ✅ FIXED
                 
                 // Subtype & Rating
                 Text("\(item.subType ?? "Veterinary Clinic") • \(String(format: "%.1f", item.rating))★")
@@ -36,12 +29,15 @@ struct SimpleCareCardView: View {
             
             Spacer()
             
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(.gray.opacity(0.5))
+            // Image from assets
+            Image(item.imageName)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 80, height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
         }
         .padding(12)
-        .background(Color.pawNeutral)   // ✅ kept your version
+        .background(Color.pawNeutral)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
