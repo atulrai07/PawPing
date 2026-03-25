@@ -2,10 +2,13 @@
 //  CustomNavigationScroll.swift
 //  PawPing
 //
+<<<<<<< HEAD
 //  Created by Atul on 19/03/26.
 //
 //  A reusable scroll wrapper that gives us a collapsing large-title header
 //  (similar to Apple's native nav bar) without fighting with NavigationView.
+=======
+>>>>>>> 6ec899a (added comments)
 //
 //  HOW TO USE:
 //  ──────────
@@ -32,8 +35,8 @@ private struct StickyNavHeader: View {
     var body: some View {
         ZStack {
 
-            // ── Trailing profile avatar (always visible) ──────────────
-            if let img = profileImage {
+            // ── Trailing profile avatar (always visible)
+            if let img = profileImage {//if let because profile image is option (?) value.
                 HStack {
                     Spacer()
                     Circle()
@@ -48,7 +51,7 @@ private struct StickyNavHeader: View {
                 } // HStack — avatar
             }
 
-            // ── Large title (fades out on scroll) ─────────────────────
+            // Large title (fades out on scroll)
             Text(title)
                 .font(.system(size: 34, weight: .bold))
                 .foregroundStyle(.pawSecondary)
@@ -56,7 +59,7 @@ private struct StickyNavHeader: View {
                 .opacity(isCollapsed ? 0 : 1)
                 .scaleEffect(isCollapsed ? 0.9 : 1.0, anchor: .leading)
 
-            // ── Inline title (fades in on scroll) ─────────────────────
+            // Inline title (fades in on scroll)
             Text(title)
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.pawSecondary)
@@ -67,9 +70,13 @@ private struct StickyNavHeader: View {
         .padding(.top, isCollapsed ? -8 : 8)
         .padding(.bottom, isCollapsed ? 12 : 6)
 
+<<<<<<< HEAD
         // ── Background gradient ────────────────────────────────────────
         // Fades from solid to transparent at the bottom so text beneath
         // doesn't get a hard edge.
+=======
+        // ── Background gradient
+>>>>>>> 6ec899a (added comments)
         .background {
             Rectangle()
                 .fill(Color.pawBackground)
@@ -87,8 +94,12 @@ private struct StickyNavHeader: View {
                 }
                 .ignoresSafeArea(edges: .top)
         }
+<<<<<<< HEAD
 
         // ── Hairline separator (currently hidden) ─────────────────────
+=======
+        
+>>>>>>> 6ec899a (added comments)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(.pawPrimary)
@@ -100,12 +111,16 @@ private struct StickyNavHeader: View {
     }
 } // StickyNavHeader
 
+<<<<<<< HEAD
 // MARK: - CustomNavigationScrollModifier
 // This is a ViewModifier — think of it like a reusable "plugin" you can
 // attach to any view. It wraps the content in a ScrollView and tracks
 // scroll position using GeometryReader to toggle the header state.
+=======
+// CustomNavigationScrollModifier
+>>>>>>> 6ec899a (added comments)
 
-private struct CustomNavigationScrollModifier: ViewModifier {
+private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, so that we can it as .Nav...(__)
 
     let title: String
     var profileImage: String?

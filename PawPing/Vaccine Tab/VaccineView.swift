@@ -119,5 +119,7 @@ struct VaccineView: View {
 // MARK: - Preview
 
 #Preview {
-    VaccineView(store: VaccineStore(), profile: ActivityStore().dogProfile)
+    NavigationStack {
+        VaccineView(store: VaccineStore(), profile: ActivityStore().dogProfile)
+    }
 }
