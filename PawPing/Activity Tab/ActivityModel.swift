@@ -25,8 +25,8 @@ struct DogProfile: Identifiable {
     var gender: DogGender
     var age: String
     var dogImage: String = "profilePhoto"
-    var homeLatitude: Double = 37.3346
-    var homeLongitude: Double = -122.0090
+    var homeLatitude: Double = 28.4210   // Dankaur, Gautam Buddh Nagar, UP
+    var homeLongitude: Double = 77.5340  // Dankaur, Gautam Buddh Nagar, UP
     
     static let sampleProfile = DogProfile(
         id: UUID(),
@@ -53,7 +53,7 @@ enum DogGender: String {
 //    var goalMinutes: Int
 //    var distanceWalked: Double
 //    var goalDistanceWalked: Double
-//    
+//
 //    var progress: Double {
 //        guard goalMinutes > 0 else { return 0 }
 //        return Double(currentMinutes) / Double(goalMinutes)
