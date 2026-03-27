@@ -23,7 +23,7 @@ struct AddVaccineSheet: View {
                         dismiss()}) {
                         Image(systemName: "xmark")
                                 .foregroundColor(.black)
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.system(size: 16, weight: .semibold))
                                 .frame(width: 36, height: 36)
                                 .background(.ultraThinMaterial)
                                 .clipShape(Circle())

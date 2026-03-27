@@ -30,11 +30,11 @@ struct VaccineView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-
+                
                 // Top card with done/upcoming/overdue counts
                 VaccineSummaryCard(summary: summary)
                     .padding(.horizontal)
-
+                
                 // Upcoming Vaccines
                 if !upcomingRecords.isEmpty {
                     vaccineSection(title: "Upcoming Vaccines") {
@@ -45,7 +45,7 @@ struct VaccineView: View {
                         }
                     }
                 }
-
+                
                 // Overdue
                 if !overdueRecords.isEmpty {
                     vaccineSection(title: "Overdue") {
@@ -56,7 +56,7 @@ struct VaccineView: View {
                         }
                     }
                 }
-
+                
                 // Done
                 if !doneRecords.isEmpty {
                     vaccineSection(title: "Done") {
@@ -65,7 +65,7 @@ struct VaccineView: View {
                         }
                     }
                 }
-
+                
                 // Export Button
                 ExportPassportButton {
                     print("Export vaccine passport tapped")
@@ -75,7 +75,6 @@ struct VaccineView: View {
             .padding(.top, 10)
             .padding(.bottom, 80)
             .customNavigationScroll(title: "Vaccine", profileImage: profile.dogImage)
-            
         } // NavigationStack
     }
 
