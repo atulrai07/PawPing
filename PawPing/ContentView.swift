@@ -25,7 +25,7 @@ struct ContentView: View {
             }
 
             Tab("Vaccine", systemImage: "syringe.fill") {
-                VaccineView(store: vaccineStore, activityStore: activityStore)
+                VaccineView(store: vaccineStore, activityStore: activityStore, careStore: careStore)
             }
         }
         .tint(Color("baseColor"))

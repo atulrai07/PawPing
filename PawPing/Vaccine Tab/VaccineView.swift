@@ -13,8 +13,10 @@ struct VaccineView: View {
 
     var store: VaccineStore
     var activityStore: ActivityStore
+    var careStore: CareStore
 
     @State private var showProfile = false
+    @State private var showAddVaccine = false
 
     // MARK: Derived collections
 
@@ -66,7 +68,7 @@ struct VaccineView: View {
 
                 // Export Button
                 ExportPassportButton {
-                    print("Export vaccine passport tapped")
+                    print("Export vaccine report tapped")
                 }
                 .padding(.horizontal)
             }
@@ -75,10 +77,14 @@ struct VaccineView: View {
             .customNavigationScroll(
                 title: "Vaccine",
                 profileImage: activityStore.dogProfile.dogImage,
-                onProfileTap: { showProfile = true }
+                onProfileTap: { showProfile = true },
+                onAddTap: { showAddVaccine = true }
             )
             .navigationDestination(isPresented: $showProfile) {
                 ProfileView(store: activityStore)
+            }
+            .sheet(isPresented: $showAddVaccine) {
+                AddVaccineFlowView(vaccineStore: store, careStore: careStore)
             }
         }
     }
@@ -93,7 +99,7 @@ struct VaccineView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color("baseColor"))
                 .padding(.horizontal)
 
             content()
@@ -122,6 +128,6 @@ struct VaccineView: View {
 
 #Preview {
     NavigationStack {
-        VaccineView(store: VaccineStore(), activityStore: ActivityStore())
+        VaccineView(store: VaccineStore(), activityStore: ActivityStore(), careStore: CareStore())
     }
 }

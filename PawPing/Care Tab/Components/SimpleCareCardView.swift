@@ -19,7 +19,7 @@ struct SimpleCareCardView: View {
                 // Name
                 Text(item.name)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(Color("baseColor"))
                 
                 // Subtype & Rating
                 Text("\(item.subType ?? "Veterinary Clinic") • \(String(format: "%.1f", item.rating))★")

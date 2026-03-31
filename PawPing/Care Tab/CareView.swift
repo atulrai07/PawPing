@@ -99,7 +99,7 @@ struct CareView: View {
         .padding(4)
         .background(Color("baseColor").opacity(0.15))
         .clipShape(Capsule())
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 16)
         .padding(.top, 10)
     }
 

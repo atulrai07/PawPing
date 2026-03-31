@@ -2,7 +2,7 @@
 //  MealLogView.swift
 //  PawPing
 //
-//  Created for Meal Log feature.
+//  Created by Mamoon.
 //
 
 import SwiftUI
@@ -45,10 +45,12 @@ struct MealLogView: View {
     @State private var isLunchSaved = false
     @State private var isDinnerSaved = false
     
-    // Date states for native pickers
+    // Date states for pickers
     @State private var breakfastTime: Date = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: Date()) ?? Date()
     @State private var lunchTime: Date = Calendar.current.date(bySettingHour: 13, minute: 0, second: 0, of: Date()) ?? Date()
     @State private var dinnerTime: Date = Calendar.current.date(bySettingHour: 20, minute: 0, second: 0, of: Date()) ?? Date()
+    
+    @State private var showAlert = false
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -60,6 +62,7 @@ struct MealLogView: View {
                 // Meal Cards
                 VStack(spacing: 16) {
                     mealCard(type: .breakfast, selectedMeal: $breakfastSelection, time: $breakfastTime, isSaved: $isBreakfastSaved)
+                    
                     mealCard(type: .lunch, selectedMeal: $lunchSelection, time: $lunchTime, isSaved: $isLunchSaved)
                     mealCard(type: .dinner, selectedMeal: $dinnerSelection, time: $dinnerTime, isSaved: $isDinnerSaved)
                 }
@@ -91,6 +94,11 @@ struct MealLogView: View {
         .onAppear {
             selectedDateIndex = todayIndex
             syncWithStore()
+        }
+        .alert("Selection Required", isPresented: $showAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("You must select a meal to save the log.")
         }
     }
     
@@ -256,9 +264,13 @@ struct MealLogView: View {
                     
                     // Status Button
                     Button {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            isSaved.wrappedValue.toggle()
-                            saveToStore(type: type)
+                        if !isSaved.wrappedValue && selectedMeal.wrappedValue == .select {
+                            showAlert = true
+                        } else {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                isSaved.wrappedValue.toggle()
+                                saveToStore(type: type)
+                            }
                         }
                     } label: {
                         Text(isSaved.wrappedValue ? "Log Saved" : "Save Log")
@@ -291,13 +303,29 @@ struct MealLogView: View {
                 .font(.system(size: 16, weight: .bold))
                 .padding(.horizontal, 22)
             
-            TextField("Add any additional notes here...", text: $notesText)
-                .font(.system(size: 16))
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
-                .background(Color("cardBackground"))
-                .clipShape(Capsule())
-                .padding(.horizontal)
+            HStack {
+                TextField("Add any additional notes here...", text: $notesText)
+                    .font(.system(size: 16))
+                
+                Button {
+                    // Logic to save notes can be added here
+                    print("Notes saved: \(notesText)")
+                } label: {
+                    Text("Save")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color("baseColor"))
+                        .clipShape(Capsule())
+                }
+            }
+            .padding(.leading, 20)
+            .padding(.trailing, 8)
+            .padding(.vertical, 8)
+            .background(Color("cardBackground"))
+            .clipShape(Capsule())
+            .padding(.horizontal)
         }
     }
     

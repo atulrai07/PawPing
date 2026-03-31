@@ -25,6 +25,7 @@ private struct StickyNavHeader: View {
     let title: String
     var profileImage: String?
     var onProfileTap: (() -> Void)?
+    var onAddTap: (() -> Void)?
     let isCollapsed: Bool
 
     var body: some View {
@@ -34,6 +35,26 @@ private struct StickyNavHeader: View {
             if let img = profileImage {//if let because profile image is option (?) value.
                 HStack {
                     Spacer()
+                    
+                    // Add button (liquid glass style)
+                    if let addAction = onAddTap {
+                        Button {
+                            addAction()
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(.ultraThinMaterial)
+                                    .frame(width: 36, height: 36)
+                                    .shadow(color: Color("baseColor").opacity(0.3), radius: 6, x: 0, y: 2)
+                                
+                                Image(systemName: "plus")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(Color("baseColor"))
+                            }
+                        }
+                        .padding(.trailing, 8)
+                    }
+                    
                     Button {
                         onProfileTap?()
                     } label: {
@@ -105,6 +126,7 @@ private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, 
     let title: String
     var profileImage: String?
     var onProfileTap: (() -> Void)?
+    var onAddTap: (() -> Void)?
     var collapseThreshold: CGFloat
 
     @State private var scrollOffset: CGFloat = 0
@@ -140,6 +162,7 @@ private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, 
                 title: title,
                 profileImage: profileImage,
                 onProfileTap: onProfileTap,
+                onAddTap: onAddTap,
                 isCollapsed: isCollapsed
             )
         }
@@ -160,12 +183,14 @@ extension View {
         title: String,
         profileImage: String? = nil,
         onProfileTap: (() -> Void)? = nil,
+        onAddTap: (() -> Void)? = nil,
         collapseThreshold: CGFloat = 50
     ) -> some View {
         modifier(CustomNavigationScrollModifier(
             title: title,
             profileImage: profileImage,
             onProfileTap: onProfileTap,
+            onAddTap: onAddTap,
             collapseThreshold: collapseThreshold
         ))
     }
