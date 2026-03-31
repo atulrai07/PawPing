@@ -81,6 +81,40 @@ struct TimeWalkedGraphModel {
     }
 }
 
+struct DistanceData: Identifiable {
+    let id = UUID()
+    let date: Date
+    let distanceInKm: Double
+    
+    // For chart labels/axis
+    var dayLabel: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE" // "Mon"
+        return formatter.string(from: date)
+    }
+    
+    var dayOfMonthLabel: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d" // "1", "15", "30"
+        return formatter.string(from: date)
+    }
+}
+
+struct DistanceSummaryModel {
+    let weekData: [DistanceData]
+    let monthData: [DistanceData]
+    let weekRange: String // "02-09 Sep"
+    let monthName: String // "September"
+    
+    var totalWeekDistance: Double {
+        weekData.reduce(0) { $0 + $1.distanceInKm }
+    }
+    
+    var totalMonthDistance: Double {
+        monthData.reduce(0) { $0 + $1.distanceInKm }
+    }
+}
+
 // MARK: - Meals
 
 struct Meal: Identifiable {

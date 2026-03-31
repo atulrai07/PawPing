@@ -14,6 +14,7 @@ struct ActivityView: View {
     @State private var countdownFinished = false
     @State private var showProfile = false
     @State private var showMealsLog = false
+    @State private var showDistanceSummary = false
 
     var body: some View {
         NavigationStack {
@@ -21,7 +22,7 @@ struct ActivityView: View {
 
                 // MARK: - Walked Card
                 ZStack {
-                    RoundedRectangle(cornerRadius: 34)
+                    RoundedRectangle(cornerRadius: 28)
                         .fill(Color("cardBackground"))
                         .frame(height: 160)
 
@@ -81,7 +82,7 @@ struct ActivityView: View {
                 // MARK: - Vaccine & Meals Row
                 HStack(spacing: 16) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 34)
+                        RoundedRectangle(cornerRadius: 28)
                             .fill(Color("cardBackground"))
                             .frame(width: 175, height: 190)
                         VStack(alignment: .leading) {
@@ -175,7 +176,12 @@ struct ActivityView: View {
                 }
 
                 // MARK: - Graph Card
-                WalkTimeGraphView(model: store.timeWalkedGraph)
+                Button {
+                    showDistanceSummary = true
+                } label: {
+                    WalkTimeGraphView(model: store.timeWalkedGraph)
+                }
+                .buttonStyle(.plain)
             }
             .padding(.top, 10)
             .padding(.bottom, 80)
@@ -189,6 +195,9 @@ struct ActivityView: View {
             }
             .navigationDestination(isPresented: $showMealsLog) {
                 MealLogView(store: store)
+            }
+            .navigationDestination(isPresented: $showDistanceSummary) {
+                DistanceSummaryView(store: store)
             }
         }
         .fullScreenCover(isPresented: $showWalkFlow) {

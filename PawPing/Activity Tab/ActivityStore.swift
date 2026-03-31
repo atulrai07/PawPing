@@ -16,6 +16,7 @@ class ActivityStore {
     var allergies: [Allergy] = []
     var walkActivity: WalkActivity
     var timeWalkedGraph: TimeWalkedGraphModel
+    var distanceSummary: DistanceSummaryModel
 
     // MARK: - Walk Session (persists across view appearances)
     var isWalking: Bool = false
@@ -121,6 +122,41 @@ class ActivityStore {
                 TimeWalkedData(day: "SUN", minutes: 0)
             ],
             goalMinutes: 60
+        )
+        
+        let calendar = Calendar.current
+        let today = Date()
+        
+        // Sample week data (Sep 02-09 - Ensure it starts on MON)
+        var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+        components.weekday = 2 // Monday
+        let monday = calendar.date(from: components)!
+        
+        let weekDates = (0..<7).map { calendar.date(byAdding: .day, value: $0, to: monday)! }
+        let weekDistances = [0.8, 3.5, 2.1, 1.2, 2.4, 0.0, 0.5] // Adjusted distances
+        
+        var weekData: [DistanceData] = []
+        for i in 0..<weekDistances.count {
+            weekData.append(DistanceData(date: Array(weekDates)[i], distanceInKm: weekDistances[i]))
+        }
+        
+        // Sample month data (September as in screenshot)
+        let monthDistances = [
+            0, 0, 0, 0, 0, 0, 0, 1.1, 0.7, 1.3, 1.7, 1.2, 1.6, 0.6, 0, 0, 1.1, 0, 0, 0, 0, 0, 0
+        ]
+        
+        var monthData: [DistanceData] = []
+        for i in 0..<monthDistances.count {
+            if let date = calendar.date(byAdding: .day, value: i - 20, to: today) {
+                monthData.append(DistanceData(date: date, distanceInKm: monthDistances[i]))
+            }
+        }
+        
+        distanceSummary = DistanceSummaryModel(
+            weekData: weekData,
+            monthData: monthData,
+            weekRange: "02-09 Sep",
+            monthName: "September"
         )
     }
 
