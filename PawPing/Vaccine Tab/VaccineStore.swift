@@ -30,10 +30,12 @@ class VaccineStore {
 
         let sampleClinic = ClinicInfo(
             id: UUID(),
-            vetName: "Dr. Sharma",
+            vetName: "Dr. Ananya Sharma(BVSc)",
             clinicName: "PupiLife Pet Clinic",
-            address: "123 Main St, Dankour",
-            phoneNumber: "9876543210",
+            address: "Saket, New Delhi, 11034",
+            phoneNumber: "+91 62839 87239",
+            email: "contact@pupilife.com",
+            registrationNumber: "DL/VCI/2021/4587",
             linkedVetId: nil
         )
 
@@ -43,7 +45,7 @@ class VaccineStore {
                 id: UUID(), dogId: sampleDogId,
                 vaccineName: .dhppBooster,
                 dateGiven: Calendar.current.date(byAdding: .month, value: -2, to: Date())!,
-                clinicInfo: nil,
+                clinicInfo: sampleClinic,
                 nextDoseDate: Calendar.current.date(byAdding: .weekOfYear, value: 3, to: Date()),
                 notes: ""
             ),
@@ -52,7 +54,7 @@ class VaccineStore {
                 id: UUID(), dogId: sampleDogId,
                 vaccineName: .leptospirosis,
                 dateGiven: Calendar.current.date(byAdding: .month, value: -4, to: Date())!,
-                clinicInfo: nil,
+                clinicInfo: sampleClinic,
                 nextDoseDate: Calendar.current.date(byAdding: .day, value: -5, to: Date()),
                 notes: ""
             ),
@@ -60,7 +62,7 @@ class VaccineStore {
                 id: UUID(), dogId: sampleDogId,
                 vaccineName: .deworming,
                 dateGiven: Calendar.current.date(byAdding: .month, value: -11, to: Date())!,
-                clinicInfo: nil,
+                clinicInfo: sampleClinic,
                 nextDoseDate: Calendar.current.date(byAdding: .month, value: -1, to: Date()),
                 notes: ""
             ),
@@ -112,5 +114,14 @@ class VaccineStore {
 
     func deleteRecord(id: UUID) {
         vaccineRecords.removeAll { $0.id == id }
+    }
+
+    func markAsDone(id: UUID) {
+        if let index = vaccineRecords.firstIndex(where: { $0.id == id }) {
+            // Setting nextDoseDate to nil automatically updates the status to .done
+            vaccineRecords[index].nextDoseDate = nil
+            // Optional: update dateGiven to today if marking it done implies taking it right now
+            vaccineRecords[index].dateGiven = Date()
+        }
     }
 } // VaccineStore

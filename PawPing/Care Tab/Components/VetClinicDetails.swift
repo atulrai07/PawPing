@@ -4,14 +4,7 @@
 //
 //  Created by Atul on 23/03/26.
 //
-
-
-//
-//  VetClinicDetails.swift
-//  PawPing
-//
-//  Created by SidMoon on 23/03/26.
-//
+ 
 //  A detail sheet that pops up when you tap on a vet/daycare card.
 //  Shows stats, quick actions (call, navigate), gallery, about, and contact info.
 //

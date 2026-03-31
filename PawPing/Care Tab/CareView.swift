@@ -24,9 +24,8 @@ struct CareView: View {
     @State private var selectedLocation: CareLocation?
     @State private var showProfile = false;
 
-    // Passed in from ContentView — we don't own these, just read them
-    var store: CareStore
-    var activityStore: ActivityStore
+    @Environment(CareStore.self) var store
+    @Environment(ActivityStore.self) var activityStore
 
     // Switches between vets and dayCares based on the selected segment,
     // then filters by search text if the user typed something
@@ -179,5 +178,7 @@ struct CareView: View {
 } // CareView
 
 #Preview {
-    CareView(store: CareStore(), activityStore: ActivityStore())
+    CareView()
+        .environment(CareStore())
+        .environment(ActivityStore())
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ActivityView: View {
-    var store: ActivityStore
+    @Environment(ActivityStore.self) var store
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
@@ -294,5 +294,6 @@ private struct WalkingLabel: View {
 }
 
 #Preview {
-    ActivityView(store: ActivityStore())
+    ActivityView()
+        .environment(ActivityStore())
 }

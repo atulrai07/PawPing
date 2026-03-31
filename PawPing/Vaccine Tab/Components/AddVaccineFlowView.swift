@@ -2,6 +2,8 @@
 //  AddVaccineFlowView.swift
 //  PawPing
 //
+// Created by SidMoon on 28/03/26.
+//
 //  Multi-step sheet for adding a new vaccination record.
 //  Step 1: Vaccine details (name, date, time, frequency).
 //  Step 2: Clinic information (manual entry or select from vet care).
@@ -26,8 +28,9 @@ enum VaccineFrequency: String, CaseIterable, Identifiable {
 
 struct AddVaccineFlowView: View {
 
-    var vaccineStore: VaccineStore
-    var careStore: CareStore
+    @Environment(VaccineStore.self) var vaccineStore
+    @Environment(CareStore.self) var careStore
+    @Environment(ActivityStore.self) var activityStore
 
     @Environment(\.dismiss) private var dismiss
 
@@ -48,6 +51,7 @@ struct AddVaccineFlowView: View {
     @State private var phoneNumber: String = ""
     @State private var notes: String = ""
     @State private var selectedVetClinic: CareLocation? = nil
+    @State private var showingVetSelection = false
 
     var body: some View {
         NavigationStack {
@@ -71,6 +75,9 @@ struct AddVaccineFlowView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+            }
+            .navigationDestination(isPresented: $showingVetSelection) {
+                VetCareSelectionView(onSelect: handleVetSelection)
             }
         }
     }
@@ -415,7 +422,7 @@ struct AddVaccineFlowView: View {
 
                 // Select Vet Clinic button
                 Button {
-                    // This would typically open a picker or navigate
+                    showingVetSelection = true
                 } label: {
                     Text("Select Vet Clinic")
                         .font(.system(size: 14, weight: .semibold))
@@ -428,79 +435,6 @@ struct AddVaccineFlowView: View {
                         )
                 }
                 .padding(.bottom, 8)
-            }
-
-            // If a vet clinic is selected, show its info
-            if let selectedClinic = selectedVetClinic {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Selected Clinic")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.secondary)
-
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(selectedClinic.name)
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(Color("baseColor"))
-
-                            if let clinicAddress = selectedClinic.address {
-                                Text(clinicAddress)
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-
-                        Spacer()
-
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 22))
-                            .foregroundStyle(Color("baseColor"))
-                    }
-                    .padding(14)
-                    .background(Color("cardBackground"))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-            }
-
-            // Vet clinic list
-            VStack(spacing: 8) {
-                ForEach(careStore.vets) { vet in
-                    Button {
-                        withAnimation {
-                            selectedVetClinic = vet
-                            vetName = ""
-                            clinicName = vet.name
-                            address = vet.address ?? ""
-                            phoneNumber = vet.contactNumber ?? ""
-                        }
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(vet.name)
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundStyle(.primary)
-
-                                Text(vet.distanceString)
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(.secondary)
-                            }
-
-                            Spacer()
-
-                            if selectedVetClinic?.id == vet.id {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(Color("baseColor"))
-                            } else {
-                                Image(systemName: "circle")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(14)
-                        .background(Color("cardBackground"))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                    .buttonStyle(.plain)
-                }
             }
 
             // Notes
@@ -534,7 +468,7 @@ struct AddVaccineFlowView: View {
                     clinicName: clinicName,
                     address: address.isEmpty ? nil : address,
                     phoneNumber: phoneNumber.isEmpty ? nil : phoneNumber,
-                    linkedVetId: nil
+                    linkedVetId: selectedVetClinic?.id
                 )
             }
         } else {
@@ -581,10 +515,28 @@ struct AddVaccineFlowView: View {
 
         vaccineStore.addRecord(newRecord)
     }
+
+    // MARK: - Handlers
+
+    private func handleVetSelection(_ clinic: CareLocation) {
+        selectedVetClinic = clinic
+        vetName = ""
+        clinicName = clinic.name
+        address = clinic.address ?? ""
+        phoneNumber = clinic.contactNumber ?? ""
+        
+        // Return to manual view to showcase populated data
+        withAnimation {
+            clinicInputMode = .manual
+        }
+    }
 }
 
 // MARK: - Preview
 
 #Preview {
-    AddVaccineFlowView(vaccineStore: VaccineStore(), careStore: CareStore())
+    AddVaccineFlowView()
+        .environment(VaccineStore())
+        .environment(CareStore())
+        .environment(ActivityStore())
 }

@@ -1,3 +1,8 @@
+//
+// DistanceSummaryView.swift
+// Pawping
+//
+//Created by Atul on 28/03/26
 import SwiftUI
 import Charts
 

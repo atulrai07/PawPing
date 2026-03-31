@@ -18,8 +18,8 @@ struct DoneVaccineRowView: View {
             // Vaccine Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(record.displayName)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.pawSecondary)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
                 
                 Text("Last Taken : \(record.formattedDateGiven)")
                     .font(.system(size: 12))
@@ -59,7 +59,7 @@ struct DoneVaccineRowView: View {
                 } label: {
                     Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
                         .font(.system(size: 14))
-                        .foregroundStyle(.pawSecondary)
+                        .foregroundStyle(Color("baseColor"))
                 }
             }
         }

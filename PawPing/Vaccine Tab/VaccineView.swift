@@ -11,12 +11,13 @@ import SwiftUI
 
 struct VaccineView: View {
 
-    var store: VaccineStore
-    var activityStore: ActivityStore
-    var careStore: CareStore
+    @Environment(VaccineStore.self) var store
+    @Environment(ActivityStore.self) var activityStore
+    @Environment(CareStore.self) var careStore
 
     @State private var showProfile = false
     @State private var showAddVaccine = false
+    @State private var showReportConfig = false
 
     // MARK: Derived collections
 
@@ -40,7 +41,9 @@ struct VaccineView: View {
                     vaccineSection(title: "Upcoming Vaccines") {
                         recordList(upcomingRecords) { record in
                             VaccineRowView(record: record) {
-                                print("Mark as done: \(record.displayName)")
+                                withAnimation {
+                                    store.markAsDone(id: record.id)
+                                }
                             }
                         }
                     }
@@ -51,7 +54,9 @@ struct VaccineView: View {
                     vaccineSection(title: "Overdue") {
                         recordList(overdueRecords) { record in
                             VaccineRowView(record: record) {
-                                print("Mark as done: \(record.displayName)")
+                                withAnimation {
+                                    store.markAsDone(id: record.id)
+                                }
                             }
                         }
                     }
@@ -68,7 +73,7 @@ struct VaccineView: View {
 
                 // Export Button
                 ExportPassportButton {
-                    print("Export vaccine report tapped")
+                    showReportConfig = true
                 }
                 .padding(.horizontal)
             }
@@ -83,8 +88,13 @@ struct VaccineView: View {
             .navigationDestination(isPresented: $showProfile) {
                 ProfileView(store: activityStore)
             }
+            .navigationDestination(isPresented: $showReportConfig) {
+                VaccineReportConfigView()
+                    .environment(activityStore)
+                    .environment(store)
+            }
             .sheet(isPresented: $showAddVaccine) {
-                AddVaccineFlowView(vaccineStore: store, careStore: careStore)
+                AddVaccineFlowView()
             }
         }
     }
@@ -128,6 +138,9 @@ struct VaccineView: View {
 
 #Preview {
     NavigationStack {
-        VaccineView(store: VaccineStore(), activityStore: ActivityStore(), careStore: CareStore())
+        VaccineView()
+            .environment(VaccineStore())
+            .environment(ActivityStore())
+            .environment(CareStore())
     }
 }

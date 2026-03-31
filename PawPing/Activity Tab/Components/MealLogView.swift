@@ -2,7 +2,7 @@
 //  MealLogView.swift
 //  PawPing
 //
-//  Created by Mamoon.
+//  Created by SidMoon
 //
 
 import SwiftUI
