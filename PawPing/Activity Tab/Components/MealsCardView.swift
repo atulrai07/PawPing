@@ -14,7 +14,7 @@ struct MealsCardView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 34)
-                .fill(.gray.opacity(0.1))
+                .fill(Color("cardBackground"))
                 .frame(width: 175, height: 190)
             
             VStack(alignment: .leading) {
@@ -22,30 +22,26 @@ struct MealsCardView: View {
                     Text("Meals")
                         .font(.system(size: 22, weight: .regular))
                     
-                    Button {
-                        
-                    } label: {
-                        Circle()
-                            .fill(Color("baseColor").opacity(0.2))
-                            .frame(width: 22, height: 22)
-                            .overlay(
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(.black)
-                                    .font(.system(size: 12))
-                            )
-                    }
+                    Circle()
+                        .fill(Color("baseColor").opacity(0.2))
+                        .frame(width: 22, height: 22)
+                        .overlay(
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.primary)
+                                .font(.system(size: 12))
+                        )
                 }
                 
                 // Meals
                 HStack(spacing: 11) {
                     ForEach(store.meals, id: \.id) { (meal: Meal) in
                         Capsule()
-                            .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
+                            .fill(Color("secondaryCardBackground"))
                             .frame(width: 40, height: 105)
                             .overlay(
                                 VStack {
                                     Circle()
-                                        .fill(Color.base)
+                                        .fill(Color("baseColor"))
                                         .overlay(
                                             Image(systemName: String(meal.icon))
                                                 .foregroundStyle(.white)

@@ -13,6 +13,7 @@ struct ActivityView: View {
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
     @State private var showProfile = false
+    @State private var showMealsLog = false
 
     var body: some View {
         NavigationStack {
@@ -21,7 +22,7 @@ struct ActivityView: View {
                 // MARK: - Walked Card
                 ZStack {
                     RoundedRectangle(cornerRadius: 34)
-                        .fill(.gray.opacity(0.1))
+                        .fill(Color("cardBackground"))
                         .frame(height: 160)
 
                     HStack(spacing: 20) {
@@ -34,7 +35,7 @@ struct ActivityView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Walked")
                                 .font(.system(size: 18, weight: .medium))
-                                .foregroundStyle(Color.black.opacity(0.6))
+                                .foregroundStyle(Color("secondaryText"))
                             
                             HStack (spacing:0){
                                 Text("\(store.walkActivity.currentMinutes)/")
@@ -81,7 +82,7 @@ struct ActivityView: View {
                 HStack(spacing: 16) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 34)
-                            .fill(.gray.opacity(0.1))
+                            .fill(Color("cardBackground"))
                             .frame(width: 175, height: 190)
                         VStack(alignment: .leading) {
                             HStack(spacing: 15) {
@@ -95,13 +96,13 @@ struct ActivityView: View {
                                         .frame(width: 22, height: 22)
                                         .overlay(
                                             Image(systemName: "chevron.right")
-                                                .foregroundStyle(.black)
+                                                .foregroundStyle(.primary)
                                                 .font(.system(size: 12))
                                         )
                                 }
                             }
                             Image(systemName: "syringe")
-                                .foregroundStyle(Color.base)
+                                .foregroundStyle(Color("baseColor"))
                                 .rotationEffect(.degrees(270))
                                 .font(.system(size: 65))
                             Text(store.vaccines.first?.name ?? "No vaccine")
@@ -113,17 +114,22 @@ struct ActivityView: View {
                     }
 
                     // Meals Card
-                    MealsCardView(store: store)
+                    Button {
+                        showMealsLog = true
+                    } label: {
+                        MealsCardView(store: store)
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 // MARK: - Allergies Card
                 ZStack {
                     RoundedRectangle(cornerRadius: 23)
-                        .fill(.gray.opacity(0.1))
+                        .fill(Color("cardBackground"))
                         .frame(width: 370, height: 95)
                     HStack(spacing: 20) {
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
+                            .fill(Color("secondaryCardBackground"))
                             .frame(width: 78, height: 78)
                             .overlay(
                                 Image("allergiesIcon")
@@ -143,7 +149,7 @@ struct ActivityView: View {
                                         .frame(width: 22, height: 22)
                                         .overlay(
                                             Image(systemName: "chevron.right")
-                                                .foregroundStyle(.black)
+                                                .foregroundStyle(.primary)
                                                 .font(.system(size: 12))
                                         )
                                 }
@@ -152,10 +158,10 @@ struct ActivityView: View {
                                 ForEach(store.allergies.prefix(3)) { allergies in
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 6)
-                                            .fill(Color.base)
+                                            .fill(Color("baseColor"))
                                             .frame(width: 62, height: 27)
                                         RoundedRectangle(cornerRadius: 5)
-                                            .fill(Color(red: 250/255, green: 250/255, blue: 250/255))
+                                            .fill(Color("secondaryCardBackground"))
                                             .frame(width: 60, height: 25)
                                             .overlay(
                                                 Text(allergies.allergen ?? "none")
@@ -180,6 +186,9 @@ struct ActivityView: View {
             )
             .navigationDestination(isPresented: $showProfile) {
                 ProfileView(store: store)
+            }
+            .navigationDestination(isPresented: $showMealsLog) {
+                MealLogView(store: store)
             }
         }
         .fullScreenCover(isPresented: $showWalkFlow) {

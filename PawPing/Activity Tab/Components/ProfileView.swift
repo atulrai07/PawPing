@@ -44,7 +44,7 @@ struct ProfileView: View {
             }
             .padding(.bottom, 40)
         }
-        .background(Color(.baseBackground))
+        .background(Color("baseBackground"))
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)

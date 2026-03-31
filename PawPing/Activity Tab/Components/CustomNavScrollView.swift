@@ -38,7 +38,7 @@ private struct StickyNavHeader: View {
                         onProfileTap?()
                     } label: {
                         Circle()
-                            .fill(.gray.opacity(0.2))
+                            .fill(Color("secondaryText").opacity(0.2))
                             .frame(width: 36, height: 36)
                             .overlay(
                                 Image(img)

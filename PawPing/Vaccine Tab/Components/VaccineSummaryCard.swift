@@ -27,7 +27,7 @@ struct VaccineSummaryCard: View {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(.gray.opacity(0.1))
+                .fill(Color("cardBackground"))
         )
     }
     

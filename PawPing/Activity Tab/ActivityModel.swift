@@ -107,14 +107,22 @@ enum MealType: String {
     case dinner    = "Dinner"
 }
 
-enum MealName: String {
+enum MealName: String, CaseIterable, Identifiable {
     case eggAndCheese = "Egg and Cheese"
     case eggAndRice = "Egg and Rice"
     case chickenAndRice = "Chicken and Rice"
     case curdAndRice = "Curd and Rice"
     case dogFood = "Dog Food"
     case dogFoodWithCarrots = "Dog Food with Carrots"
+    case rice = "Rice"
+    case chicken = "Chicken"
+    case soyabean = "Soyabean"
+    case pedigree = "Pedigree"
+    case boiledEgg = "Boiled Egg"
     case others = "Others"
+    case select = "Select"
+    
+    var id: String { self.rawValue }
 }
 
 // MARK: - Vaccines

@@ -15,7 +15,7 @@ struct WalkTimeGraphView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 34)
-                .fill(.gray.opacity(0.1))
+                .fill(Color("cardBackground"))
 
             VStack(alignment: .leading, spacing: 12) {
 
@@ -62,7 +62,7 @@ struct WalkTimeGraphView: View {
                         y: .value("Goal", model.goalMinutes)
                     )
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4,4]))
-                    .foregroundStyle(Color.gray)
+                    .foregroundStyle(Color("secondaryText"))
                 }
 
                 // Only modification: custom X labels
@@ -76,7 +76,7 @@ struct WalkTimeGraphView: View {
 
                                 Text(day)
                                     .font(.system(size: 11, weight: .medium))
-                                    .foregroundStyle(day == currentDay ? .white : .gray)
+                                    .foregroundStyle(day == currentDay ? .white : Color("secondaryText"))
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
                                     .background(

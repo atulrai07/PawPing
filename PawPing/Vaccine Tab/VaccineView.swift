@@ -114,7 +114,7 @@ struct VaccineView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
-        .background(RoundedRectangle(cornerRadius: 16).fill(.gray.opacity(0.1)))
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color("cardBackground")))
     }
 }
 

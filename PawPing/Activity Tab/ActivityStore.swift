@@ -56,10 +56,10 @@ class ActivityStore {
                 time: "12:30",
                 meridian: "PM",
                 mealType: .lunch,
-                mealName: .chickenAndRice,
+                mealName: .select,
                 isTaken: false
             ),
-
+            
             Meal(
                 id: UUID(),
                 dogId: sampleDogId,
@@ -67,7 +67,7 @@ class ActivityStore {
                 time: "8:30",
                 meridian: "PM",
                 mealType: .dinner,
-                mealName: .eggAndRice,
+                mealName: .select,
                 isTaken: false
             )
         ]
@@ -158,6 +158,22 @@ class ActivityStore {
         } else {
             locationManager.startTracking()
             startTimer()
+        }
+    }
+
+    func updateMeal(type: MealType, name: MealName, time: Date, isTaken: Bool) {
+        if let index = meals.firstIndex(where: { $0.mealType == type }) {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "h:mm"
+            let timeStr = formatter.string(from: time)
+            
+            formatter.dateFormat = "a"
+            let meridianStr = formatter.string(from: time)
+            
+            meals[index].mealName = name
+            meals[index].time = timeStr
+            meals[index].meridian = meridianStr
+            meals[index].isTaken = isTaken
         }
     }
 
