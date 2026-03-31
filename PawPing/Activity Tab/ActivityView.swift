@@ -134,7 +134,6 @@ struct ActivityView: View {
                             HStack(spacing: 130) {
                                 Text("Allergies")
                                     .font(.system(size: 24, weight: .regular))
-                                    .padding(.top, 5)
                                 
                                 Button {} label: {
                                     Circle()
@@ -149,7 +148,7 @@ struct ActivityView: View {
                             }
                             
                             HStack {
-                                ForEach(store.allergies.prefix(3)) { allergies in
+                                ForEach(store.allergies.prefix(3)) { allergy in
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 6)
                                             .fill(.pawPrimary)
@@ -159,7 +158,7 @@ struct ActivityView: View {
                                             .fill(Color.pawNeutral)
                                             .frame(width: 60, height: 25)
                                             .overlay(
-                                                Text(allergies.allergen ?? "none")
+                                                Text(allergy.allergen ?? "none")
                                                     .font(.system(size: 10, weight: .medium))
                                             )
                                     }
@@ -174,8 +173,6 @@ struct ActivityView: View {
             }
             .padding(.top, 10)
             .padding(.bottom, 80)
-            //            .customNavigationScroll(title: "Activity", profileImage: store.dogProfile.dogImage)
-            //        }
             .fullScreenCover(isPresented: $showWalkFlow) {
                 WalkFlowContainer(
                     store: store,
@@ -187,87 +184,69 @@ struct ActivityView: View {
             }
         }
     }
-    
-    // MARK: - Walking Label
-    
-    private struct WalkingLabel: View {
-        @State private var dotCount = 0
-        private let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
-        
-        private var dots: String {
-            String(repeating: ".", count: dotCount + 1)
-        }
-        
-        private var hiddenText: String { "WALKING..." }
-        
-        var body: some View {
-            Text("WALKING\(dots)")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.white)
-                .frame(width: textWidth(hiddenText))
-                .padding(.horizontal, 24)
-                .padding(.vertical, 8)
-                .background(
-                    Capsule()
-                        .fill(Color.pawPrimary)
-                )
-                .onReceive(timer) { _ in
-                    dotCount = (dotCount + 1) % 3
-                }
-        }
-        
-        private func textWidth(_ text: String) -> CGFloat {
-            let font = UIFont.systemFont(ofSize: 14, weight: .medium)
-            let attributes: [NSAttributedString.Key: Any] = [.font: font]
-            let size = (text as NSString).boundingRect(
-                with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
-                options: .usesLineFragmentOrigin,
-                attributes: attributes,
-                context: nil
-            ).size
-            return ceil(size.width)
-        }
-    }
-    
-    // MARK: - Walk Flow Container
-    
-    private struct WalkFlowContainer: View {
-        var store: ActivityStore
-        var startWithTracking: Bool
-        var onDismiss: () -> Void
-        
-        @State private var showTracking: Bool
-        
-        init(store: ActivityStore, startWithTracking: Bool, onDismiss: @escaping () -> Void) {
-            self.store = store
-            self.startWithTracking = startWithTracking
-            self.onDismiss = onDismiss
-            _showTracking = State(initialValue: startWithTracking)
-        }
-        
-        var body: some View {
-            if showTracking {
-                WalkTrackingView(store: store, onDismiss: onDismiss)
-                    .transition(.opacity)
-            } else {
-                CountdownView(
-                    onComplete: {
-                        store.startWalk()
-                        withAnimation {
-                            showTracking = true
-                        }
-                    },
-                    onCancel: {
-                        store.isWalking = false
-                        onDismiss()
-                    }
-                )
-                .transition(.opacity)
-            }
-        }
-    }
-    
-    #Preview {
-        ActivityView(store: ActivityStore())
-    }
+}
 
+// MARK: - Walking Label
+
+private struct WalkingLabel: View {
+    @State private var dotCount = 0
+    private let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+    
+    private var dots: String {
+        String(repeating: ".", count: dotCount + 1)
+    }
+    
+    var body: some View {
+        Text("WALKING\(dots)")
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(Color.pawPrimary)
+            )
+            .onReceive(timer) { _ in
+                dotCount = (dotCount + 1) % 3
+            }
+    }
+}
+
+// MARK: - Walk Flow Container
+
+private struct WalkFlowContainer: View {
+    var store: ActivityStore
+    var startWithTracking: Bool
+    var onDismiss: () -> Void
+    
+    @State private var showTracking: Bool
+    
+    init(store: ActivityStore, startWithTracking: Bool, onDismiss: @escaping () -> Void) {
+        self.store = store
+        self.startWithTracking = startWithTracking
+        self.onDismiss = onDismiss
+        _showTracking = State(initialValue: startWithTracking)
+    }
+    
+    var body: some View {
+        if showTracking {
+            WalkTrackingView(store: store, onDismiss: onDismiss)
+        } else {
+            CountdownView(
+                onComplete: {
+                    store.startWalk()
+                    showTracking = true
+                },
+                onCancel: {
+                    onDismiss()
+                }
+            )
+        }
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    ActivityView(store: ActivityStore())
+}
