@@ -12,10 +12,10 @@ struct WalkTrackingView: View {
     var store: ActivityStore
     var onDismiss: () -> Void
 
-    // MARK: - Computed
+    
     private var distanceText: String {
         let d = store.locationManager.totalDistance
-        if d >= 1000 {
+        if (d >= 1000) {
             return String(format: "%.1fKM", d / 1000)
         }
         return "\(Int(d))M"

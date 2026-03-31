@@ -5,9 +5,7 @@
 //  Created by Atul on 01/02/26.
 //
 
-import Foundation
 import CoreLocation
-
 
 struct Owner: Identifiable {
     let id: UUID
@@ -25,8 +23,8 @@ struct DogProfile: Identifiable {
     var gender: DogGender
     var age: String
     var dogImage: String = "profilePhoto"
-    var homeLatitude: Double = 28.4210   // Dankaur, Gautam Buddh Nagar, UP
-    var homeLongitude: Double = 77.5340  // Dankaur, Gautam Buddh Nagar, UP
+    var homeLatitude: Double = 28.4210
+    var homeLongitude: Double = 77.5340
     
     static let sampleProfile = DogProfile(
         id: UUID(),
@@ -45,27 +43,12 @@ enum DogGender: String {
 
 // MARK: - Activity
 
-//struct Activity: Identifiable {
-//    let id: UUID
-//    var dogId: UUID
-//    var date: Date
-//    var currentMinutes: Int
-//    var goalMinutes: Int
-//    var distanceWalked: Double
-//    var goalDistanceWalked: Double
-//
-//    var progress: Double {
-//        guard goalMinutes > 0 else { return 0 }
-//        return Double(currentMinutes) / Double(goalMinutes)
-//    }
-//}
-
 struct WalkActivity {
     var currentMinutes: Int
     var goalMinutes: Int
 
     var progress: Double {
-        guard goalMinutes > 0 else { return 0 }
+        guard goalMinutes > 0 else { return 0 } //guard to fight zero division error
         return Double(currentMinutes) / Double(goalMinutes)
     }
 }

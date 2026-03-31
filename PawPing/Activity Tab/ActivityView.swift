@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Combine
 
 struct ActivityView: View {
     var store: ActivityStore
@@ -46,7 +45,7 @@ struct ActivityView: View {
                             .font(.system(size: 28, weight: .bold))
 
                             if store.isWalking {
-                                // Tapping reopens the tracking view (no countdown)
+                                // reopens the tracking view (no countdown)
                                 Button {
                                     countdownFinished = true
                                     showWalkFlow = true
@@ -200,7 +199,7 @@ struct ActivityView: View {
 private struct WalkFlowContainer: View {
     var store: ActivityStore
     var startWithTracking: Bool
-    var onDismiss: () -> Void
+    var onDismiss: () -> Void //what does this do ?
 
     @State private var showTracking: Bool
 
@@ -233,17 +232,15 @@ private struct WalkFlowContainer: View {
     }
 }
 
-// MARK: - Animated "WALKING..." Label (fixed width)
+// MARK: - Animated "WALKING..." Label
 
 private struct WalkingLabel: View {
     @State private var dotCount = 0
-    private let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
     private var dots: String {
         String(repeating: ".", count: dotCount + 1)
     }
 
-    // Invisible text to reserve the maximum width
     private var hiddenText: String { "WALKING..." }
 
     var body: some View {
@@ -257,8 +254,11 @@ private struct WalkingLabel: View {
                 Capsule()
                     .fill(Color("baseColor"))
             )
-            .onReceive(timer) { _ in
-                dotCount = (dotCount + 1) % 3
+            .task {
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(0.5))
+                    dotCount = (dotCount + 1) % 3
+                }
             }
     }
 
