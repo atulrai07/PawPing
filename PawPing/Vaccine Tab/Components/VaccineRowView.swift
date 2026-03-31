@@ -2,6 +2,8 @@
 //  VaccineRowView.swift
 //  PawPing
 //
+//  Created by Atul on 15/03/26.
+//
 
 import SwiftUI
 
@@ -14,13 +16,13 @@ struct VaccineRowView: View {
             HStack {
                 Text(record.displayName)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.pawSecondary)
+                    .foregroundStyle(.primary)
                 
                 Spacer()
                 
                 Text(record.timeRemainingText)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(record.status == .overdue ? .red : .pawPrimary)
+                    .foregroundStyle(record.status == .overdue ? .red : .blue)
             }
             
             HStack {
@@ -35,12 +37,12 @@ struct VaccineRowView: View {
                 } label: {
                     Text("Mark as Done")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.pawPrimary)   // ✅ kept original
+                        .foregroundStyle(Color("baseColor"))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(
                             Capsule()
-                                .stroke(Color.pawPrimary, lineWidth: 1.2)   // ✅ kept original
+                                .stroke(Color("baseColor"), lineWidth: 1.2)
                         )
                 }
             }
@@ -57,5 +59,5 @@ struct VaccineRowView: View {
         VaccineRowView(record: store.vaccineRecords[1])
     }
     .padding()
-    .background(Color.pawNeutral)
+    .background(Color("baseBackground"))
 }

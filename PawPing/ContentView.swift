@@ -2,11 +2,14 @@
 //  ContentView.swift
 //  PawPing
 //
+//  Created by Atul on 19/01/26.
+//
 
 import SwiftUI
 
 struct ContentView: View {
 
+    // MARK: - Stores (single source of truth for the whole app)
     @State private var activityStore = ActivityStore()
     @State private var careStore     = CareStore()
     @State private var vaccineStore  = VaccineStore()
@@ -22,10 +25,10 @@ struct ContentView: View {
             }
 
             Tab("Vaccine", systemImage: "syringe.fill") {
-                VaccineView(store: vaccineStore, activityStore: activityStore)
+                VaccineView(store: vaccineStore, activityStore: activityStore, careStore: careStore)
             }
-        } // TabView
-        .tint(.pawPrimary) // ✅ kept original
+        }
+        .tint(Color("baseColor"))
     }
 }
 

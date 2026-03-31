@@ -2,6 +2,8 @@
 //  VaccineSummaryCard.swift
 //  PawPing
 //
+//  Created by Atul on 15/03/26.
+//
 
 import SwiftUI
 
@@ -10,12 +12,12 @@ struct VaccineSummaryCard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            summaryColumn(title: "Done", count: summary.doneCount, color: Color.green) // ✅ FIXED
+            summaryColumn(title: "Done", count: summary.doneCount, color: Color.green)
             
             Divider()
                 .frame(height: 40)
             
-            summaryColumn(title: "Upcoming", count: summary.upcomingCount, color: .pawPrimary)
+            summaryColumn(title: "Upcoming", count: summary.upcomingCount, color: .blue)
             
             Divider()
                 .frame(height: 40)
@@ -25,7 +27,7 @@ struct VaccineSummaryCard: View {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.pawNeutral)
+                .fill(Color("cardBackground"))
         )
     }
     
@@ -37,7 +39,7 @@ struct VaccineSummaryCard: View {
             
             Text("\(count)")
                 .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(.pawSecondary)
+                .foregroundStyle(.primary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -46,5 +48,5 @@ struct VaccineSummaryCard: View {
 #Preview {
     VaccineSummaryCard(summary: VaccineStore().summary)
         .padding()
-        .background(Color.pawNeutral)
+        .background(Color("baseBackground"))
 }

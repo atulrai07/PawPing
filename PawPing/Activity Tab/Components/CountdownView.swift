@@ -4,14 +4,9 @@
 //
 //  Created by Atul on 21/03/26.
 //
-//  The 3-2-1 countdown screen before a walk starts.
-//  Uses a Combine Timer publisher to tick every second,
-//  with spring animations for the number pop-in effect.
-//
 
 import SwiftUI
 import Combine
-import UIKit
 
 struct CountdownView: View {
 
@@ -23,27 +18,26 @@ struct CountdownView: View {
     @State private var numberScale: CGFloat = 0.5
     @State private var numberOpacity: Double = 0
 
+    // Drives a per-second ring animation
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ZStack {
-            Color(uiColor: .systemGroupedBackground)
+            Color(.systemGroupedBackground)
                 .ignoresSafeArea()
 
             VStack(spacing: 30) {
-                
-                // Walking dog icon
+                // Person walking dog icon
                 HStack(spacing: -4) {
                     Image(systemName: "figure.walk")
                         .font(.system(size: 36, weight: .bold))
                         .foregroundStyle(Color("baseColor"))
-
                     Image(systemName: "dog.fill")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundStyle(Color("baseColor"))
                 }
 
-                // Circular ring
+                // Circular ring + number
                 ZStack {
                     Circle()
                         .stroke(Color("baseColor").opacity(0.15), lineWidth: 14)
@@ -66,10 +60,10 @@ struct CountdownView: View {
 
                 Text("Starting Walk")
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundStyle(.pawSecondary)
+                    .foregroundStyle(.primary)
             }
 
-            // Cancel button
+            // X (close) button — top leading
             VStack {
                 HStack {
                     Button(action: onCancel) {

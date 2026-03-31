@@ -4,18 +4,9 @@
 //
 //  Created by SidMoon on 16/03/26.
 //
-//  This is the "brain" behind the Activity tab.
-//  It holds all the data (meals, vaccines, walk stats, etc.) and
-//  exposes methods to control a walk session (start, stop, pause).
-//
 
 import Foundation
-import Observation
 
-// @Observable is Apple's newer (iOS 17+) replacement for ObservableObject.
-// Any property you change inside this class will automatically
-// trigger a UI update in any SwiftUI view that reads it — no need
-// for @Published or Combine. Just change the var and SwiftUI reacts.
 @Observable
 class ActivityStore {
 
@@ -25,19 +16,15 @@ class ActivityStore {
     var allergies: [Allergy] = []
     var walkActivity: WalkActivity
     var timeWalkedGraph: TimeWalkedGraphModel
+    var distanceSummary: DistanceSummaryModel
 
-    // MARK: - Walk Session State
-    // These persist across view appearances so if you leave the tab
-    // and come back, your walk is still going.
+    // MARK: - Walk Session (persists across view appearances)
     var isWalking: Bool = false
     var elapsedSeconds: TimeInterval = 0
     var isPaused: Bool = false
     var locationManager = LocationManager()
     private var walkTimer: Timer?
 
-    // MARK: - Init (Mock Data)
-    // Right now everything is hardcoded. When we hook up a real backend,
-    // this init will be replaced with a network fetch or CoreData load.
     init() {
 
         let sampleDogId = UUID()
@@ -70,10 +57,10 @@ class ActivityStore {
                 time: "12:30",
                 meridian: "PM",
                 mealType: .lunch,
-                mealName: .chickenAndRice,
+                mealName: .select,
                 isTaken: false
             ),
-
+            
             Meal(
                 id: UUID(),
                 dogId: sampleDogId,
@@ -81,10 +68,10 @@ class ActivityStore {
                 time: "8:30",
                 meridian: "PM",
                 mealType: .dinner,
-                mealName: .eggAndRice,
+                mealName: .select,
                 isTaken: false
             )
-        ] // meals
+        ]
 
         vaccines = [
             Vaccine(
@@ -97,7 +84,7 @@ class ActivityStore {
                 frequencyType: .monthly,
                 vaccineNotes: "N/A"
             )
-        ] // vaccines
+        ]
 
         allergies = [
             Allergy(
@@ -117,7 +104,7 @@ class ActivityStore {
                 allergyNotes: "N/A",
                 allergen: "Lactose"
             )
-        ] // allergies
+        ]
 
         walkActivity = WalkActivity(
             currentMinutes: 23,
@@ -136,7 +123,42 @@ class ActivityStore {
             ],
             goalMinutes: 60
         )
-    } // init
+        
+        let calendar = Calendar.current
+        let today = Date()
+        
+        // Sample week data (Sep 02-09 - Ensure it starts on MON)
+        var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+        components.weekday = 2 // Monday
+        let monday = calendar.date(from: components)!
+        
+        let weekDates = (0..<7).map { calendar.date(byAdding: .day, value: $0, to: monday)! }
+        let weekDistances = [0.8, 3.5, 2.1, 1.2, 2.4, 0.0, 0.5] // Adjusted distances
+        
+        var weekData: [DistanceData] = []
+        for i in 0..<weekDistances.count {
+            weekData.append(DistanceData(date: Array(weekDates)[i], distanceInKm: weekDistances[i]))
+        }
+        
+        // Sample month data (September as in screenshot)
+        let monthDistances = [
+            0, 0, 0, 0, 0, 0, 0, 1.1, 0.7, 1.3, 1.7, 1.2, 1.6, 0.6, 0, 0, 1.1, 0, 0, 0, 0, 0, 0
+        ]
+        
+        var monthData: [DistanceData] = []
+        for i in 0..<monthDistances.count {
+            if let date = calendar.date(byAdding: .day, value: i - 20, to: today) {
+                monthData.append(DistanceData(date: date, distanceInKm: monthDistances[i]))
+            }
+        }
+        
+        distanceSummary = DistanceSummaryModel(
+            weekData: weekData,
+            monthData: monthData,
+            weekRange: "02-09 Sep",
+            monthName: "September"
+        )
+    }
 
     // MARK: - Walk Session Controls
 
@@ -154,7 +176,6 @@ class ActivityStore {
         walkTimer = nil
         locationManager.stopTracking()
 
-        // Convert elapsed seconds into minutes and add to daily total
         let walkedMinutes = Int(elapsedSeconds / 60)
         walkActivity.currentMinutes += walkedMinutes
 
@@ -176,7 +197,22 @@ class ActivityStore {
         }
     }
 
-    // Fires every 10ms for a smooth stopwatch display
+    func updateMeal(type: MealType, name: MealName, time: Date, isTaken: Bool) {
+        if let index = meals.firstIndex(where: { $0.mealType == type }) {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "h:mm"
+            let timeStr = formatter.string(from: time)
+            
+            formatter.dateFormat = "a"
+            let meridianStr = formatter.string(from: time)
+            
+            meals[index].mealName = name
+            meals[index].time = timeStr
+            meals[index].meridian = meridianStr
+            meals[index].isTaken = isTaken
+        }
+    }
+
     private func startTimer() {
         walkTimer?.invalidate()
         walkTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] _ in
@@ -184,4 +220,4 @@ class ActivityStore {
             self.elapsedSeconds += 0.01
         }
     }
-} // ActivityStore
+}

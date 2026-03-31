@@ -2,18 +2,20 @@
 //  WalkTrackingView.swift
 //  PawPing
 //
+//  Created by Atul on 21/03/26.
+//
 
 import SwiftUI
-import UIKit
 
 struct WalkTrackingView: View {
 
     var store: ActivityStore
     var onDismiss: () -> Void
 
+    
     private var distanceText: String {
         let d = store.locationManager.totalDistance
-        if d >= 1000 {
+        if (d >= 1000) {
             return String(format: "%.1fKM", d / 1000)
         }
         return "\(Int(d))M"
@@ -35,11 +37,12 @@ struct WalkTrackingView: View {
 
     var body: some View {
         ZStack {
-            Color(uiColor: .systemGroupedBackground)
+            Color(.systemGroupedBackground)
                 .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
 
+                // Minimize button (go back to activity tab, walk keeps running)
                 HStack {
                     Button(action: onDismiss) {
                         Image(systemName: "chevron.down")
@@ -47,12 +50,9 @@ struct WalkTrackingView: View {
                             .foregroundStyle(.secondary)
                             .padding(12)
                             .background(Circle().fill(.ultraThinMaterial))
-                    }
-                    .padding(.leading, 20)
-                    .padding(.top, 10)
-                    Spacer()
                 }
-
+                .padding(.leading, 20)
+                .padding(.top, 10)
                 Spacer()
             }
 
@@ -62,96 +62,103 @@ struct WalkTrackingView: View {
                 .padding(.top, 10)
                 .padding(.bottom, 20)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("TOTAL DISTANCE")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(Color.pawTertiary)
-                    .tracking(1.5)
-
-                Text(distanceText)
-                    .font(.system(size: 80, weight: .black, design: .rounded))
-                    .foregroundStyle(.pawSecondary)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-            }
-            .padding(.horizontal, 30)
-
-            Spacer().frame(height: 30)
-
-            HStack(spacing: 40) {
+            // MARK: - Distance
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("TIME OBJECTIVE")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .tracking(1)
-                    Text("\(store.walkActivity.goalMinutes) MIN")
-                        .font(.system(size: 28, weight: .bold))
-                    Text("GOAL")
+                    Text("TOTAL DISTANCE")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .tracking(1)
+                        .foregroundStyle(Color("baseColor"))
+                        .tracking(1.5)
+
+                    Text(distanceText)
+                        .font(.system(size: 80, weight: .bold))
+                        .foregroundStyle(.primary)
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
                 }
+                .padding(.horizontal, 30)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("CURRENT PROGRESS")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .tracking(1)
-                    Text("\(progressPercent)%")
-                        .font(.system(size: 28, weight: .bold))
-                    Text("COMPLETED")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .tracking(1)
-                }
-            }
-            .padding(.horizontal, 30)
+                Spacer().frame(height: 30)
 
-            Spacer()
-
-            VStack(spacing: 20) {
-                Text(timerText)
-                    .font(.system(size: 56, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.pawTertiary)
-                    .monospacedDigit()
-
-                HStack(spacing: 24) {
-                    Button {
-                        store.togglePause()
-                    } label: {
-                        Circle()
-                            .fill(Color(uiColor: .systemGray2))
-                            .frame(width: 64, height: 64)
-                            .overlay(
-                                Image(systemName: store.isPaused ? "play.fill" : "pause.fill")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundStyle(.white)
-                            )
+                // MARK: - Goal + Progress
+                HStack(spacing: 40) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("TIME OBJECTIVE")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .tracking(1)
+                        Text("\(store.walkActivity.goalMinutes) MIN")
+                            .font(.system(size: 28, weight: .bold))
+                        Text("GOAL")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .tracking(1)
                     }
 
-                    Button {
-                        store.stopWalk()
-                        onDismiss()
-                    } label: {
-                        Circle()
-                            .fill(Color.pawTertiary)
-                            .frame(width: 64, height: 64)
-                            .overlay(
-                                Image(systemName: "stop.fill")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundStyle(.white)
-                            )
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("CURRENT PROGRESS")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .tracking(1)
+                        Text("\(progressPercent)%")
+                            .font(.system(size: 28, weight: .bold))
+                        Text("COMPLETED")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .tracking(1)
                     }
                 }
+                .padding(.horizontal, 30)
+
+                Spacer()
+
+                // MARK: - Timer Card
+                VStack(spacing: 20) {
+                    Text(timerText)
+                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color("baseColor"))
+                        .monospacedDigit()
+
+                    // Pause/Play + Stop buttons
+                    HStack(spacing: 24) {
+                        // Pause / Play
+                        Button {
+                            store.togglePause()
+                        } label: {
+                            Circle()
+                                .fill(Color(.systemGray2))
+                                .frame(width: 64, height: 64)
+                                .overlay(
+                                    Image(systemName: store.isPaused ? "play.fill" : "pause.fill")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundStyle(.white)
+                                )
+                        }
+
+                        // Stop
+                        Button {
+                            store.stopWalk()
+                            onDismiss()
+                        } label: {
+                            Circle()
+                                .fill(Color("baseColor"))
+                                .frame(width: 64, height: 64)
+                                .overlay(
+                                    Image(systemName: "stop.fill")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundStyle(.white)
+                                )
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 30)
+                .background(
+                    RoundedRectangle(cornerRadius: 28)
+                        .fill(.gray.opacity(0.12))
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 30)
-            .background(
-                RoundedRectangle(cornerRadius: 28)
-                    .fill(Color.pawNeutral)
-            )
-            .padding(.horizontal, 20)
-            .padding(.bottom, 40)
         }
     }
 }

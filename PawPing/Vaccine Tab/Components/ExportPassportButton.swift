@@ -2,6 +2,8 @@
 //  ExportPassportButton.swift
 //  PawPing
 //
+//  Created by Atul on 15/03/26.
+//
 
 import SwiftUI
 
@@ -22,7 +24,7 @@ struct ExportPassportButton: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(Color.pawPrimary)   // ✅ kept original
+            .background(Color("baseColor"))
             .clipShape(Capsule())
         }
     }
@@ -31,5 +33,5 @@ struct ExportPassportButton: View {
 #Preview {
     ExportPassportButton()
         .padding()
-        .background(Color.pawNeutral)
+        .background(Color("baseBackground"))
 }

@@ -5,9 +5,15 @@
         "color-space" : "srgb",
         "components" : {
           "alpha" : "1.000",
+<<<<<<<< HEAD:PawPing/Assets.xcassets/baseColor.colorset/Contents.json
           "blue" : "242",
           "green" : "106",
           "red" : "72"
+========
+          "blue" : "250",
+          "green" : "250",
+          "red" : "250"
+>>>>>>>> develop-atul:PawPing/Assets.xcassets/secondaryCardBackground.colorset/Contents.json
         }
       },
       "idiom" : "universal"
@@ -23,9 +29,15 @@
         "color-space" : "srgb",
         "components" : {
           "alpha" : "1.000",
-          "blue" : "255",
-          "green" : "138",
-          "red" : "107"
+<<<<<<<< HEAD:PawPing/Assets.xcassets/baseColor.colorset/Contents.json
+          "blue" : "241",
+          "green" : "106",
+          "red" : "72"
+========
+          "blue" : "46",
+          "green" : "44",
+          "red" : "44"
+>>>>>>>> develop-atul:PawPing/Assets.xcassets/secondaryCardBackground.colorset/Contents.json
         }
       },
       "idiom" : "universal"

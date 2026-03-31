@@ -2,11 +2,10 @@
 //  ActivityModel.swift
 //  PawPing
 //
+//  Created by Atul on 01/02/26.
+//
 
-import Foundation
 import CoreLocation
-
-// MARK: - Owner
 
 struct Owner: Identifiable {
     let id: UUID
@@ -15,8 +14,6 @@ struct Owner: Identifiable {
     var phone: String?
     var profileImage: String?
 }
-
-// MARK: - Dog Profile
 
 struct DogProfile: Identifiable {
     let id: UUID
@@ -28,37 +25,33 @@ struct DogProfile: Identifiable {
     var dogImage: String = "profilePhoto"
     var homeLatitude: Double = 28.4210
     var homeLongitude: Double = 77.5340
-
+    
     static let sampleProfile = DogProfile(
         id: UUID(),
         ownerId: UUID(),
         dogName: "Buddy",
         breed: "Labrador",
         gender: .male,
-        age: "2",
-        homeLatitude: 28.535,
-        homeLongitude: 77.240
+        age: "2"
     )
 }
 
 enum DogGender: String {
-    case male = "Male"
-    case female = "Female"
+   case male = "Male"
+   case female = "Female"
 }
 
-// MARK: - Walk Activity
+// MARK: - Activity
 
 struct WalkActivity {
     var currentMinutes: Int
     var goalMinutes: Int
 
     var progress: Double {
-        guard goalMinutes > 0 else { return 0 }
+        guard goalMinutes > 0 else { return 0 } //guard to fight zero division error
         return Double(currentMinutes) / Double(goalMinutes)
     }
 }
-
-// MARK: - Walk Time Graph
 
 struct TimeWalkedData: Identifiable {
     let id = UUID()
@@ -88,6 +81,40 @@ struct TimeWalkedGraphModel {
     }
 }
 
+struct DistanceData: Identifiable {
+    let id = UUID()
+    let date: Date
+    let distanceInKm: Double
+    
+    // For chart labels/axis
+    var dayLabel: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE" // "Mon"
+        return formatter.string(from: date)
+    }
+    
+    var dayOfMonthLabel: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d" // "1", "15", "30"
+        return formatter.string(from: date)
+    }
+}
+
+struct DistanceSummaryModel {
+    let weekData: [DistanceData]
+    let monthData: [DistanceData]
+    let weekRange: String // "02-09 Sep"
+    let monthName: String // "September"
+    
+    var totalWeekDistance: Double {
+        weekData.reduce(0) { $0 + $1.distanceInKm }
+    }
+    
+    var totalMonthDistance: Double {
+        monthData.reduce(0) { $0 + $1.distanceInKm }
+    }
+}
+
 // MARK: - Meals
 
 struct Meal: Identifiable {
@@ -110,18 +137,26 @@ struct Meal: Identifiable {
 
 enum MealType: String {
     case breakfast = "Breakfast"
-    case lunch = "Lunch"
-    case dinner = "Dinner"
+    case lunch     = "Lunch"
+    case dinner    = "Dinner"
 }
 
-enum MealName: String {
-    case eggAndCheese
-    case eggAndRice
-    case chickenAndRice
-    case curdAndRice
-    case dogFood
-    case dogFoodWithCarrots
-    case others
+enum MealName: String, CaseIterable, Identifiable {
+    case eggAndCheese = "Egg and Cheese"
+    case eggAndRice = "Egg and Rice"
+    case chickenAndRice = "Chicken and Rice"
+    case curdAndRice = "Curd and Rice"
+    case dogFood = "Dog Food"
+    case dogFoodWithCarrots = "Dog Food with Carrots"
+    case rice = "Rice"
+    case chicken = "Chicken"
+    case soyabean = "Soyabean"
+    case pedigree = "Pedigree"
+    case boiledEgg = "Boiled Egg"
+    case others = "Others"
+    case select = "Select"
+    
+    var id: String { self.rawValue }
 }
 
 // MARK: - Vaccines
@@ -135,13 +170,24 @@ struct Vaccine: Identifiable {
     var frequency: Int
     var frequencyType: VaccineFrequencyType
     var vaccineNotes: String
+    
+    static let sampleVaccines = Vaccine(
+        id: UUID(),
+        dogId: UUID(),
+        name: "Rabies Booster",
+        givenDate: Date(),
+        daysLeft: 3,
+        frequency: 12,
+        frequencyType: .monthly,
+        vaccineNotes: "N/A"
+    )
 }
 
 enum VaccineFrequencyType: String {
-    case days
-    case weekly
-    case monthly
-    case yearly
+    case days = "Days"
+    case weekly = "Weekly"
+    case monthly = "Monthly"
+    case yearly = "Yearly"
 }
 
 // MARK: - Allergies
@@ -153,10 +199,15 @@ struct Allergy: Identifiable {
     var allergyType: AllergyType
     var allergyNotes: String
     var allergen: String?
+    
+    static let sampleAllergies: [Allergy] = [
+        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", allergyType: .environmental, allergyNotes: "N/A", allergen: "Gluten"),
+        Allergy(id: UUID(), dogId: UUID(), allergyName: "Flea Dermatitis", allergyType: .environmental, allergyNotes: "N/A", allergen: "Lactose")
+    ]
 }
 
 enum AllergyType: String {
-    case food
-    case medication
-    case environmental
+    case food = "Food"
+    case medication = "Medication"
+    case environmental = "Environmental"
 }
