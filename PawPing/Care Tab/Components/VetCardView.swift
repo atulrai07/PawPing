@@ -17,7 +17,7 @@ struct VetCardView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 70, height: 70)
-                    e.clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     .background(Color.gray.opacity(0.1))
                 
                 VStack(alignment: .leading, spacing: 4) {
