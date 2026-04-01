@@ -81,38 +81,13 @@ struct ActivityView: View {
 
                 // MARK: - Vaccine & Meals Row
                 HStack(spacing: 16) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 28)
-                            .fill(Color("cardBackground"))
-                            .frame(width: 175, height: 190)
-                        VStack(alignment: .leading) {
-                            HStack(spacing: 15) {
-                                Text("Upcoming")
-                                    .font(.system(size: 22, weight: .regular))
-                                Button {
-                                    // workflow pending
-                                } label: {
-                                    Circle()
-                                        .fill(Color("baseColor").opacity(0.2))
-                                        .frame(width: 22, height: 22)
-                                        .overlay(
-                                            Image(systemName: "chevron.right")
-                                                .foregroundStyle(.primary)
-                                                .font(.system(size: 12))
-                                        )
-                                }
-                            }
-                            Image(systemName: "syringe")
-                                .foregroundStyle(Color("baseColor"))
-                                .rotationEffect(.degrees(270))
-                                .font(.system(size: 65))
-                            Text(store.vaccines.first?.name ?? "No vaccine")
-                                .font(.system(size: 18, weight: .medium))
-                            Text("\(store.vaccines.first?.daysLeft ?? 0) days left")
-                                .font(.system(size: 12, weight: .semibold))
-                        }
-                        .frame(height: 175)
+                    // Vaccine Card
+                    Button {
+                        // TODO: Direct navigation to Vaccine Tab
+                    } label: {
+                        VaccineCardView(store: store)
                     }
+                    .buttonStyle(.plain)
 
                     // Meals Card
                     Button {
@@ -122,26 +97,34 @@ struct ActivityView: View {
                     }
                     .buttonStyle(.plain)
                 }
+                .padding(.horizontal)
 
                 // MARK: - Allergies Card
                 ZStack {
-                    RoundedRectangle(cornerRadius: 23)
+                    RoundedRectangle(cornerRadius: 28)
                         .fill(Color("cardBackground"))
-                        .frame(width: 370, height: 95)
-                    HStack(spacing: 20) {
+                        .frame(height: 95)
+                    
+                    HStack(spacing: 16) {
+                        // Icon Container
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color("secondaryCardBackground"))
                             .frame(width: 78, height: 78)
                             .overlay(
                                 Image("allergiesIcon")
                                     .resizable()
-                                    .frame(width: 66, height: 63)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 55, height: 55)
                             )
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack(spacing: 130) {
+                            .padding(.leading, 8)
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
                                 Text("Allergies")
                                     .font(.system(size: 24, weight: .regular))
-                                    .padding(.top, 5)
+                                
+                                Spacer()
+                                
                                 Button {
                                     // workflow pending
                                 } label: {
@@ -154,26 +137,25 @@ struct ActivityView: View {
                                                 .font(.system(size: 12))
                                         )
                                 }
+                                .padding(.trailing, 12)
                             }
-                            HStack {
-                                ForEach(store.allergies.prefix(3)) { allergies in
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 6)
-                                            .fill(Color("baseColor"))
-                                            .frame(width: 62, height: 27)
-                                        RoundedRectangle(cornerRadius: 5)
-                                            .fill(Color("secondaryCardBackground"))
-                                            .frame(width: 60, height: 25)
-                                            .overlay(
-                                                Text(allergies.allergen ?? "none")
-                                                    .font(.system(size: 10, weight: .medium))
-                                            )
-                                    }
+                            
+                            HStack(spacing: 8) {
+                                ForEach(store.allergies.prefix(3)) { allergy in
+                                    Text(allergy.allergen ?? "none")
+                                        .font(.system(size: 10, weight: .medium))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(
+                                            Capsule()
+                                                .stroke(Color("baseColor"), lineWidth: 1)
+                                        )
                                 }
                             }
                         }
                     }
                 }
+                .padding(.horizontal)
 
                 // MARK: - Graph Card
                 Button {
