@@ -210,11 +210,9 @@ struct MealLogView: View {
                 .fill(Color("baseColor"))
                 .frame(width: 64, height: 64)
                 .overlay(
-                    Image("allergiesIcon") // Placeholder for dog food bowl icon, reusing for shape
+                    Image("foodIcon")
                         .resizable()
-                        .renderingMode(.template)
-                        .foregroundStyle(.white)
-                        .frame(width: 40, height: 40) // scaling it down
+                        .frame(width: 40, height: 40) 
                 )
             
             VStack(alignment: .leading, spacing: 0) {

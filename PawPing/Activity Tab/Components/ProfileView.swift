@@ -20,7 +20,7 @@ struct ProfileView: View {
                 // MARK: - Pet Information
                 settingsSection(title: "Pet Information", rows: [
                     "Pet Details",
-                    "Medical History"
+                    "Vaccine History"
                 ])
 
                 // MARK: - Vet & Emergency

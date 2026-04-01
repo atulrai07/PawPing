@@ -127,20 +127,20 @@ class ActivityStore {
         let calendar = Calendar.current
         let today = Date()
         
-        // Sample week data (Sep 02-09 - Ensure it starts on MON)
+        // Sample week data
         var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
-        components.weekday = 2 // Monday
+        components.weekday = 2 // chart will start from Monday
         let monday = calendar.date(from: components)!
         
         let weekDates = (0..<7).map { calendar.date(byAdding: .day, value: $0, to: monday)! }
-        let weekDistances = [0.8, 3.5, 2.1, 1.2, 2.4, 0.0, 0.5] // Adjusted distances
+        let weekDistances = [0.8, 3.2, 2.1, 1.2, 2.4, 0.0, 0.5] //distances for graph in weekly walk activity
         
         var weekData: [DistanceData] = []
         for i in 0..<weekDistances.count {
             weekData.append(DistanceData(date: Array(weekDates)[i], distanceInKm: weekDistances[i]))
         }
         
-        // Sample month data (September as in screenshot)
+        // Sample month data
         let monthDistances = [
             0, 0, 0, 0, 0, 0, 0, 1.1, 0.7, 1.3, 1.7, 1.2, 1.6, 0.6, 0, 0, 1.1, 0, 0, 0, 0, 0, 0
         ]

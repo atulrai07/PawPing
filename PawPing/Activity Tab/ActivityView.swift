@@ -101,7 +101,7 @@ struct ActivityView: View {
 
                 // MARK: - Allergies Card
                 ZStack {
-                    RoundedRectangle(cornerRadius: 28)
+                    RoundedRectangle(cornerRadius: 24)
                         .fill(Color("cardBackground"))
                         .frame(height: 95)
                     
