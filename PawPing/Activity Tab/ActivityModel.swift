@@ -51,7 +51,7 @@ struct DogProfile: Identifiable {
     )
 }
 
-enum DogGender: String {
+enum DogGender: String, CaseIterable {
    case male = "Male"
    case female = "Female"
 }

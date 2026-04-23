@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var showSplash = true
     @State private var hasCompletedOnboarding = false
+    @State private var isAuthenticated = false
 
     // MARK: - Stores (single source of truth for the whole app)
     // @State here because ContentView OWNS these stores.
@@ -28,6 +29,15 @@ struct ContentView: View {
             OnboardingView(onCompletion: {
                 withAnimation {
                     hasCompletedOnboarding = true
+                }
+            })
+        } else if !isAuthenticated {
+            // Auth flow sits between onboarding and the main app.
+            // Once the user logs in or creates an account, this
+            // flips isAuthenticated → true and we fall through to the TabView.
+            AuthFlowView(onAuthenticated: {
+                withAnimation {
+                    isAuthenticated = true
                 }
             })
         } else {
