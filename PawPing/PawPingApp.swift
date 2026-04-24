@@ -15,6 +15,7 @@ struct PawPingApp: App {
     @State private var activityStore = ActivityStore()
     @State private var careStore     = CareStore()
     @State private var vaccineStore  = VaccineStore()
+    @State private var symptomStore  = SymptomStore()
 
     var body: some Scene {
         WindowGroup {
@@ -22,6 +23,7 @@ struct PawPingApp: App {
                 .environment(activityStore)
                 .environment(careStore)
                 .environment(vaccineStore)
+                .environment(symptomStore)
         }
     }
 }

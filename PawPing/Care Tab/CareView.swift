@@ -177,8 +177,17 @@ struct CareView: View {
     }
 } // CareView
 
+struct CareViewPreviewWrapper: View {
+    @State private var store = CareStore()
+    @State private var activityStore = ActivityStore()
+    
+    var body: some View {
+        CareView()
+            .environment(store)
+            .environment(activityStore)
+    }
+}
+
 #Preview {
-    CareView()
-        .environment(CareStore())
-        .environment(ActivityStore())
+    CareViewPreviewWrapper()
 }

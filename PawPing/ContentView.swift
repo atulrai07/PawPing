@@ -33,5 +33,6 @@ struct ContentView: View {
             .environment(ActivityStore())
             .environment(CareStore())
             .environment(VaccineStore())
+            .environment(SymptomStore())
     }
 }

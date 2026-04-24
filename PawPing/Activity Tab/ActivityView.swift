@@ -9,12 +9,14 @@ import SwiftUI
 
 struct ActivityView: View {
     @Environment(ActivityStore.self) var store
+    @Environment(SymptomStore.self) var symptomStore
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
     @State private var showProfile = false
     @State private var showMealsLog = false
     @State private var showDistanceSummary = false
+    @State private var showSymptomChecker = false
 
     var body: some View {
         NavigationStack {
@@ -99,62 +101,61 @@ struct ActivityView: View {
                 }
                 .padding(.horizontal)
 
-                // MARK: - Allergies Card
-                ZStack {
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(Color("cardBackground"))
-                        .frame(height: 95)
-                    
-                    HStack(spacing: 16) {
-                        // Icon Container
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color("secondaryCardBackground"))
-                            .frame(width: 78, height: 78)
-                            .overlay(
-                                Image("allergiesIcon")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 55, height: 55)
+                // MARK: - Symptom Checker Card
+                Button {
+                    symptomStore.reset()
+                    showSymptomChecker = true
+                } label: {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color("baseColor").opacity(0.12),
+                                        Color("baseColor").opacity(0.04)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                            .padding(.leading, 8)
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Allergies")
-                                    .font(.system(size: 24, weight: .regular))
-                                
-                                Spacer()
-                                
-                                Button {
-                                    // workflow pending
-                                } label: {
-                                    Circle()
-                                        .fill(Color("baseColor").opacity(0.2))
-                                        .frame(width: 22, height: 22)
-                                        .overlay(
-                                            Image(systemName: "chevron.right")
-                                                .foregroundStyle(.primary)
-                                                .font(.system(size: 12))
-                                        )
-                                }
+                            .frame(height: 95)
+
+                        HStack(spacing: 16) {
+                            // Icon Container
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color("baseColor").opacity(0.15))
+                                .frame(width: 78, height: 78)
+                                .overlay(
+                                    Image(systemName: "stethoscope")
+                                        .font(.system(size: 32))
+                                        .foregroundStyle(Color("baseColor"))
+                                )
+                                .padding(.leading, 8)
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Check Symptoms")
+                                    .font(.system(size: 20, weight: .semibold))
+
+                                Text("Get guidance")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Color("secondaryText"))
+                            }
+
+                            Spacer()
+
+                            Circle()
+                                .fill(Color("baseColor").opacity(0.2))
+                                .frame(width: 28, height: 28)
+                                .overlay(
+                                    Image(systemName: "chevron.right")
+                                        .foregroundStyle(Color("baseColor"))
+                                        .font(.system(size: 12, weight: .bold))
+                                )
                                 .padding(.trailing, 12)
-                            }
-                            
-                            HStack(spacing: 8) {
-                                ForEach(store.allergies.prefix(3)) { allergy in
-                                    Text(allergy.allergen ?? "none")
-                                        .font(.system(size: 10, weight: .medium))
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 5)
-                                        .background(
-                                            Capsule()
-                                                .stroke(Color("baseColor"), lineWidth: 1)
-                                        )
-                                }
-                            }
                         }
                     }
                 }
+                .buttonStyle(.plain)
                 .padding(.horizontal)
 
                 // MARK: - Graph Card
@@ -180,6 +181,11 @@ struct ActivityView: View {
             }
             .navigationDestination(isPresented: $showDistanceSummary) {
                 DistanceSummaryView(store: store)
+            }
+            .navigationDestination(isPresented: $showSymptomChecker) {
+                SymptomCheckerView()
+                    .environment(symptomStore)
+                    .environment(store)
             }
         }
         .fullScreenCover(isPresented: $showWalkFlow) {
@@ -275,7 +281,17 @@ private struct WalkingLabel: View {
     }
 }
 
+struct ActivityViewPreviewWrapper: View {
+    @State private var store = ActivityStore()
+    @State private var symptomStore = SymptomStore()
+    
+    var body: some View {
+        ActivityView()
+            .environment(store)
+            .environment(symptomStore)
+    }
+}
+
 #Preview {
-    ActivityView()
-        .environment(ActivityStore())
+    ActivityViewPreviewWrapper()
 }
