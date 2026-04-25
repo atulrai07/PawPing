@@ -1,0 +1,8 @@
+{
+    "dry_dog_food": { "unit": "cup", "calories": 350 },
+    "wet_dog_food": { "unit": "serving", "calories": 250 },
+    "chicken":      { "unit": "100g", "calories": 165 },
+    "rice":         { "unit": "100g", "calories": 130 },
+    "egg":          { "unit": "unit", "calories": 70 }
+}
+

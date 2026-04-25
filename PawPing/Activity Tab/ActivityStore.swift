@@ -18,6 +18,9 @@ class ActivityStore {
     var timeWalkedGraph: TimeWalkedGraphModel
     var distanceSummary: DistanceSummaryModel
 
+    // MARK: - Meal & Diet Sub-Store
+    var mealDietStore = MealDietStore()
+
     // MARK: - Walk Session (persists across view appearances)
     var isWalking: Bool = false
     var elapsedSeconds: TimeInterval = 0
@@ -35,7 +38,8 @@ class ActivityStore {
             dogName: "Buddy",
             breed: "Labrador",
             gender: .male,
-            age: "2"
+            age: "2",
+            weightKg: 25.0
         )
 
         meals = [
@@ -46,7 +50,10 @@ class ActivityStore {
                 time: "8:00",
                 meridian: "AM",
                 mealType: .breakfast,
-                mealName: .dogFood,
+                foodType: .dryDogFood,
+                quantity: 1.0,
+                unit: "cup",
+                calories: 350,
                 isTaken: true
             ),
 
@@ -57,7 +64,7 @@ class ActivityStore {
                 time: "12:30",
                 meridian: "PM",
                 mealType: .lunch,
-                mealName: .select,
+                foodType: nil,
                 isTaken: false
             ),
             
@@ -68,7 +75,7 @@ class ActivityStore {
                 time: "8:30",
                 meridian: "PM",
                 mealType: .dinner,
-                mealName: .select,
+                foodType: nil,
                 isTaken: false
             )
         ]
@@ -197,7 +204,9 @@ class ActivityStore {
         }
     }
 
-    func updateMeal(type: MealType, name: MealName, time: Date, isTaken: Bool) {
+    // MARK: - Meal Update (delegates calorie calculation to MealDietStore)
+
+    func updateMeal(type: MealType, foodType: FoodType?, quantity: Double, unit: String, ingredients: [MealIngredient], time: Date, isTaken: Bool) {
         if let index = meals.firstIndex(where: { $0.mealType == type }) {
             let formatter = DateFormatter()
             formatter.dateFormat = "h:mm"
@@ -206,11 +215,50 @@ class ActivityStore {
             formatter.dateFormat = "a"
             let meridianStr = formatter.string(from: time)
             
-            meals[index].mealName = name
+            meals[index].foodType = foodType
+            meals[index].quantity = quantity
+            meals[index].unit = unit
+            meals[index].ingredients = ingredients
             meals[index].time = timeStr
             meals[index].meridian = meridianStr
             meals[index].isTaken = isTaken
+
+            // Calculate calories via MealDietStore or ingredients
+            if let food = foodType {
+                if food.isEstimateOnly {
+                    let sum = ingredients.reduce(0) { $0 + $1.calculatedCalories }
+                    meals[index].calories = sum
+                } else {
+                    meals[index].calories = mealDietStore.caloriesFor(food: food, quantity: quantity)
+                }
+
+                // Also persist to MealDietStore
+                if isTaken {
+                    mealDietStore.logMeal(
+                        mealType: type,
+                        foodType: food,
+                        quantity: quantity,
+                        unit: unit,
+                        ingredients: ingredients,
+                        time: timeStr,
+                        meridian: meridianStr,
+                        date: Date()
+                    )
+                }
+            } else {
+                meals[index].calories = 0
+            }
         }
+    }
+
+    /// Total calories across all meals today (from the in-memory meals array)
+    var totalCaloriesToday: Double {
+        meals.filter { $0.isTaken }.reduce(0) { $0 + $1.calories }
+    }
+
+    /// Number of meals logged today
+    var mealsLoggedToday: Int {
+        meals.filter { $0.isTaken }.count
     }
 
     private func startTimer() {

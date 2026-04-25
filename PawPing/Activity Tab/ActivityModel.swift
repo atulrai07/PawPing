@@ -22,6 +22,7 @@ struct DogProfile: Identifiable {
     var breed: String
     var gender: DogGender
     var age: String
+    var weightKg: Double = 25.0          // hardcoded for now — user profile setup later
     var dogImage: String = "profilePhoto"
     var homeLatitude: Double = 28.4210
     var homeLongitude: Double = 77.5340
@@ -103,31 +104,36 @@ struct Meal: Identifiable {
     var meridian: String
     var date: Date = Date()
     var mealType: MealType
-    var mealName: MealName
+    var foodType: FoodType?                // nil = not yet selected (replaces old mealName)
+    var quantity: Double = 1.0              // default 1.0 (cup, grams, or units)
+    var unit: String = "cup"
+    var calories: Double = 0               // calculated from food × quantity
+    var ingredients: [MealIngredient] = []  // for custom/homemade meals
     var isTaken: Bool
 }
 
-enum MealType: String {
+struct MealIngredient: Codable, Identifiable {
+    var id = UUID()
+    var name: String
+    var quantity: Double
+    var unit: String = "g"
+    var caloriesPer100g: Double
+    
+    var calculatedCalories: Double {
+        (caloriesPer100g / 100.0) * quantity
+    }
+}
+
+struct USDAFood: Codable, Identifiable {
+    var id: String { name }
+    let name: String
+    let caloriesPer100g: Double
+}
+
+enum MealType: String, Codable {
     case breakfast = "Breakfast"
     case lunch     = "Lunch"
     case dinner    = "Dinner"
-}
-
-enum MealName: String, CaseIterable, Identifiable {
-    case eggAndCheese = "Egg and Cheese"
-    case eggAndRice = "Egg and Rice"
-    case chickenAndRice = "Chicken and Rice"
-    case curdAndRice = "Curd and Rice"
-    case dogFood = "Dog Food"
-    case dogFoodWithCarrots = "Dog Food with Carrots"
-    case rice = "Rice"
-    case chicken = "Chicken"
-    case soyabean = "Soyabean"
-    case pedigree = "Pedigree"
-    case boiledEgg = "Boiled Egg"
-    case select = "Select"
-    
-    var id: String { self.rawValue }
 }
 
 // MARK: - Vaccines

@@ -46,16 +46,16 @@ class VetSearchManager {
                 
                 // Map to our model and take top 3
                 self.nearbyVets = response.mapItems.prefix(3).map { item in
-                    let clinicLocation = item.placemark.location ?? CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                    let clinicLocation = item.location ?? CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
                     let userLocation = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
                     let distance = userLocation.distance(from: clinicLocation) / 1000.0 // in km
                     
                     return NearbyVet(
                         name: item.name ?? "Unknown Clinic",
                         phoneNumber: item.phoneNumber,
-                        address: item.placemark.title ?? "",
+                        address: item.address?.fullAddress ?? "",
                         distance: distance,
-                        coordinate: item.placemark.coordinate
+                        coordinate: clinicLocation.coordinate
                     )
                 }
             }

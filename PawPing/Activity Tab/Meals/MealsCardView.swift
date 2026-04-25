@@ -34,6 +34,17 @@ struct MealsCardView: View {
                         )
                 }
                 
+                // Calorie summary
+                HStack(spacing: 4) {
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.orange)
+                    Text("\(Int(store.totalCaloriesToday)) kcal")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color("secondaryText"))
+                }
+                .padding(.top, -2)
+
                 Spacer()
                 
                 // Meals
