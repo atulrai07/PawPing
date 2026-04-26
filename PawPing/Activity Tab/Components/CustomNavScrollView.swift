@@ -8,13 +8,8 @@
 //  VStack(spacing: 20) {
 //      // your scrollable content
 //  }
-//  .customNavigationScroll(title: "Vaccine")
+//  .customNavigationScroll(title: "Vaccine", petStore: petStore)
 //
-//  With a profile avatar:
-//  .customNavigationScroll(title: "Vaccine", profileImage: profile.dogImage)
-//
-//  Custom collapse threshold:
-//  .customNavigationScroll(title: "Vaccine", collapseThreshold: 60)
 
 import SwiftUI
 
@@ -23,19 +18,17 @@ import SwiftUI
 private struct StickyNavHeader: View {
 
     let title: String
-    var profileImage: String?
-    var onProfileTap: (() -> Void)?
+    var petStore: PetStore?
     var onAddTap: (() -> Void)?
     let isCollapsed: Bool
 
     var body: some View {
         ZStack {
-            // MARK: Profile View is in Activity View
-            // Trailing profile avatar (always visible)
-            if let img = profileImage {//if let because profile image is option (?) value.
+            // MARK: Pet Switcher Menu
+            if let petStore = petStore {
                 HStack {
                     Spacer()
-                    
+
                     // Add button (liquid glass style)
                     if let addAction = onAddTap {
                         Button {
@@ -46,7 +39,7 @@ private struct StickyNavHeader: View {
                                     .fill(.ultraThinMaterial)
                                     .frame(width: 36, height: 36)
                                     .shadow(color: Color("baseColor").opacity(0.3), radius: 6, x: 0, y: 2)
-                                
+
                                 Image(systemName: "plus")
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundStyle(Color("baseColor"))
@@ -54,19 +47,57 @@ private struct StickyNavHeader: View {
                         }
                         .padding(.trailing, 8)
                     }
-                    
-                    Button {
-                        onProfileTap?()
-                    } label: {
-                        Circle()
-                            .fill(Color("secondaryText").opacity(0.2))
-                            .frame(width: 36, height: 36)
-                            .overlay(
-                                Image(img)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .clipShape(Circle())
+
+                    // Pet switcher menu
+                    Menu {
+                        ForEach(petStore.pets) { pet in
+                            Button {
+                                petStore.switchPet(to: pet.id)
+                            } label: {
+                                Label {
+                                    Text(pet.name)
+                                } icon: {
+                                    if pet.id == petStore.activePetId {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+
+                        Divider()
+
+                        Button {
+                            let newPet = Pet(
+                                id: UUID(),
+                                name: "New Pet",
+                                breed: "Mixed",
+                                gender: .male,
+                                age: "1",
+                                weightKg: 10.0,
+                                imageName: "dog\(min(petStore.pets.count + 1, 3))",
+                                homeLatitude: 28.4210,
+                                homeLongitude: 77.5340
                             )
+                            petStore.addPet(newPet)
+                            petStore.switchPet(to: newPet.id)
+                        } label: {
+                            Label("Add Pet", systemImage: "plus.circle")
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(Color("secondaryText").opacity(0.2))
+                                .frame(width: 36, height: 36)
+                                .overlay(
+                                    Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .clipShape(Circle())
+                                )
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(Color("secondaryText"))
+                        }
                     }
                 }
             }
@@ -122,10 +153,9 @@ private struct StickyNavHeader: View {
 
 // CustomNavigationScrollModifier
 
-private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, so that we can it as .Nav...(__)\n
+private struct CustomNavigationScrollModifier: ViewModifier {
     let title: String
-    var profileImage: String?
-    var onProfileTap: (() -> Void)?
+    var petStore: PetStore?
     var onAddTap: (() -> Void)?
     var collapseThreshold: CGFloat
 
@@ -160,8 +190,7 @@ private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, 
         .safeAreaInset(edge: .top, spacing: 0) {
             StickyNavHeader(
                 title: title,
-                profileImage: profileImage,
-                onProfileTap: onProfileTap,
+                petStore: petStore,
                 onAddTap: onAddTap,
                 isCollapsed: isCollapsed
             )
@@ -173,23 +202,23 @@ private struct CustomNavigationScrollModifier: ViewModifier { // View Modifier, 
 
 extension View {
 
-    /// Wraps the view in a scroll container with a collapsing navigation header.
+    /// Wraps the view in a scroll container with a collapsing navigation header
+    /// and an integrated pet-switcher dropdown.
     ///
     /// - Parameters:
     ///   - title:              The screen title shown large, then inline once collapsed.
-    ///   - profileImage:       Optional asset name for a trailing circular avatar.
+    ///   - petStore:           The PetStore to power the pet-switcher dropdown.
+    ///   - onAddTap:           Optional action for the "+" button.
     ///   - collapseThreshold:  Scroll distance (pt) before the title collapses. Default 50.
     func customNavigationScroll(
         title: String,
-        profileImage: String? = nil,
-        onProfileTap: (() -> Void)? = nil,
+        petStore: PetStore? = nil,
         onAddTap: (() -> Void)? = nil,
         collapseThreshold: CGFloat = 50
     ) -> some View {
         modifier(CustomNavigationScrollModifier(
             title: title,
-            profileImage: profileImage,
-            onProfileTap: onProfileTap,
+            petStore: petStore,
             onAddTap: onAddTap,
             collapseThreshold: collapseThreshold
         ))

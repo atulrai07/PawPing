@@ -12,6 +12,7 @@ import SwiftUI
 
 struct MealLoggingSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(PetStore.self) var petStore
 
     var store: ActivityStore
     var mealType: MealType
@@ -136,7 +137,7 @@ struct MealLoggingSheet: View {
 
     private var foodTypeSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("What did \(store.dogProfile.dogName) eat?")
+            Text("What did \(petStore.activePet?.name ?? "your pet") eat?")
                 .font(.system(size: 16, weight: .semibold))
 
             LazyVGrid(columns: [

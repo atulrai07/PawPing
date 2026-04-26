@@ -14,6 +14,7 @@ import SwiftUI
 
 struct DietSetupSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(PetStore.self) var petStore
 
     var store: ActivityStore
 
@@ -93,7 +94,7 @@ struct DietSetupSheet: View {
         }
         .onAppear {
             // Pre-fill with existing weight
-            let currentKg = store.dogProfile.weightKg
+            let currentKg = petStore.activePet?.weightKg ?? 10.0
             weightInput = String(format: "%.1f", weightUnit.fromKg(currentKg))
         }
     }
@@ -102,19 +103,19 @@ struct DietSetupSheet: View {
 
     private var petInfoCard: some View {
         HStack(spacing: 16) {
-            Image(store.dogProfile.dogImage)
+            Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
                 .resizable()
                 .scaledToFill()
                 .frame(width: 50, height: 50)
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(store.dogProfile.dogName)
+                Text(petStore.activePet?.name ?? "Pet")
                     .font(.system(size: 18, weight: .semibold))
 
                 HStack(spacing: 12) {
-                    Label(store.dogProfile.breed, systemImage: "pawprint.fill")
-                    Label("\(store.dogProfile.age) yr", systemImage: "birthday.cake.fill")
+                    Label(petStore.activePet?.breed ?? "—", systemImage: "pawprint.fill")
+                    Label("\(petStore.activePet?.age ?? "?") yr", systemImage: "birthday.cake.fill")
                 }
                 .font(.system(size: 12))
                 .foregroundStyle(Color("secondaryText"))
@@ -270,7 +271,10 @@ struct DietSetupSheet: View {
     private var startButton: some View {
         Button {
             store.mealDietStore.startDiet(goal: selectedGoal, weightKg: weightKg)
-            store.dogProfile.weightKg = weightKg
+            if var pet = petStore.activePet {
+                pet.weightKg = weightKg
+                petStore.updatePet(pet)
+            }
             dismiss()
         } label: {
             HStack(spacing: 8) {

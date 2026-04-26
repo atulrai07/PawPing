@@ -78,7 +78,7 @@ struct ClinicInfo: Identifiable, Hashable {
 struct VaccineRecord: Identifiable {
 
     let id: UUID
-    var dogId: UUID
+    var petId: UUID
     var vaccineName: VaccineName
     var dateGiven: Date
     var clinicInfo: ClinicInfo?
@@ -180,7 +180,7 @@ struct VaccineRecord: Identifiable {
 
         VaccineRecord(
             id: UUID(),
-            dogId: UUID(),
+            petId: UUID(),
             vaccineName: .dhppBooster,
             dateGiven: Calendar.current.date(byAdding: .month, value: -2, to: Date())!,
             clinicInfo: .sample,
@@ -190,7 +190,7 @@ struct VaccineRecord: Identifiable {
 
         VaccineRecord(
             id: UUID(),
-            dogId: UUID(),
+            petId: UUID(),
             vaccineName: .leptospirosis,
             dateGiven: Calendar.current.date(byAdding: .month, value: -4, to: Date())!,
             clinicInfo: .sample,
@@ -200,7 +200,7 @@ struct VaccineRecord: Identifiable {
 
         VaccineRecord(
             id: UUID(),
-            dogId: UUID(),
+            petId: UUID(),
             vaccineName: .rabiesBooster,
             dateGiven: Calendar.current.date(byAdding: .month, value: -2, to: Date())!,
             clinicInfo: .sample,

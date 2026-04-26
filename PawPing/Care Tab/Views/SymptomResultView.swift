@@ -13,7 +13,7 @@ import MapKit
 
 struct SymptomResultView: View {
     @Environment(SymptomStore.self) var store
-    @Environment(ActivityStore.self) var activityStore
+    @Environment(PetStore.self) var petStore
     @Environment(\.dismiss) var dismiss
 
     @State private var vetManager = VetSearchManager()
@@ -69,8 +69,8 @@ struct SymptomResultView: View {
         .onAppear {
             if let result = store.triageResult, result.overallSeverity != .mild {
                 let coords = CLLocationCoordinate2D(
-                    latitude: activityStore.dogProfile.homeLatitude,
-                    longitude: activityStore.dogProfile.homeLongitude
+                    latitude: petStore.activePet?.homeLatitude ?? 28.4210,
+                    longitude: petStore.activePet?.homeLongitude ?? 77.5340
                 )
                 vetManager.searchNearbyVets(near: coords)
             }
@@ -290,13 +290,13 @@ struct SymptomResultView: View {
 
 struct SymptomResultPreviewWrapper: View {
     @State private var store = SymptomStore()
-    @State private var activityStore = ActivityStore()
+    @State private var petStore = PetStore()
 
     var body: some View {
         NavigationStack {
             SymptomResultView()
                 .environment(store)
-                .environment(activityStore)
+                .environment(petStore)
         }
         .onAppear {
             store.toggleSymptom(Symptom(id: "vomiting", name: "Vomiting", category: .digestive, isEmergency: false))

@@ -15,24 +15,12 @@ struct Owner: Identifiable {
     var profileImage: String?
 }
 
-struct DogProfile: Identifiable {
-    let id: UUID
-    var ownerId: UUID
-    var dogName: String
-    var breed: String
-    var gender: DogGender
-    var age: String
-    var weightKg: Double = 25.0          // hardcoded for now — user profile setup later
-    var dogImage: String = "profilePhoto"
-    var homeLatitude: Double = 28.4210
-    var homeLongitude: Double = 77.5340
-    
-}
+/// Legacy alias — kept so existing code that refers to DogProfile still compiles.
+/// New code should use Pet directly.
+typealias DogProfile = Pet
 
-enum DogGender: String {
-   case male = "Male"
-   case female = "Female"
-}
+/// Legacy alias — kept for backward compatibility.
+typealias DogGender = PetGender
 
 // MARK: - Activity
 
@@ -49,11 +37,11 @@ struct WalkActivity {
 struct TimeWalkedData: Identifiable {
     let id = UUID()
     let day: String
-    let minutes: Int
+    var minutes: Int
 }
 
 struct TimeWalkedGraphModel {
-    let data: [TimeWalkedData]
+    var data: [TimeWalkedData]
     let goalMinutes: Int
 
     var maxMinutes: Int {
@@ -98,7 +86,7 @@ struct DistanceSummaryModel {
 
 struct Meal: Identifiable {
     let id: UUID
-    var dogId: UUID
+    var petId: UUID
     var icon: String
     var time: String
     var meridian: String
@@ -140,7 +128,7 @@ enum MealType: String, Codable {
 
 struct Vaccine: Identifiable {
     let id: UUID
-    var dogId: UUID
+    var petId: UUID
     var name: String
     var givenDate: Date?
     var daysLeft: Int
@@ -160,7 +148,7 @@ enum VaccineFrequencyType: String {
 
 struct Allergy: Identifiable {
     let id: UUID
-    var dogId: UUID
+    var petId: UUID
     var allergyName: String
     var allergyType: AllergyType
     var allergyNotes: String

@@ -10,7 +10,12 @@ import Charts
 struct WalkTimeGraphView: View {
 
     var model: TimeWalkedGraphModel
-    let currentDay = "FRI"   // highlight this
+    
+    var currentDay: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+        return formatter.string(from: Date()).uppercased()
+    }
 
     var body: some View {
         ZStack {

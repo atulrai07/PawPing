@@ -30,7 +30,7 @@ struct AddVaccineFlowView: View {
 
     @Environment(VaccineStore.self) var vaccineStore
     @Environment(CareStore.self) var careStore
-    @Environment(ActivityStore.self) var activityStore
+    @Environment(PetStore.self) var petStore
 
     @Environment(\.dismiss) private var dismiss
 
@@ -505,7 +505,7 @@ struct AddVaccineFlowView: View {
         // Create the record
         let newRecord = VaccineRecord(
             id: UUID(),
-            dogId: UUID(),
+            petId: petStore.activePetId ?? UUID(),
             vaccineName: selectedVaccineName ?? .other("Unknown"),
             dateGiven: dateGiven,
             clinicInfo: clinicInfo,
@@ -538,5 +538,5 @@ struct AddVaccineFlowView: View {
     AddVaccineFlowView()
         .environment(VaccineStore())
         .environment(CareStore())
-        .environment(ActivityStore())
+        .environment(PetStore())
 }

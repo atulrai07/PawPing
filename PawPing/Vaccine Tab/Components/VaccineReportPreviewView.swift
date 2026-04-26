@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct VaccineReportPreviewView: View {
-    @Environment(ActivityStore.self) var activityStore
+    @Environment(PetStore.self) var petStore
     @Environment(VaccineStore.self) var vaccineStore
     
     let config: VaccineReportConfig
@@ -157,20 +157,20 @@ struct VaccineReportPreviewView: View {
     
     private var dogProfileCard: some View {
         HStack(spacing: 16) {
-            Image(activityStore.dogProfile.dogImage)
+            Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
                 .resizable()
                 .scaledToFill()
                 .frame(width: 70, height: 70)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(activityStore.dogProfile.dogName)
+                Text(petStore.activePet?.name ?? "Pet")
                     .font(.system(size: 16, weight: .bold))
                 
-                Text("Breed : \(activityStore.dogProfile.breed)")
+                Text("Breed : \(petStore.activePet?.breed ?? "—")")
                     .font(.system(size: 14))
                 
-                Text("Age : \(activityStore.dogProfile.age) yrs 2 months")
+                Text("Age : \(petStore.activePet?.age ?? "?") yrs")
                     .font(.system(size: 14))
                 
                 Text("Owner : Rahul Kumar")
@@ -233,7 +233,7 @@ struct VaccineReportPreviewView: View {
 #Preview {
     NavigationStack {
         VaccineReportPreviewView(config: VaccineReportConfig.defaultConfig)
-            .environment(ActivityStore())
+            .environment(PetStore())
             .environment(VaccineStore())
     }
 }

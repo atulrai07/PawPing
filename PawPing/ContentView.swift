@@ -22,17 +22,22 @@ struct ContentView: View {
             Tab("Vaccine", systemImage: "syringe.fill") {
                 VaccineView()
             }
+
+            Tab("Profile", systemImage: "person.fill") {
+                NavigationStack {
+                    ProfileView()
+                }
+            }
         }
         .tint(Color("baseColor"))
     }
 }
 
 #Preview {
-    NavigationStack {
-        ContentView()
-            .environment(ActivityStore())
-            .environment(CareStore())
-            .environment(VaccineStore())
-            .environment(SymptomStore())
-    }
+    ContentView()
+        .environment(PetStore())
+        .environment(ActivityStore())
+        .environment(CareStore())
+        .environment(VaccineStore())
+        .environment(SymptomStore())
 }

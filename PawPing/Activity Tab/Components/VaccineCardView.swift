@@ -8,7 +8,14 @@
 import SwiftUI
 
 struct VaccineCardView: View {
-    var store: ActivityStore
+    @Environment(VaccineStore.self) var vaccineStore
+    
+    private var nearestVaccine: VaccineRecord? {
+        vaccineStore.vaccineRecords
+            .filter { $0.nextDoseDate != nil }
+            .sorted { ($0.nextDoseDate ?? Date()) < ($1.nextDoseDate ?? Date()) }
+            .first
+    }
     
     var body: some View {
         ZStack {
@@ -23,7 +30,7 @@ struct VaccineCardView: View {
                     
                     Spacer()
                 }
-                .padding(.trailing, 4) // Slight adjustment for chevron
+                .padding(.trailing, 4) 
                 
                 Spacer()
                 
@@ -35,12 +42,22 @@ struct VaccineCardView: View {
                 Spacer()
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(store.vaccines.first?.name ?? "No vaccine")
-                        .font(.system(size: 18, weight: .medium))
-                    
-                    Text("\(store.vaccines.first?.daysLeft ?? 0) days left")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color("secondaryText"))
+                    if let vaccine = nearestVaccine {
+                        Text(vaccine.displayName)
+                            .font(.system(size: 18, weight: .medium))
+                            .lineLimit(1)
+                        
+                        Text(vaccine.timeRemainingText)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Color("secondaryText"))
+                    } else {
+                        Text("No vaccine")
+                            .font(.system(size: 18, weight: .medium))
+                        
+                        Text("All up to date")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Color("secondaryText"))
+                    }
                 }
             }
             .padding(16)
@@ -50,5 +67,6 @@ struct VaccineCardView: View {
 }
 
 #Preview {
-    VaccineCardView(store: ActivityStore())
+    VaccineCardView()
+        .environment(VaccineStore())
 }

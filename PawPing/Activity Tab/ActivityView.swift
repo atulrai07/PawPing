@@ -9,11 +9,11 @@ import SwiftUI
 
 struct ActivityView: View {
     @Environment(ActivityStore.self) var store
+    @Environment(PetStore.self) var petStore
     @Environment(SymptomStore.self) var symptomStore
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
-    @State private var showProfile = false
     @State private var showMealsLog = false
     @State private var showDistanceSummary = false
     @State private var showSymptomChecker = false
@@ -87,7 +87,7 @@ struct ActivityView: View {
                     Button {
                         // TODO: Direct navigation to Vaccine Tab
                     } label: {
-                        VaccineCardView(store: store)
+                        VaccineCardView()
                     }
                     .buttonStyle(.plain)
 
@@ -170,12 +170,8 @@ struct ActivityView: View {
             .padding(.bottom, 80)
             .customNavigationScroll(
                 title: "Activity",
-                profileImage: store.dogProfile.dogImage,
-                onProfileTap: { showProfile = true }
+                petStore: petStore
             )
-            .navigationDestination(isPresented: $showProfile) {
-                ProfileView(store: store)
-            }
             .navigationDestination(isPresented: $showMealsLog) {
                 MealLogView(store: store)
             }
@@ -283,11 +279,13 @@ private struct WalkingLabel: View {
 
 struct ActivityViewPreviewWrapper: View {
     @State private var store = ActivityStore()
+    @State private var petStore = PetStore()
     @State private var symptomStore = SymptomStore()
     
     var body: some View {
         ActivityView()
             .environment(store)
+            .environment(petStore)
             .environment(symptomStore)
     }
 }

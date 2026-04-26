@@ -13,7 +13,7 @@ struct VetCareSelectionView: View {
     
     // Dependencies needed to show the map and profile
     @Environment(CareStore.self) var careStore
-    @Environment(ActivityStore.self) var activityStore
+    @Environment(PetStore.self) var petStore
     
     // Callback when a user taps a card
     var onSelect: (CareLocation) -> Void
@@ -45,7 +45,7 @@ struct VetCareSelectionView: View {
         // Match the navigation style of "Dog Profile" shown in the user's images
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Image(activityStore.dogProfile.dogImage)
+                Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 34, height: 34)
@@ -60,7 +60,7 @@ struct VetCareSelectionView: View {
         Map(position: $position) {
             UserAnnotation()
 
-            Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: activityStore.dogProfile.homeLatitude, longitude: activityStore.dogProfile.homeLongitude)) {
+            Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: petStore.activePet?.homeLatitude ?? 28.4210, longitude: petStore.activePet?.homeLongitude ?? 77.5340)) {
                 ZStack {
                     Circle()
                         .fill(Color.white)
@@ -81,7 +81,7 @@ struct VetCareSelectionView: View {
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .overlay(alignment: .bottomTrailing) {
             Button {
-                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: activityStore.dogProfile.homeLatitude, longitude: activityStore.dogProfile.homeLongitude), latitudinalMeters: 3000, longitudinalMeters: 3000))
+                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: petStore.activePet?.homeLatitude ?? 28.4210, longitude: petStore.activePet?.homeLongitude ?? 77.5340), latitudinalMeters: 3000, longitudinalMeters: 3000))
             } label: {
                 Image(systemName: "location.fill")
                     .font(.system(size: 16, weight: .bold))
@@ -132,6 +132,6 @@ struct VetCareSelectionView: View {
     NavigationStack {
         VetCareSelectionView(onSelect: { _ in })
             .environment(CareStore())
-            .environment(ActivityStore())
+            .environment(PetStore())
     }
 }

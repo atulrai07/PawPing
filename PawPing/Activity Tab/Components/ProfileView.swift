@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileView: View {
-    var store: ActivityStore
+    @Environment(PetStore.self) var petStore
 
     var body: some View {
         ScrollView {
@@ -47,7 +47,6 @@ struct ProfileView: View {
         .background(Color("baseBackground"))
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
     }
 }
 
@@ -56,15 +55,78 @@ struct ProfileView: View {
 private extension ProfileView {
 
     var profileHeader: some View {
-        VStack(spacing: 8) {
-            Image(store.dogProfile.dogImage)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 100, height: 100)
-                .clipShape(Circle())
+        VStack(spacing: 12) {
+            if let pet = petStore.activePet {
+                Image(pet.imageName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 100, height: 100)
+                    .clipShape(Circle())
 
-            Text(store.dogProfile.dogName)
-                .font(.system(size: 18, weight: .semibold))
+                Text(pet.name)
+                    .font(.system(size: 18, weight: .semibold))
+
+                // Pet switcher menu
+                Menu {
+                    ForEach(petStore.pets) { p in
+                        Button {
+                            petStore.switchPet(to: p.id)
+                        } label: {
+                            Label {
+                                Text(p.name)
+                            } icon: {
+                                if p.id == petStore.activePetId {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+
+                    Divider()
+
+                    Button {
+                        let newPet = Pet(
+                            id: UUID(),
+                            name: "New Pet",
+                            breed: "Mixed",
+                            gender: .male,
+                            age: "1",
+                            weightKg: 10.0,
+                            imageName: "dog\(min(petStore.pets.count + 1, 3))",
+                            homeLatitude: 28.4210,
+                            homeLongitude: 77.5340
+                        )
+                        petStore.addPet(newPet)
+                        petStore.switchPet(to: newPet.id)
+                    } label: {
+                        Label("Add Pet", systemImage: "plus.circle")
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Switch Pet")
+                            .font(.system(size: 13, weight: .medium))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundStyle(Color("baseColor"))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Color("baseColor").opacity(0.1))
+                    )
+                }
+            } else {
+                Image(Pet.defaultImageName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 100, height: 100)
+                    .clipShape(Circle())
+
+                Text("No Pet")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color("secondaryText"))
+            }
         }
         .padding(.top, 12)
     }
@@ -130,6 +192,7 @@ private extension ProfileView {
 
 #Preview {
     NavigationStack {
-        ProfileView(store: ActivityStore())
+        ProfileView()
+            .environment(PetStore())
     }
 }

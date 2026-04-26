@@ -12,10 +12,9 @@ import SwiftUI
 struct VaccineView: View {
 
     @Environment(VaccineStore.self) var store
-    @Environment(ActivityStore.self) var activityStore
+    @Environment(PetStore.self) var petStore
     @Environment(CareStore.self) var careStore
 
-    @State private var showProfile = false
     @State private var showAddVaccine = false
     @State private var showReportConfig = false
 
@@ -81,16 +80,12 @@ struct VaccineView: View {
             .padding(.bottom, 80)
             .customNavigationScroll(
                 title: "Vaccine",
-                profileImage: activityStore.dogProfile.dogImage,
-                onProfileTap: { showProfile = true },
+                petStore: petStore,
                 onAddTap: { showAddVaccine = true }
             )
-            .navigationDestination(isPresented: $showProfile) {
-                ProfileView(store: activityStore)
-            }
             .navigationDestination(isPresented: $showReportConfig) {
                 VaccineReportConfigView()
-                    .environment(activityStore)
+                    .environment(petStore)
                     .environment(store)
             }
             .sheet(isPresented: $showAddVaccine) {
@@ -140,7 +135,7 @@ struct VaccineView: View {
     NavigationStack {
         VaccineView()
             .environment(VaccineStore())
-            .environment(ActivityStore())
+            .environment(PetStore())
             .environment(CareStore())
     }
 }

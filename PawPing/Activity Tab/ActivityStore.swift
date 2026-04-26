@@ -10,7 +10,6 @@ import Foundation
 @Observable
 class ActivityStore {
 
-    var dogProfile: DogProfile
     var meals: [Meal] = []
     var vaccines: [Vaccine] = []
     var allergies: [Allergy] = []
@@ -30,36 +29,26 @@ class ActivityStore {
 
     init() {
 
-        let sampleDogId = UUID()
-
-        dogProfile = DogProfile(
-            id: sampleDogId,
-            ownerId: UUID(),
-            dogName: "Buddy",
-            breed: "Labrador",
-            gender: .male,
-            age: "2",
-            weightKg: 25.0
-        )
+        let samplePetId = UUID()
 
         meals = [
             Meal(
                 id: UUID(),
-                dogId: sampleDogId,
+                petId: samplePetId,
                 icon: "sun.max",
                 time: "8:00",
                 meridian: "AM",
                 mealType: .breakfast,
-                foodType: .dryDogFood,
-                quantity: 1.0,
+                foodType: nil,
+                quantity: 0,
                 unit: "cup",
-                calories: 350,
-                isTaken: true
+                calories: 0,
+                isTaken: false
             ),
 
             Meal(
                 id: UUID(),
-                dogId: sampleDogId,
+                petId: samplePetId,
                 icon: "sunset.fill",
                 time: "12:30",
                 meridian: "PM",
@@ -70,7 +59,7 @@ class ActivityStore {
             
             Meal(
                 id: UUID(),
-                dogId: sampleDogId,
+                petId: samplePetId,
                 icon: "moon",
                 time: "8:30",
                 meridian: "PM",
@@ -80,51 +69,21 @@ class ActivityStore {
             )
         ]
 
-        vaccines = [
-            Vaccine(
-                id: UUID(),
-                dogId: sampleDogId,
-                name: "Rabies Booster",
-                givenDate: Date(),
-                daysLeft: 3,
-                frequency: 12,
-                frequencyType: .monthly,
-                vaccineNotes: "N/A"
-            )
-        ]
-
-        allergies = [
-            Allergy(
-                id: UUID(),
-                dogId: sampleDogId,
-                allergyName: "Flea Dermatitis",
-                allergyType: .environmental,
-                allergyNotes: "N/A",
-                allergen: "Gluten"
-            ),
-
-            Allergy(
-                id: UUID(),
-                dogId: sampleDogId,
-                allergyName: "Flea Dermatitis",
-                allergyType: .environmental,
-                allergyNotes: "N/A",
-                allergen: "Lactose"
-            )
-        ]
+        vaccines = []
+        allergies = []
 
         walkActivity = WalkActivity(
-            currentMinutes: 23,
+            currentMinutes: 0,
             goalMinutes: 60
         )
 
         timeWalkedGraph = TimeWalkedGraphModel(
             data: [
-                TimeWalkedData(day: "MON", minutes: 10),
-                TimeWalkedData(day: "TUE", minutes: 28),
-                TimeWalkedData(day: "WED", minutes: 18),
-                TimeWalkedData(day: "THU", minutes: 42),
-                TimeWalkedData(day: "FRI", minutes: 38),
+                TimeWalkedData(day: "MON", minutes: 0),
+                TimeWalkedData(day: "TUE", minutes: 0),
+                TimeWalkedData(day: "WED", minutes: 0),
+                TimeWalkedData(day: "THU", minutes: 0),
+                TimeWalkedData(day: "FRI", minutes: 0),
                 TimeWalkedData(day: "SAT", minutes: 0),
                 TimeWalkedData(day: "SUN", minutes: 0)
             ],
@@ -140,30 +99,21 @@ class ActivityStore {
         let monday = calendar.date(from: components)!
         
         let weekDates = (0..<7).map { calendar.date(byAdding: .day, value: $0, to: monday)! }
-        let weekDistances = [0.8, 3.2, 2.1, 1.2, 2.4, 0.0, 0.5] //distances for graph in weekly walk activity
+        let weekDistances = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         
         var weekData: [DistanceData] = []
         for i in 0..<weekDistances.count {
             weekData.append(DistanceData(date: Array(weekDates)[i], distanceInKm: weekDistances[i]))
         }
         
-        // Sample month data
-        let monthDistances = [
-            0, 0, 0, 0, 0, 0, 0, 1.1, 0.7, 1.3, 1.7, 1.2, 1.6, 0.6, 0, 0, 1.1, 0, 0, 0, 0, 0, 0
-        ]
-        
+        // Empty month data
         var monthData: [DistanceData] = []
-        for i in 0..<monthDistances.count {
-            if let date = calendar.date(byAdding: .day, value: i - 20, to: today) {
-                monthData.append(DistanceData(date: date, distanceInKm: monthDistances[i]))
-            }
-        }
         
         distanceSummary = DistanceSummaryModel(
             weekData: weekData,
             monthData: monthData,
-            weekRange: "02-09 Sep",
-            monthName: "September"
+            weekRange: "Current Week",
+            monthName: "Current Month"
         )
     }
 
@@ -185,6 +135,15 @@ class ActivityStore {
 
         let walkedMinutes = Int(elapsedSeconds / 60)
         walkActivity.currentMinutes += walkedMinutes
+        
+        // Update graph for current day
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+        let currentDay = formatter.string(from: Date()).uppercased()
+        
+        if let index = timeWalkedGraph.data.firstIndex(where: { $0.day == currentDay }) {
+            timeWalkedGraph.data[index].minutes += walkedMinutes
+        }
 
         isWalking = false
         isPaused = false

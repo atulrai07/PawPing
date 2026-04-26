@@ -25,7 +25,7 @@ struct CareView: View {
     @State private var showProfile = false;
 
     @Environment(CareStore.self) var store
-    @Environment(ActivityStore.self) var activityStore
+    @Environment(PetStore.self) var petStore
 
     // Switches between vets and dayCares based on the selected segment,
     // then filters by search text if the user typed something
@@ -50,12 +50,8 @@ struct CareView: View {
             .padding(.bottom, 80)
             .customNavigationScroll(
                 title: "Care",
-                profileImage: activityStore.dogProfile.dogImage,
-                onProfileTap: {showProfile = true}
+                petStore: petStore
             )
-            .navigationDestination(isPresented: $showProfile) {
-                ProfileView(store: activityStore)
-            }
             // .sheet presents VetClinicDetails as a half-sheet when a card is tapped.
             // `item:` binding means the sheet shows whenever selectedLocation != nil.
             .sheet(item: $selectedLocation) { location in
@@ -108,7 +104,7 @@ struct CareView: View {
             UserAnnotation()
 
             // "Home" pin — pulls lat/lng from the dog's profile
-            Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: activityStore.dogProfile.homeLatitude, longitude: activityStore.dogProfile.homeLongitude)) {
+            Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: petStore.activePet?.homeLatitude ?? 28.4210, longitude: petStore.activePet?.homeLongitude ?? 77.5340)) {
                 ZStack {
                     Circle()
                         .fill(Color.white)
@@ -131,7 +127,7 @@ struct CareView: View {
         .overlay(alignment: .bottomTrailing) {
             // Recenter button — snaps the map back to the pet's home area
             Button {
-                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: activityStore.dogProfile.homeLatitude, longitude: activityStore.dogProfile.homeLongitude), latitudinalMeters: 3000, longitudinalMeters: 3000))
+                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: petStore.activePet?.homeLatitude ?? 28.4210, longitude: petStore.activePet?.homeLongitude ?? 77.5340), latitudinalMeters: 3000, longitudinalMeters: 3000))
             } label: {
                 Image(systemName: "location.fill")
                     .font(.system(size: 16, weight: .bold))
@@ -179,12 +175,12 @@ struct CareView: View {
 
 struct CareViewPreviewWrapper: View {
     @State private var store = CareStore()
-    @State private var activityStore = ActivityStore()
+    @State private var petStore = PetStore()
     
     var body: some View {
         CareView()
             .environment(store)
-            .environment(activityStore)
+            .environment(petStore)
     }
 }
 
