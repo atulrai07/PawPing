@@ -16,12 +16,12 @@ struct VetCareSelectionView: View {
     @Environment(PetStore.self) var petStore
     
     // Callback when a user taps a card
-    var onSelect: (CareLocation) -> Void
+    var onSelect: (PlaceModel) -> Void
 
     @State private var searchText: String = ""
     @State private var position: MapCameraPosition = .automatic
     
-    var filteredLocations: [CareLocation] {
+    var filteredLocations: [PlaceModel] {
         if searchText.isEmpty {
             return careStore.vets
         } else {

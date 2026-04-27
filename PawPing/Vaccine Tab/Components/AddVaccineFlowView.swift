@@ -50,7 +50,7 @@ struct AddVaccineFlowView: View {
     @State private var address: String = ""
     @State private var phoneNumber: String = ""
     @State private var notes: String = ""
-    @State private var selectedVetClinic: CareLocation? = nil
+    @State private var selectedVetClinic: PlaceModel? = nil
     @State private var showingVetSelection = false
 
     var body: some View {
@@ -477,8 +477,8 @@ struct AddVaccineFlowView: View {
                     id: UUID(),
                     vetName: "",
                     clinicName: selectedClinic.name,
-                    address: selectedClinic.address,
-                    phoneNumber: selectedClinic.contactNumber,
+                    address: nil,
+                    phoneNumber: nil,
                     linkedVetId: selectedClinic.id
                 )
             }
@@ -518,12 +518,12 @@ struct AddVaccineFlowView: View {
 
     // MARK: - Handlers
 
-    private func handleVetSelection(_ clinic: CareLocation) {
+    private func handleVetSelection(_ clinic: PlaceModel) {
         selectedVetClinic = clinic
         vetName = ""
         clinicName = clinic.name
-        address = clinic.address ?? ""
-        phoneNumber = clinic.contactNumber ?? ""
+        address = "Not available"
+        phoneNumber = "Not available"
         
         // Return to manual view to showcase populated data
         withAnimation {

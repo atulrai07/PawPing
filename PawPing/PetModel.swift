@@ -23,6 +23,8 @@ struct Pet: Identifiable, Codable, Hashable {
     var imageName: String          // asset catalog name (e.g. "dog1")
     var homeLatitude: Double
     var homeLongitude: Double
+    var birthday: Date? = nil
+    var isNeutered: Bool? = nil
 
     /// Fallback image used when no pet exists
     static let defaultImageName = "profilePhoto"

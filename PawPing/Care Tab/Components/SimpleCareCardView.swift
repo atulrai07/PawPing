@@ -11,7 +11,7 @@
 import SwiftUI
 
 struct SimpleCareCardView: View {
-    let item: CareLocation
+    let item: PlaceModel
     
     var body: some View {
         HStack(spacing: 12) {
@@ -21,8 +21,7 @@ struct SimpleCareCardView: View {
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Color("baseColor"))
                 
-                // Subtype & Rating
-                Text("\(item.subType ?? "Veterinary Clinic") • \(String(format: "%.1f", item.rating))★")
+                Text(item.category.rawValue)
                     .font(.system(size: 14))
                     .foregroundStyle(.gray)
                 
@@ -34,12 +33,15 @@ struct SimpleCareCardView: View {
             
             Spacer()
             
-            // Image from assets
-            Image(item.imageName)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color("baseColor").opacity(0.1))
+                    .frame(width: 80, height: 80)
+                
+                Image(systemName: item.category == .vet ? "cross.case.fill" : "pawprint.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(Color("baseColor"))
+            }
         }
         .padding(12)
         .background(Color(.systemGray6))
@@ -48,15 +50,12 @@ struct SimpleCareCardView: View {
 }
 
 #Preview {
-    SimpleCareCardView(item: CareLocation(
-        id: UUID(),
+    SimpleCareCardView(item: PlaceModel(
         name: "PupiLife Pet Clinic",
-        subType: "Veterinary Clinic",
-        rating: 4.8,
-        distance: 1.2,
-        imageName: "profilePhoto",
         latitude: 28.525211,
-        longitude: 77.218489
+        longitude: 77.218489,
+        distance: 1.2,
+        category: .vet
     ))
     .padding()
 }

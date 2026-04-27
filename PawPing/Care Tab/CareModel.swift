@@ -18,30 +18,16 @@ enum CareType: String, CaseIterable {
     case dayCare = "Day Care"
 }
 
-// MARK: - Unified Care Location
-// One struct for both vets and day cares.
-// subType is nil for vets (defaults to "Veterinary Clinic" in the UI).
-// For day cares it holds something like "Pet Boarding Service" or "Pet DayCare".
+// MARK: - Place Model
+// Dynamic model for MapKit results
 
-struct CareLocation: Identifiable {
-    let id: UUID
+struct PlaceModel: Identifiable {
+    let id = UUID()
     var name: String
-    var subType: String?
-    var rating: Double
-    var distance: Double       // in km
-    var imageName: String      // asset catalog image name
     var latitude: Double
     var longitude: Double
-    var contactNumber: String?
-    var email: String?
-    var address: String?
-    var openingTime: String?
-    var closingTime: String?
-    
-    // Extra stats shown in VetClinicDetails
-    var petSeen: String?       // e.g. "850+"
-    var experience: String?    // e.g. "12 Years"
-    var about: String?
+    var distance: Double       // in km
+    var category: CareType
 
     /// Convenience — converts lat/lng into the type MapKit needs
     var coordinate: CLLocationCoordinate2D {

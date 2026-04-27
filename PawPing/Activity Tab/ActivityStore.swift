@@ -107,7 +107,7 @@ class ActivityStore {
         }
         
         // Empty month data
-        var monthData: [DistanceData] = []
+        let monthData: [DistanceData] = []
         
         distanceSummary = DistanceSummaryModel(
             weekData: weekData,

@@ -21,7 +21,7 @@ struct CareView: View {
     // .automatic tells MapKit to frame all annotations automatically
     @State private var position: MapCameraPosition = .automatic
     // When a user taps a card, we store the location here to trigger the detail sheet
-    @State private var selectedLocation: CareLocation?
+    @State private var selectedLocation: PlaceModel?
     @State private var showProfile = false;
 
     @Environment(CareStore.self) var store
@@ -29,7 +29,7 @@ struct CareView: View {
 
     // Switches between vets and dayCares based on the selected segment,
     // then filters by search text if the user typed something
-    var filteredLocations: [CareLocation] {
+    var filteredLocations: [PlaceModel] {
         let sourceList = selectedCareType == .vet ? store.vets : store.dayCares
         if searchText.isEmpty {
             return sourceList
@@ -58,6 +58,11 @@ struct CareView: View {
                 VetClinicDetails(item: location)
             }
         } // NavigationStack
+        .onAppear {
+            if store.vets.isEmpty && store.dayCares.isEmpty {
+                store.requestLocationAndFetch()
+            }
+        }
     }
 
     // @Namespace creates a shared animation ID space so the capsule
@@ -160,13 +165,29 @@ struct CareView: View {
 
     private var cardsList: some View {
         VStack(spacing: 12) {
-            ForEach(filteredLocations) { item in
-                Button {
-                    selectedLocation = item
-                } label: {
-                    SimpleCareCardView(item: item)
+            if store.isLoading {
+                ProgressView("Searching nearby places...")
+                    .padding(.top, 40)
+            } else if store.isLocationDenied {
+                Text("Location access is denied. Please enable it in Settings to see nearby places.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 40)
+            } else if filteredLocations.isEmpty {
+                Text("No places found nearby.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.gray)
+                    .padding(.top, 40)
+            } else {
+                ForEach(filteredLocations) { item in
+                    Button {
+                        selectedLocation = item
+                    } label: {
+                        SimpleCareCardView(item: item)
+                    }
+                    .buttonStyle(.plain) // keeps card styling instead of default blue text
                 }
-                .buttonStyle(.plain) // keeps card styling instead of default blue text
             }
         } // VStack — cards list
         .padding(.horizontal)
@@ -176,11 +197,15 @@ struct CareView: View {
 struct CareViewPreviewWrapper: View {
     @State private var store = CareStore()
     @State private var petStore = PetStore()
+    @StateObject private var authStore = AuthStore()
+    @StateObject private var appState = AppState()
     
     var body: some View {
         CareView()
             .environment(store)
             .environment(petStore)
+            .environmentObject(authStore)
+            .environmentObject(appState)
     }
 }
 

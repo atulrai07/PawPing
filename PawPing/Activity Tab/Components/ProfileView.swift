@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(PetStore.self) var petStore
+    @EnvironmentObject var authStore: AuthStore
+    @State private var showingAddPet = false
 
     var body: some View {
         ScrollView {
@@ -47,6 +49,12 @@ struct ProfileView: View {
         .background(Color("baseBackground"))
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $showingAddPet) {
+            AddPetView { newPet in
+                petStore.addPet(newPet)
+                petStore.switchPet(to: newPet.id)
+            }
+        }
     }
 }
 
@@ -85,19 +93,7 @@ private extension ProfileView {
                     Divider()
 
                     Button {
-                        let newPet = Pet(
-                            id: UUID(),
-                            name: "New Pet",
-                            breed: "Mixed",
-                            gender: .male,
-                            age: "1",
-                            weightKg: 10.0,
-                            imageName: "dog\(min(petStore.pets.count + 1, 3))",
-                            homeLatitude: 28.4210,
-                            homeLongitude: 77.5340
-                        )
-                        petStore.addPet(newPet)
-                        petStore.switchPet(to: newPet.id)
+                        showingAddPet = true
                     } label: {
                         Label("Add Pet", systemImage: "plus.circle")
                     }
@@ -174,7 +170,7 @@ private extension ProfileView {
 
     var logOutButton: some View {
         Button {
-            // Log-out workflow pending
+            authStore.logout()
         } label: {
             Text("Log Out")
                 .font(.system(size: 17, weight: .semibold))
@@ -194,5 +190,7 @@ private extension ProfileView {
     NavigationStack {
         ProfileView()
             .environment(PetStore())
+            .environmentObject(AuthStore())
+            .environmentObject(AppState())
     }
 }

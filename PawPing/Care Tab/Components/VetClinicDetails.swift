@@ -13,7 +13,7 @@ import SwiftUI
 import UIKit
 
 struct VetClinicDetails: View {
-    let item: CareLocation
+    let item: PlaceModel
 
     // @Environment(\.dismiss) gives us a handle to close this sheet.
     // It works because CareView presents this via .sheet(item:),
@@ -33,7 +33,7 @@ struct VetClinicDetails: View {
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundStyle(.primary)
                             
-                            Text(item.subType ?? "Veterinary Clinic")
+                            Text(item.category.rawValue)
                                 .font(.system(size: 14))
                                 .foregroundStyle(.gray)
                         } // VStack — titles
@@ -55,54 +55,15 @@ struct VetClinicDetails: View {
                 } // VStack — drag indicator + header
                 .padding(.top, 24)
                 
-                // MARK: - Stats Row
-                HStack {
-                    Spacer()
-                    
-                    VStack(spacing: 4) {
-                        HStack(spacing: 2) {
-                            Text(String(format: "%.1f", item.rating))
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(Color("baseColor"))
-                            Image(systemName: "star.fill")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.yellow)
-                        } // HStack — rating
-                        Text("Rating")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.gray)
-                    } // VStack — rating column
-                    
-                    Spacer()
-                    
-                    VStack(spacing: 4) {
-                        Text(item.petSeen ?? "N/A")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(Color("baseColor"))
-                        Text("Pet Seen")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.gray)
-                    } // VStack — pets seen column
-                    
-                    Spacer()
-                    
-                    VStack(spacing: 4) {
-                        Text(item.experience ?? "N/A")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(Color("baseColor"))
-                        Text("Experience")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.gray)
-                    } // VStack — experience column
-                    
-                    Spacer()
-                } // HStack — stats row
+
                 
                 // MARK: - Quick Action Buttons
                 HStack(spacing: 12) {
                     // Distance Button (Solid Blue)
                     Button {
-                        print("Navigate to \(item.name)")
+                        if let url = URL(string: "http://maps.apple.com/?daddr=\(item.latitude),\(item.longitude)") {
+                            UIApplication.shared.open(url)
+                        }
                     } label: {
                         VStack(spacing: 6) {
                             Image(systemName: "location.fill")
@@ -117,14 +78,13 @@ struct VetClinicDetails: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     
-                    // Call Button (Light Blue)
+                    // Call Button (Disabled)
                     Button {
-                        print("Call \(item.contactNumber ?? "")")
                     } label: {
                         VStack(spacing: 6) {
                             Image(systemName: "phone.fill")
                                 .font(.system(size: 20))
-                            Text("Call")
+                            Text("Unavailable")
                                 .font(.system(size: 14))
                         } // VStack — call button
                         .foregroundStyle(Color("baseColor"))
@@ -133,15 +93,16 @@ struct VetClinicDetails: View {
                         .background(Color("baseColor").opacity(0.15))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
+                    .disabled(true)
+                    .opacity(0.6)
                     
-                    // Website Button (Light Blue)
+                    // Website Button (Disabled)
                     Button {
-                        print("Visit \(item.email ?? "")")
                     } label: {
                         VStack(spacing: 6) {
                             Image(systemName: "globe")
                                 .font(.system(size: 20))
-                            Text("Website")
+                            Text("Unavailable")
                                 .font(.system(size: 14))
                         } // VStack — website button
                         .foregroundStyle(Color("baseColor"))
@@ -150,28 +111,11 @@ struct VetClinicDetails: View {
                         .background(Color("baseColor").opacity(0.15))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
+                    .disabled(true)
+                    .opacity(0.6)
                 } // HStack — quick actions
                 
-                // MARK: - Image Gallery
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        // Using the same image twice as a placeholder gallery
-                        Image(item.imageName)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 170, height: 170)
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                        
-                        Image(item.imageName)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 170, height: 170)
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                    } // HStack — gallery images
-                    .padding(.horizontal, 20)
-                } // ScrollView — horizontal gallery
-                .frame(height: 170)
-                .padding(.horizontal, -20) // cancels out the main padding for edge-to-edge scroll
+
                 
                 // MARK: - About Section
                 VStack(alignment: .leading, spacing: 12) {
@@ -179,11 +123,10 @@ struct VetClinicDetails: View {
                         .font(.system(size: 20, weight: .bold))
                         .foregroundStyle(.primary)
                     
-                    Text("\(item.about ?? "No description available.") [MORE...](#)")
+                    Text("This \(item.category.rawValue.lowercased()) is located \(item.distanceString) from you.")
                         .foregroundStyle(.primary)
                         .font(.system(size: 15))
                         .lineSpacing(4)
-                        .tint(Color("baseColor"))
                 } // VStack — about
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
@@ -194,10 +137,10 @@ struct VetClinicDetails: View {
                         .foregroundStyle(.primary)
                     
                     VStack(spacing: 0) {
-                        detailRow(title: "Phone", value: item.contactNumber ?? "N/A")
-                        detailRow(title: "Website", value: item.email ?? "N/A")
-                        detailRow(title: "Address", value: item.address ?? "N/A")
-                        detailRow(title: "Timing", value: "\(item.openingTime ?? "") - \(item.closingTime ?? "")", isLast: true)
+                        detailRow(title: "Phone", value: "Not available")
+                        detailRow(title: "Website", value: "Not available")
+                        detailRow(title: "Address", value: "Not available")
+                        detailRow(title: "Timing", value: "Not available", isLast: true)
                     } // VStack — detail rows
                 } // VStack — details section
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -239,17 +182,11 @@ struct VetClinicDetails: View {
 } // VetClinicDetails
 
 #Preview {
-    VetClinicDetails(item: CareLocation(
-        id: UUID(),
+    VetClinicDetails(item: PlaceModel(
         name: "PupiLife Pet Clinic",
-        subType: nil,
-        rating: 4.8, distance: 4.5, imageName: "vet1",
-        latitude: 28.6139, longitude: 77.2090,
-        contactNumber: "+91 8456789027",
-        email: "petcare.in",
-        address: "New Delhi ,India",
-        openingTime: "9 AM", closingTime: "9 PM",
-        petSeen: "850+", experience: "12 Years",
-        about: "PupiLife Pet Clinic is a premium center dedicated to advanced pet care. Our specialists bring years of expertise in surgical and diagnostic services, ensuring your pet gets the best treatment available in Dankaur."
+        latitude: 28.6139,
+        longitude: 77.2090,
+        distance: 4.5,
+        category: .vet
     ))
 }

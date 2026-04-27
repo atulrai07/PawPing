@@ -21,6 +21,7 @@ private struct StickyNavHeader: View {
     var petStore: PetStore?
     var onAddTap: (() -> Void)?
     let isCollapsed: Bool
+    @State private var showingAddPet = false
 
     var body: some View {
         ZStack {
@@ -67,19 +68,7 @@ private struct StickyNavHeader: View {
                         Divider()
 
                         Button {
-                            let newPet = Pet(
-                                id: UUID(),
-                                name: "New Pet",
-                                breed: "Mixed",
-                                gender: .male,
-                                age: "1",
-                                weightKg: 10.0,
-                                imageName: "dog\(min(petStore.pets.count + 1, 3))",
-                                homeLatitude: 28.4210,
-                                homeLongitude: 77.5340
-                            )
-                            petStore.addPet(newPet)
-                            petStore.switchPet(to: newPet.id)
+                            showingAddPet = true
                         } label: {
                             Label("Add Pet", systemImage: "plus.circle")
                         }
@@ -146,7 +135,14 @@ private struct StickyNavHeader: View {
                 .frame(height: 0.5)
                 .opacity(isCollapsed ? 0 : 0)
         }
-
+        .fullScreenCover(isPresented: $showingAddPet) {
+            if let petStore = petStore {
+                AddPetView { newPet in
+                    petStore.addPet(newPet)
+                    petStore.switchPet(to: newPet.id)
+                }
+            }
+        }
         .animation(.spring(response: 0.15, dampingFraction: 0.9), value: isCollapsed)
     }
 }
