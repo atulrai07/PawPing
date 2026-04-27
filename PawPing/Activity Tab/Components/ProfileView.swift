@@ -2,8 +2,6 @@
 //  ProfileView.swift
 //  PawPing
 //
-//  Created by Atul on 25/03/26.
-//
 
 import SwiftUI
 
@@ -43,6 +41,17 @@ struct ProfileView: View {
                 // MARK: - Log Out
                 logOutButton
                     .padding(.top, 8)
+                
+                // Temporary Diagnostic Info
+                VStack(spacing: 4) {
+                    Text("Debug Info")
+                        .font(.caption2).bold().foregroundStyle(.secondary)
+                    Text("User ID: \(authStore.appState?.currentUserId ?? "Not Found")")
+                        .font(.system(size: 8, design: .monospaced))
+                    Text("Pets found: \(petStore.pets.count)")
+                        .font(.caption2)
+                }
+                .padding(.top, 20)
             }
             .padding(.bottom, 40)
         }
@@ -50,11 +59,8 @@ struct ProfileView: View {
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $showingAddPet) {
-            AddPetView { newPet in
-                Task {
-                    await petStore.addPet(newPet)
-                    petStore.switchPet(to: newPet.id)
-                }
+            AddPetView {
+                showingAddPet = false
             }
         }
     }
@@ -67,14 +73,29 @@ private extension ProfileView {
     var profileHeader: some View {
         VStack(spacing: 12) {
             if let pet = petStore.activePet {
-                Image(pet.imageName)
-                    .resizable()
-                    .scaledToFill()
+                if pet.imageName.hasPrefix("http"), let url = URL(string: pet.imageName) {
+                    AsyncImage(url: url) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        ProgressView()
+                    }
                     .frame(width: 100, height: 100)
                     .clipShape(Circle())
+                } else {
+                    Image(pet.imageName)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 100, height: 100)
+                        .clipShape(Circle())
+                }
 
                 Text(pet.name)
                     .font(.system(size: 18, weight: .semibold))
+
+                Text("Owner: \(authStore.appState?.currentUserName ?? "Pet Owner")")
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundStyle(Color("secondaryText"))
+                    .padding(.top, -8)
 
                 // Pet switcher menu
                 Menu {
@@ -111,7 +132,7 @@ private extension ProfileView {
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
-                            .fill(Color("baseColor").opacity(0.1))
+                        .fill(Color("baseColor").opacity(0.1))
                     )
                 }
             } else {

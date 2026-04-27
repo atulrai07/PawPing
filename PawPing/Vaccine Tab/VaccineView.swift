@@ -81,7 +81,13 @@ struct VaccineView: View {
             .customNavigationScroll(
                 title: "Vaccine",
                 petStore: petStore,
-                onAddTap: { showAddVaccine = true }
+                onAddTap: { showAddVaccine = true },
+                refreshAction: {
+                    await petStore.fetchPets()
+                    if let activeId = petStore.activePetId {
+                        await store.fetchRecords(for: activeId)
+                    }
+                }
             )
             .navigationDestination(isPresented: $showReportConfig) {
                 VaccineReportConfigView()
@@ -90,6 +96,11 @@ struct VaccineView: View {
             }
             .sheet(isPresented: $showAddVaccine) {
                 AddVaccineFlowView()
+            }
+            .task {
+                if let activeId = petStore.activePetId {
+                    await store.fetchRecords(for: activeId)
+                }
             }
         }
     }

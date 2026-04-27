@@ -50,7 +50,11 @@ struct CareView: View {
             .padding(.bottom, 80)
             .customNavigationScroll(
                 title: "Care",
-                petStore: petStore
+                petStore: petStore,
+                refreshAction: {
+                    await petStore.fetchPets()
+                    store.requestLocationAndFetch()
+                }
             )
             // .sheet presents VetClinicDetails as a half-sheet when a card is tapped.
             // `item:` binding means the sheet shows whenever selectedLocation != nil.

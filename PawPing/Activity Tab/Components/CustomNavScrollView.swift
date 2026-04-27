@@ -78,10 +78,20 @@ private struct StickyNavHeader: View {
                                 .fill(Color("secondaryText").opacity(0.2))
                                 .frame(width: 36, height: 36)
                                 .overlay(
-                                    Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .clipShape(Circle())
+                                    Group {
+                                        if let imageName = petStore.activePet?.imageName, imageName.hasPrefix("http"), let url = URL(string: imageName) {
+                                            AsyncImage(url: url) { image in
+                                                image.resizable().scaledToFill()
+                                            } placeholder: {
+                                                ProgressView()
+                                            }
+                                        } else {
+                                            Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
+                                                .resizable()
+                                                .scaledToFill()
+                                        }
+                                    }
+                                    .clipShape(Circle())
                                 )
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 10, weight: .bold))
@@ -136,13 +146,8 @@ private struct StickyNavHeader: View {
                 .opacity(isCollapsed ? 0 : 0)
         }
         .fullScreenCover(isPresented: $showingAddPet) {
-            if let petStore = petStore {
-                AddPetView { newPet in
-                    Task {
-                        await petStore.addPet(newPet)
-                        petStore.switchPet(to: newPet.id)
-                    }
-                }
+            AddPetView {
+                showingAddPet = false
             }
         }
         .animation(.spring(response: 0.15, dampingFraction: 0.9), value: isCollapsed)
@@ -155,6 +160,7 @@ private struct CustomNavigationScrollModifier: ViewModifier {
     let title: String
     var petStore: PetStore?
     var onAddTap: (() -> Void)?
+    var refreshAction: (() async -> Void)?
     var collapseThreshold: CGFloat
 
     @State private var scrollOffset: CGFloat = 0
@@ -179,6 +185,11 @@ private struct CustomNavigationScrollModifier: ViewModifier {
                             }
                     }
                 )
+        }
+        .refreshable {
+            if let refreshAction {
+                await refreshAction()
+            }
         }
         .coordinateSpace(name: "_customNavScroll")
         .background(Color("baseBackground"))
@@ -212,12 +223,14 @@ extension View {
         title: String,
         petStore: PetStore? = nil,
         onAddTap: (() -> Void)? = nil,
+        refreshAction: (() async -> Void)? = nil,
         collapseThreshold: CGFloat = 50
     ) -> some View {
         modifier(CustomNavigationScrollModifier(
             title: title,
             petStore: petStore,
             onAddTap: onAddTap,
+            refreshAction: refreshAction,
             collapseThreshold: collapseThreshold
         ))
     }

@@ -199,7 +199,7 @@ struct SignupView: View {
             do {
                 try await authStore.signup(name: name, email: email, password: password)
             } catch {
-                errorMessage = "Failed to create account. Please try again."
+                errorMessage = error.localizedDescription
             }
             isLoading = false
         }

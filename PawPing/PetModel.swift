@@ -8,7 +8,7 @@ import Foundation
 // MARK: - Pet
 struct Pet: Identifiable, Codable, Hashable {
     let id: UUID
-    var ownerId: UUID?             // References profiles.id in Supabase
+    var ownerId: String?           // References profiles.id in Supabase
     var name: String
     var breed: String
     var gender: PetGender
@@ -17,7 +17,7 @@ struct Pet: Identifiable, Codable, Hashable {
     var imageName: String          // asset catalog name (e.g. "dog1")
     var homeLatitude: Double
     var homeLongitude: Double
-    var birthday: Date? = nil
+    var birthday: String? = nil    // Stored as "yyyy-MM-dd" to match Supabase date column
     var isNeutered: Bool? = nil
 
     /// Fallback image used when no pet exists
@@ -37,6 +37,23 @@ struct Pet: Identifiable, Codable, Hashable {
         case homeLongitude = "home_longitude"
         case birthday
         case isNeutered = "is_neutered"
+    }
+    
+    // MARK: - Helpers
+    
+    /// Convert a Date to the "yyyy-MM-dd" string format used by the database
+    static func birthdayString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+    
+    /// Parse the stored birthday string back into a Date
+    var birthdayDate: Date? {
+        guard let birthday else { return nil }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: birthday)
     }
 }
 

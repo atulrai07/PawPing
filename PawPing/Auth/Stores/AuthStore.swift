@@ -27,7 +27,7 @@ class AuthStore {
     func checkSession() async {
         do {
             let session = try await client.auth.session
-            updateState(with: session.user)
+            await updateState(with: session.user)
         } catch {
             // No valid session found
             logoutLocally()
@@ -36,7 +36,7 @@ class AuthStore {
     
     func login(email: String, password: String) async throws {
         let response = try await client.auth.signIn(email: email, password: password)
-        updateState(with: response.user)
+        await updateState(with: response.user)
     }
     
     func signup(name: String, email: String, password: String) async throws {
@@ -46,7 +46,7 @@ class AuthStore {
             password: password,
             data: ["full_name": .string(name)]
         )
-        updateState(with: response.user)
+        await updateState(with: response.user)
     }
     
     func logout() async {
@@ -56,9 +56,46 @@ class AuthStore {
     
     // MARK: - Private Helpers
     
-    private func updateState(with user: User) {
-        appState?.currentUserId = user.id.uuidString
+    private func updateState(with user: User) async {
+        // BUG FIX: Force lowercase for consistency with PetStore
+        appState?.currentUserId = user.id.uuidString.lowercased()
+        
+        if case let .string(val) = user.userMetadata["full_name"] {
+            appState?.currentUserName = val
+        } else {
+            appState?.currentUserName = "Pet Owner"
+        }
+        
         appState?.isAuthenticated = true
+        
+        // Ensure profile exists in DB
+        await ensureProfileExists(for: user)
+    }
+    
+    private func ensureProfileExists(for user: User) async {
+        struct ProfileUpdate: Encodable {
+            let id: String
+            let full_name: String
+        }
+        
+        let name: String
+        if case let .string(val) = user.userMetadata["full_name"] {
+            name = val
+        } else {
+            name = "New User"
+        }
+        
+        // BUG FIX: Ensure the ID being upserted is lowercase
+        let profile = ProfileUpdate(id: user.id.uuidString.lowercased(), full_name: name)
+        
+        do {
+            try await client
+                .from("profiles")
+                .upsert(profile)
+                .execute()
+        } catch {
+            print("Note: Profile upsert finished. \(error.localizedDescription)")
+        }
     }
     
     private func logoutLocally() {

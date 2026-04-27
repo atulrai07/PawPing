@@ -165,7 +165,7 @@ struct CreateProfileView: View {
             imageName: Pet.defaultImageName,
             homeLatitude: 28.4210, // Mock location
             homeLongitude: 77.5340,
-            birthday: birthday,
+            birthday: Pet.birthdayString(from: birthday),
             isNeutered: isNeutered
         )
         

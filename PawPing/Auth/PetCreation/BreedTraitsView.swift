@@ -6,12 +6,19 @@
 import SwiftUI
 
 struct BreedTraitsView: View {
+    @Environment(PetStore.self) var petStore
+    @Environment(AppState.self) var appState
+    
     let petName: String
     let breed: String
-    let onContinue: () -> Void
+    let petData: (name: String, gender: PetGender, weight: Double, birthday: Date, isNeutered: Bool, image: String, imageData: Data?)
+    let onComplete: () -> Void
     
     @State private var traits: BreedTrait? = nil
     @State private var isLoading = true
+    @State private var isSaving = false
+    @State private var showError = false
+    @State private var errorMessage = ""
     
     private let horizontalPadding: CGFloat = 16
     private let cardCornerRadius: CGFloat = 20
@@ -63,7 +70,6 @@ struct BreedTraitsView: View {
                         .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius))
                         .padding(.horizontal, horizontalPadding)
                     } else {
-                        // Fallback if breed not found
                         VStack(spacing: 16) {
                             Image(systemName: "questionmark.circle.fill")
                                 .font(.system(size: 60))
@@ -77,21 +83,24 @@ struct BreedTraitsView: View {
                         .padding(.top, 100)
                     }
                 }
-                .padding(.bottom, 120) // Space for bottom button
+                .padding(.bottom, 120)
             }
             
             // MARK: - Sticky Bottom Button
             VStack {
                 Button {
-                    onContinue()
+                    saveAndContinue()
                 } label: {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color("baseColor"))
-                        .cornerRadius(16)
+                    if isSaving {
+                        ProgressView().tint(.white)
+                            .frame(maxWidth: .infinity).frame(height: 56)
+                            .background(Color("baseColor")).cornerRadius(16)
+                    } else {
+                        Text("Continue")
+                            .font(.headline).foregroundStyle(.white)
+                            .frame(maxWidth: .infinity).frame(height: 56)
+                            .background(Color("baseColor")).cornerRadius(16)
+                    }
                 }
                 .padding(.horizontal, horizontalPadding)
                 .padding(.bottom, 10)
@@ -99,45 +108,72 @@ struct BreedTraitsView: View {
             .padding(.top, 12)
             .background(.ultraThinMaterial)
         }
-        .navigationBarBackButtonHidden(false)
-        .onAppear {
-            loadTraits()
+        .navigationBarBackButtonHidden(isSaving)
+        .onAppear { loadTraits() }
+        .alert("Error Saving Pet", isPresented: $showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
+        }
+    }
+    
+    private func saveAndContinue() {
+        isSaving = true
+        
+        Task {
+            var finalImageName = petData.image
+            
+            // Upload image if selected
+            if let data = petData.imageData {
+                if let urlString = await petStore.uploadImage(data: data) {
+                    finalImageName = urlString
+                }
+            }
+            
+            let newPet = Pet(
+                id: UUID(),
+                name: petData.name,
+                breed: breed,
+                gender: petData.gender,
+                age: calculateAge(from: petData.birthday),
+                weightKg: petData.weight,
+                imageName: finalImageName,
+                homeLatitude: 28.4210,
+                homeLongitude: 77.5340,
+                birthday: Pet.birthdayString(from: petData.birthday),
+                isNeutered: petData.isNeutered
+            )
+            
+            let success = await petStore.addPet(newPet)
+            isSaving = false
+            if success {
+                onComplete()
+            } else {
+                errorMessage = petStore.lastError ?? "Unknown database error"
+                showError = true
+            }
         }
     }
     
     private func loadTraits() {
-        // Design: Small delay to show a loading state for better "discovery" feel
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.traits = BreedDataService.shared.traits(for: breed)
             self.isLoading = false
         }
     }
     
+    private func calculateAge(from birthday: Date) -> String {
+        let calendar = Calendar.current
+        let ageComponents = calendar.dateComponents([.year], from: birthday, to: Date())
+        return "\(ageComponents.year ?? 0)"
+    }
+    
     @ViewBuilder
     private func traitRow(for trait: String, score: Int) -> some View {
         if let desc = BreedDataService.shared.description(for: trait) {
-            TraitBarView(
-                title: trait,
-                lowLabel: desc.lowLabel,
-                highLabel: desc.highLabel,
-                score: score
-            )
+            TraitBarView(title: trait, lowLabel: desc.lowLabel, highLabel: desc.highLabel, score: score)
         } else {
-            // Fallback labels if description not found
-            TraitBarView(
-                title: trait,
-                lowLabel: "Low",
-                highLabel: "High",
-                score: score
-            )
-        }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        BreedTraitsView(petName: "Buddy", breed: "Labrador") {
-            print("Continue tapped")
+            TraitBarView(title: trait, lowLabel: "Low", highLabel: "High", score: score)
         }
     }
 }

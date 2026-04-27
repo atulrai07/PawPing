@@ -11,15 +11,23 @@
 //  This store is owned by ActivityStore as a sub-store.
 //  It does NOT manage UI state — only domain logic and data.
 //
+//  FIX: All UserDefaults keys are now scoped per-pet to prevent
+//  data leaking between different user accounts.
+//
 
 import Foundation
 import Observation
+import Supabase
 
-// MARK: - Persistence Keys
+// MARK: - Persistence Keys (now per-pet)
 
 private enum MealDietKeys {
-    static let dietPlan = "pawping_diet_plan"
-    static let mealLogs = "pawping_meal_logs"
+    static func dietPlanKey(for petId: UUID) -> String {
+        "pawping_diet_plan_\(petId.uuidString)"
+    }
+    static func mealLogsKey(for petId: UUID) -> String {
+        "pawping_meal_logs_\(petId.uuidString)"
+    }
 }
 
 // MARK: - Persisted Meal Log Entry
@@ -66,13 +74,38 @@ class MealDietStore {
 
     private(set) var usdaFoods: [USDAFood] = []
 
+    // MARK: - Current Pet ID (for scoped persistence)
+
+    /// The pet ID used to scope UserDefaults keys.
+    /// Call `switchPet(to:)` whenever the active pet changes.
+    private var currentPetId: UUID?
+
     // MARK: - Init
 
     init() {
         loadFoodDatabase()
+        loadOrParseUSDAFoods()
+        // Diet plan and meal logs are loaded when switchPet(to:) is called
+    }
+
+    // MARK: - Pet Switching
+
+    /// Call this whenever the active pet changes. Saves the current pet's
+    /// data and loads the new pet's data from UserDefaults.
+    func switchPet(to petId: UUID?) {
+        guard let petId else {
+            mealLogs = []
+            dietPlan = DietPlan()
+            currentPetId = nil
+            return
+        }
+
+        // Don't reload if already on this pet
+        guard petId != currentPetId else { return }
+
+        currentPetId = petId
         loadPersistedDietPlan()
         loadPersistedMealLogs()
-        loadOrParseUSDAFoods()
     }
 
     // MARK: - Food Database
@@ -94,8 +127,6 @@ class MealDietStore {
 
     // MARK: - Calorie Calculation
 
-    /// Returns calories for a given food type and quantity.
-    /// Formula: base_calories × quantity_multiplier
     /// Returns calories for a given food type and quantity.
     /// Formula: base_calories × quantity_multiplier
     func caloriesFor(food: FoodType, quantity: Double) -> Double {
@@ -350,29 +381,121 @@ class MealDietStore {
         return nil
     }
 
-    // MARK: - Persistence (UserDefaults)
+    // MARK: - Persistence (UserDefaults + Supabase Sync)
+    
+    // Helper model to combine state for Supabase
+    private struct CombinedState: Codable {
+        let dietPlan: DietPlan
+        let mealLogs: [MealLogEntry]
+    }
+    
+    private struct PetAppStateUpload: Codable {
+        let pet_id: UUID
+        let meal_diet_data: String
+    }
+    
+    private struct PetAppStateDownload: Codable {
+        let meal_diet_data: String?
+    }
 
     private func persistDietPlan() {
+        guard let petId = currentPetId else { return }
         if let data = try? JSONEncoder().encode(dietPlan) {
-            UserDefaults.standard.set(data, forKey: MealDietKeys.dietPlan)
+            UserDefaults.standard.set(data, forKey: MealDietKeys.dietPlanKey(for: petId))
         }
+        syncToSupabase()
     }
 
     private func loadPersistedDietPlan() {
-        guard let data = UserDefaults.standard.data(forKey: MealDietKeys.dietPlan),
-              let plan = try? JSONDecoder().decode(DietPlan.self, from: data) else { return }
+        guard let petId = currentPetId else {
+            dietPlan = DietPlan()
+            return
+        }
+        guard let data = UserDefaults.standard.data(forKey: MealDietKeys.dietPlanKey(for: petId)),
+              let plan = try? JSONDecoder().decode(DietPlan.self, from: data) else {
+            dietPlan = DietPlan()
+            return
+        }
         dietPlan = plan
     }
 
     private func persistMealLogs() {
+        guard let petId = currentPetId else { return }
         if let data = try? JSONEncoder().encode(mealLogs) {
-            UserDefaults.standard.set(data, forKey: MealDietKeys.mealLogs)
+            UserDefaults.standard.set(data, forKey: MealDietKeys.mealLogsKey(for: petId))
         }
+        syncToSupabase()
     }
 
     private func loadPersistedMealLogs() {
-        guard let data = UserDefaults.standard.data(forKey: MealDietKeys.mealLogs),
-              let logs = try? JSONDecoder().decode([MealLogEntry].self, from: data) else { return }
+        guard let petId = currentPetId else {
+            mealLogs = []
+            return
+        }
+        guard let data = UserDefaults.standard.data(forKey: MealDietKeys.mealLogsKey(for: petId)),
+              let logs = try? JSONDecoder().decode([MealLogEntry].self, from: data) else {
+            mealLogs = []
+            return
+        }
         mealLogs = logs
+    }
+    
+    // MARK: - Supabase Cloud Sync
+    
+    private var syncTask: Task<Void, Never>?
+    
+    private func syncToSupabase() {
+        guard let petId = currentPetId else { return }
+        let state = CombinedState(dietPlan: dietPlan, mealLogs: mealLogs)
+        
+        guard let data = try? JSONEncoder().encode(state),
+              let jsonString = String(data: data, encoding: .utf8) else { return }
+        
+        syncTask?.cancel()
+        syncTask = Task {
+            do {
+                let payload = PetAppStateUpload(pet_id: petId, meal_diet_data: jsonString)
+                try await SupabaseConfig.client
+                    .from("pet_app_state")
+                    .upsert(payload)
+                    .execute()
+            } catch {
+                print("❌ Failed to sync meal state to Supabase: \(error)")
+            }
+        }
+    }
+    
+    func fetchFromSupabase() async {
+        guard let petId = currentPetId else { return }
+        
+        do {
+            let response: PetAppStateDownload = try await SupabaseConfig.client
+                .from("pet_app_state")
+                .select("meal_diet_data")
+                .eq("pet_id", value: petId.uuidString)
+                .single()
+                .execute()
+                .value
+            
+            if let jsonString = response.meal_diet_data,
+               let data = jsonString.data(using: .utf8),
+               let state = try? JSONDecoder().decode(CombinedState.self, from: data) {
+                
+                await MainActor.run {
+                    self.dietPlan = state.dietPlan
+                    self.mealLogs = state.mealLogs
+                    
+                    // Update local UserDefaults cache
+                    if let dietData = try? JSONEncoder().encode(state.dietPlan) {
+                        UserDefaults.standard.set(dietData, forKey: MealDietKeys.dietPlanKey(for: petId))
+                    }
+                    if let logsData = try? JSONEncoder().encode(state.mealLogs) {
+                        UserDefaults.standard.set(logsData, forKey: MealDietKeys.mealLogsKey(for: petId))
+                    }
+                }
+            }
+        } catch {
+            print("⚠️ No cloud meal state found or failed to fetch: \(error)")
+        }
     }
 }

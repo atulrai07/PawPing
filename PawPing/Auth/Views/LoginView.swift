@@ -180,7 +180,7 @@ struct LoginView: View {
             do {
                 try await authStore.login(email: email, password: password)
             } catch {
-                errorMessage = "Failed to login. Please try again."
+                errorMessage = error.localizedDescription
             }
             isLoading = false
         }

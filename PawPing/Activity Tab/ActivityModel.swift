@@ -24,7 +24,7 @@ typealias DogGender = PetGender
 
 // MARK: - Activity
 
-struct WalkActivity {
+struct WalkActivity: Codable {
     var currentMinutes: Int
     var goalMinutes: Int
 
@@ -34,13 +34,13 @@ struct WalkActivity {
     }
 }
 
-struct TimeWalkedData: Identifiable {
+struct TimeWalkedData: Identifiable, Codable {
     let id = UUID()
     let day: String
     var minutes: Int
 }
 
-struct TimeWalkedGraphModel {
+struct TimeWalkedGraphModel: Codable {
     var data: [TimeWalkedData]
     let goalMinutes: Int
 
@@ -49,7 +49,7 @@ struct TimeWalkedGraphModel {
     }
 }
 
-struct DistanceData: Identifiable {
+struct DistanceData: Identifiable, Codable {
     let id = UUID()
     let date: Date
     let distanceInKm: Double
@@ -67,7 +67,7 @@ struct DistanceData: Identifiable {
     }
 }
 
-struct DistanceSummaryModel {
+struct DistanceSummaryModel: Codable {
     let weekData: [DistanceData]
     let monthData: [DistanceData]
     let weekRange: String
@@ -84,7 +84,7 @@ struct DistanceSummaryModel {
 
 // MARK: - Meals
 
-struct Meal: Identifiable {
+struct Meal: Identifiable, Codable {
     let id: UUID
     var petId: UUID
     var icon: String

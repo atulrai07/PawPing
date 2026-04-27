@@ -11,6 +11,7 @@ struct ActivityView: View {
     @Environment(ActivityStore.self) var store
     @Environment(PetStore.self) var petStore
     @Environment(SymptomStore.self) var symptomStore
+    @Environment(VaccineStore.self) var vaccineStore
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
@@ -170,7 +171,16 @@ struct ActivityView: View {
             .padding(.bottom, 80)
             .customNavigationScroll(
                 title: "Activity",
-                petStore: petStore
+                petStore: petStore,
+                refreshAction: {
+                    // Pull to Refresh Logic
+                    await petStore.fetchPets()
+                    if let activeId = petStore.activePetId {
+                        // Re-sync all stores for the active pet
+                        store.switchPet(to: activeId)
+                        await vaccineStore.fetchRecords(for: activeId)
+                    }
+                }
             )
             .navigationDestination(isPresented: $showMealsLog) {
                 MealLogView(store: store)
