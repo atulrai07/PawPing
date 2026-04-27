@@ -7,8 +7,8 @@ import SwiftUI
 
 struct LoginView: View {
     @Binding var path: NavigationPath
-    @EnvironmentObject var authStore: AuthStore
-    @EnvironmentObject var appState: AppState
+    @Environment(AuthStore.self) var authStore
+    @Environment(AppState.self) var appState
     
     @State private var email = ""
     @State private var password = ""
@@ -43,7 +43,7 @@ struct LoginView: View {
                         
                         TextField("you@gmail.com", text: $email)
                             .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
                             .padding()
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -178,7 +178,6 @@ struct LoginView: View {
         
         Task {
             do {
-                authStore.appState = appState
                 try await authStore.login(email: email, password: password)
             } catch {
                 errorMessage = "Failed to login. Please try again."
@@ -188,15 +187,9 @@ struct LoginView: View {
     }
 }
 
-struct LoginViewPreviewWrapper: View {
-    @State private var path = NavigationPath()
-    var body: some View {
-        LoginView(path: $path)
-            .environmentObject(AuthStore())
-            .environmentObject(AppState())
-    }
-}
-
 #Preview {
-    LoginViewPreviewWrapper()
+    @Previewable @State var path = NavigationPath()
+    LoginView(path: $path)
+        .environment(AuthStore())
+        .environment(AppState())
 }

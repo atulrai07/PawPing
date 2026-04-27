@@ -39,6 +39,6 @@ struct AuthFlowView: View {
 
 #Preview {
     AuthFlowView()
-        .environmentObject(AuthStore())
-        .environmentObject(AppState())
+        .environment(AuthStore())
+        .environment(AppState())
 }

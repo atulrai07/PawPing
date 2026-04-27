@@ -197,15 +197,15 @@ struct CareView: View {
 struct CareViewPreviewWrapper: View {
     @State private var store = CareStore()
     @State private var petStore = PetStore()
-    @StateObject private var authStore = AuthStore()
-    @StateObject private var appState = AppState()
+    @State private var authStore = AuthStore()
+    @State private var appState = AppState()
     
     var body: some View {
         CareView()
             .environment(store)
             .environment(petStore)
-            .environmentObject(authStore)
-            .environmentObject(appState)
+            .environment(authStore)
+            .environment(appState)
     }
 }
 

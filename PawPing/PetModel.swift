@@ -2,19 +2,13 @@
 //  PetModel.swift
 //  PawPing
 //
-//  Created by Antigravity on 27/04/26.
-//
-//  Central model for a pet profile.
-//  Replaces the old DogProfile struct — same fields, cleaner naming,
-//  Codable for persistence, ready for Supabase migration.
-//
 
 import Foundation
 
 // MARK: - Pet
-
 struct Pet: Identifiable, Codable, Hashable {
     let id: UUID
+    var ownerId: UUID?             // References profiles.id in Supabase
     var name: String
     var breed: String
     var gender: PetGender
@@ -28,10 +22,25 @@ struct Pet: Identifiable, Codable, Hashable {
 
     /// Fallback image used when no pet exists
     static let defaultImageName = "profilePhoto"
+    
+    // Mapping keys to match Supabase snake_case columns
+    enum CodingKeys: String, CodingKey {
+        case id
+        case ownerId = "owner_id"
+        case name
+        case breed
+        case gender
+        case age
+        case weightKg = "weight_kg"
+        case imageName = "image_name"
+        case homeLatitude = "home_latitude"
+        case homeLongitude = "home_longitude"
+        case birthday
+        case isNeutered = "is_neutered"
+    }
 }
 
 // MARK: - Pet Gender
-
 enum PetGender: String, Codable, CaseIterable {
     case male   = "Male"
     case female = "Female"

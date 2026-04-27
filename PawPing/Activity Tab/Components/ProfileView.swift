@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(PetStore.self) var petStore
-    @EnvironmentObject var authStore: AuthStore
+    @Environment(AuthStore.self) var authStore
     @State private var showingAddPet = false
 
     var body: some View {
@@ -51,8 +51,10 @@ struct ProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $showingAddPet) {
             AddPetView { newPet in
-                petStore.addPet(newPet)
-                petStore.switchPet(to: newPet.id)
+                Task {
+                    await petStore.addPet(newPet)
+                    petStore.switchPet(to: newPet.id)
+                }
             }
         }
     }
@@ -170,7 +172,9 @@ private extension ProfileView {
 
     var logOutButton: some View {
         Button {
-            authStore.logout()
+            Task {
+                await authStore.logout()
+            }
         } label: {
             Text("Log Out")
                 .font(.system(size: 17, weight: .semibold))
@@ -190,7 +194,7 @@ private extension ProfileView {
     NavigationStack {
         ProfileView()
             .environment(PetStore())
-            .environmentObject(AuthStore())
-            .environmentObject(AppState())
+            .environment(AuthStore())
+            .environment(AppState())
     }
 }

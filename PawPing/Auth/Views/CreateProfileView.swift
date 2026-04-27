@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct CreateProfileView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
     @Environment(PetStore.self) var petStore
     
     @State private var name = ""
@@ -169,13 +169,15 @@ struct CreateProfileView: View {
             isNeutered: isNeutered
         )
         
-        petStore.addPet(newPet)
-        appState.hasPets = true
+        Task {
+            await petStore.addPet(newPet)
+            appState.hasPets = true
+        }
     }
 }
 
 #Preview {
     CreateProfileView()
-        .environmentObject(AppState())
+        .environment(AppState())
         .environment(PetStore())
 }

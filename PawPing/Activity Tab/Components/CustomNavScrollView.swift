@@ -138,8 +138,10 @@ private struct StickyNavHeader: View {
         .fullScreenCover(isPresented: $showingAddPet) {
             if let petStore = petStore {
                 AddPetView { newPet in
-                    petStore.addPet(newPet)
-                    petStore.switchPet(to: newPet.id)
+                    Task {
+                        await petStore.addPet(newPet)
+                        petStore.switchPet(to: newPet.id)
+                    }
                 }
             }
         }

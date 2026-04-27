@@ -2,52 +2,62 @@
 //  PawPingApp.swift
 //  PawPing
 //
-//  Created by Atul on 19/01/26.
-//
 
 import SwiftUI
 
-// @main tells Swift this is THE entry point of our app.
-// Think of it like main() in other languages.
 @main
 struct PawPingApp: App {
-    // MARK: - Stores (single source of truth for the whole app)
+    // MARK: - Stores
     @State private var petStore      = PetStore()
     @State private var activityStore = ActivityStore()
     @State private var careStore     = CareStore()
     @State private var vaccineStore  = VaccineStore()
     @State private var symptomStore  = SymptomStore()
-
-    @StateObject private var appState: AppState
-    @StateObject private var authStore: AuthStore
-
-    init() {
-        let state = AppState()
-        self._appState = StateObject(wrappedValue: state)
-        self._authStore = StateObject(wrappedValue: AuthStore(appState: state))
-    }
+    @State private var appState      = AppState()
+    @State private var authStore: AuthStore?
 
     var body: some Scene {
         WindowGroup {
             Group {
-                if !appState.isAuthenticated {
-                    AuthFlowView()
-                } else if !appState.hasPets {
-                    AddPetView { newPet in
-                        petStore.addPet(newPet)
-                        appState.hasPets = true
+                if let authStore {
+                    Group {
+                        if !appState.isAuthenticated {
+                            AuthFlowView()
+                        } else if !appState.hasPets {
+                            AddPetView { newPet in
+                                Task {
+                                    await petStore.addPet(newPet)
+                                    appState.hasPets = !petStore.pets.isEmpty
+                                }
+                            }
+                        } else {
+                            ContentView()
+                        }
                     }
+                    .environment(authStore)
                 } else {
-                    ContentView()
+                    ProgressView("Loading...")
                 }
             }
-            .environmentObject(appState)
-            .environmentObject(authStore)
+            .environment(appState)
             .environment(petStore)
             .environment(activityStore)
             .environment(careStore)
             .environment(vaccineStore)
             .environment(symptomStore)
+            .task {
+                // Initialize authStore with appState reference
+                if authStore == nil {
+                    authStore = AuthStore(appState: appState)
+                }
+            }
+            .task(id: appState.isAuthenticated) {
+                // Whenever authentication status changes to true, fetch pets
+                if appState.isAuthenticated {
+                    await petStore.fetchPets()
+                    appState.hasPets = !petStore.pets.isEmpty
+                }
+            }
         }
     }
 }

@@ -137,7 +137,7 @@ struct VaccineView: View {
             .environment(VaccineStore())
             .environment(PetStore())
             .environment(CareStore())
-            .environmentObject(AuthStore())
-            .environmentObject(AppState())
+            .environment(AuthStore())
+            .environment(AppState())
     }
 }

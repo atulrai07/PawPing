@@ -7,8 +7,8 @@ import SwiftUI
 
 struct SignupView: View {
     @Binding var path: NavigationPath
-    @EnvironmentObject var authStore: AuthStore
-    @EnvironmentObject var appState: AppState
+    @Environment(AuthStore.self) var authStore
+    @Environment(AppState.self) var appState
     
     @State private var name = ""
     @State private var email = ""
@@ -58,7 +58,7 @@ struct SignupView: View {
                         
                         TextField("you@gmail.com", text: $email)
                             .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
                             .padding()
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -83,7 +83,7 @@ struct SignupView: View {
                     }
                 }
                 
-                // Sign Up / Next Button
+                // Sign Up Button
                 Button {
                     signup()
                 } label: {
@@ -197,25 +197,18 @@ struct SignupView: View {
         
         Task {
             do {
-                try await authStore.sendOTP(email: email)
-                path.append(AuthRoute.otp(email: email, isReset: false))
+                try await authStore.signup(name: name, email: email, password: password)
             } catch {
-                errorMessage = "Failed to send verification code."
+                errorMessage = "Failed to create account. Please try again."
             }
             isLoading = false
         }
     }
 }
 
-struct SignupViewPreviewWrapper: View {
-    @State private var path = NavigationPath()
-    var body: some View {
-        SignupView(path: $path)
-            .environmentObject(AuthStore())
-            .environmentObject(AppState())
-    }
-}
-
 #Preview {
-    SignupViewPreviewWrapper()
+    @Previewable @State var path = NavigationPath()
+    SignupView(path: $path)
+        .environment(AuthStore())
+        .environment(AppState())
 }

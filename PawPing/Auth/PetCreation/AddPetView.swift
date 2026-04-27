@@ -147,7 +147,10 @@ struct AddPetView: View {
             birthday: birthday,
             isNeutered: isNeutered
         )
-        onSave(newPet)
+        
+        Task {
+            onSave(newPet)
+        }
         dismiss()
     }
     

@@ -273,7 +273,9 @@ struct DietSetupSheet: View {
             store.mealDietStore.startDiet(goal: selectedGoal, weightKg: weightKg)
             if var pet = petStore.activePet {
                 pet.weightKg = weightKg
-                petStore.updatePet(pet)
+                Task {
+                    await petStore.updatePet(pet)
+                }
             }
             dismiss()
         } label: {

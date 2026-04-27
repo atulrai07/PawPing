@@ -4,12 +4,13 @@
 //
 
 import SwiftUI
+import Supabase
 
 struct ResetPasswordView: View {
     @Binding var path: NavigationPath
     let email: String
     
-    @EnvironmentObject var authStore: AuthStore
+    @Environment(AuthStore.self) var authStore
     
     @State private var password = ""
     @State private var confirmPassword = ""
@@ -118,24 +119,20 @@ struct ResetPasswordView: View {
         errorMessage = ""
         
         Task {
-            // Simulate reset
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            
-            // Pop back to root (Login)
-            path.removeLast(path.count)
+            do {
+                try await SupabaseConfig.client.auth.update(user: .init(password: password))
+                // Pop back to root (Login)
+                path.removeLast(path.count)
+            } catch {
+                errorMessage = "Failed to reset password."
+            }
             isLoading = false
         }
     }
 }
 
-struct ResetPasswordViewPreviewWrapper: View {
-    @State private var path = NavigationPath()
-    var body: some View {
-        ResetPasswordView(path: $path, email: "test@example.com")
-            .environmentObject(AuthStore())
-    }
-}
-
 #Preview {
-    ResetPasswordViewPreviewWrapper()
+    @Previewable @State var path = NavigationPath()
+    ResetPasswordView(path: $path, email: "test@example.com")
+        .environment(AuthStore())
 }

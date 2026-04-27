@@ -4,19 +4,20 @@
 //
 
 import SwiftUI
-import Combine
+import Observation
 
 @MainActor
-class AppState: ObservableObject {
-    @Published var isAuthenticated: Bool {
+@Observable
+class AppState {
+    var isAuthenticated: Bool {
         didSet { UserDefaults.standard.set(isAuthenticated, forKey: "isAuthenticated") }
     }
     
-    @Published var hasPets: Bool {
+    var hasPets: Bool {
         didSet { UserDefaults.standard.set(hasPets, forKey: "hasPets") }
     }
     
-    @Published var currentUserId: String {
+    var currentUserId: String {
         didSet { UserDefaults.standard.set(currentUserId, forKey: "currentUserId") }
     }
     

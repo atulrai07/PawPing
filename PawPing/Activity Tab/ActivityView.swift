@@ -281,16 +281,16 @@ struct ActivityViewPreviewWrapper: View {
     @State private var store = ActivityStore()
     @State private var petStore = PetStore()
     @State private var symptomStore = SymptomStore()
-    @StateObject private var authStore = AuthStore()
-    @StateObject private var appState = AppState()
+    @State private var authStore = AuthStore()
+    @State private var appState = AppState()
     
     var body: some View {
         ActivityView()
             .environment(store)
             .environment(petStore)
             .environment(symptomStore)
-            .environmentObject(authStore)
-            .environmentObject(appState)
+            .environment(authStore)
+            .environment(appState)
     }
 }
 

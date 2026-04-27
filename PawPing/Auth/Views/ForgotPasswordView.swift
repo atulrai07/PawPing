@@ -4,10 +4,11 @@
 //
 
 import SwiftUI
+import Supabase
 
 struct ForgotPasswordView: View {
     @Binding var path: NavigationPath
-    @EnvironmentObject var authStore: AuthStore
+    @Environment(AuthStore.self) var authStore
     
     @State private var email = ""
     @State private var isLoading = false
@@ -34,7 +35,7 @@ struct ForgotPasswordView: View {
                         
                         TextField("you@gmail.com", text: $email)
                             .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
                             .padding()
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -100,7 +101,7 @@ struct ForgotPasswordView: View {
         
         Task {
             do {
-                try await authStore.sendOTP(email: email)
+                try await SupabaseConfig.client.auth.resetPasswordForEmail(email)
                 path.append(AuthRoute.otp(email: email, isReset: true))
             } catch {
                 errorMessage = "Failed to send reset link."
@@ -110,14 +111,8 @@ struct ForgotPasswordView: View {
     }
 }
 
-struct ForgotPasswordViewPreviewWrapper: View {
-    @State private var path = NavigationPath()
-    var body: some View {
-        ForgotPasswordView(path: $path)
-            .environmentObject(AuthStore())
-    }
-}
-
 #Preview {
-    ForgotPasswordViewPreviewWrapper()
+    @Previewable @State var path = NavigationPath()
+    ForgotPasswordView(path: $path)
+        .environment(AuthStore())
 }

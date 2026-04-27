@@ -10,8 +10,8 @@ struct OTPVerificationView: View {
     let email: String
     let isReset: Bool
     
-    @EnvironmentObject var authStore: AuthStore
-    @EnvironmentObject var appState: AppState
+    @Environment(AuthStore.self) var authStore
+    @Environment(AppState.self) var appState
     
     @State private var code = ""
     @State private var isLoading = false
@@ -81,7 +81,7 @@ struct OTPVerificationView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
-                    .disabled(isLoading) // Code validation omitted for mock UI interactions
+                    .disabled(isLoading)
                 }
                 
                 Spacer()
@@ -128,11 +128,9 @@ struct OTPVerificationView: View {
         
         Task {
             do {
-                try await authStore.verifyOTP(code: "1234")
                 if isReset {
                     path.append(AuthRoute.resetPassword(email: email))
                 } else {
-                    authStore.appState = appState
                     try await authStore.signup(name: "User", email: email, password: "password")
                 }
             } catch {
@@ -143,15 +141,9 @@ struct OTPVerificationView: View {
     }
 }
 
-struct OTPVerificationViewPreviewWrapper: View {
-    @State private var path = NavigationPath()
-    var body: some View {
-        OTPVerificationView(path: $path, email: "you@gmail.com", isReset: false)
-            .environmentObject(AuthStore())
-            .environmentObject(AppState())
-    }
-}
-
 #Preview {
-    OTPVerificationViewPreviewWrapper()
+    @Previewable @State var path = NavigationPath()
+    OTPVerificationView(path: $path, email: "you@gmail.com", isReset: false)
+        .environment(AuthStore())
+        .environment(AppState())
 }

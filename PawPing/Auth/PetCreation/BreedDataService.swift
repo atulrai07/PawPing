@@ -28,7 +28,7 @@ class BreedDataService {
         }
         
         do {
-            let data = try String(contentsOf: url)
+            let data = try String(contentsOf: url, encoding: .utf8)
             let rows = parseCSV(data)
             
             // Skip header
@@ -69,7 +69,7 @@ class BreedDataService {
         }
         
         do {
-            let data = try String(contentsOf: url)
+            let data = try String(contentsOf: url, encoding: .utf8)
             let rows = parseCSV(data)
             
             for row in rows.dropFirst() {
