@@ -19,14 +19,14 @@ struct DoneVaccineRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(record.displayName)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.pawSecondary)
+                    .foregroundStyle(.primary)
                 
                 Text("Last Taken : \(record.formattedDateGiven)")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                 
                 if let clinic = record.clinicInfo {
-                    Text("Clinic : \(clinic.clinicName)")
+                    Text("Clinic: \(clinic.clinicName)")
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }
@@ -59,7 +59,7 @@ struct DoneVaccineRowView: View {
                 } label: {
                     Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
                         .font(.system(size: 14))
-                        .foregroundStyle(.pawSecondary)
+                        .foregroundStyle(Color("baseColor"))
                 }
             }
         }

@@ -55,16 +55,20 @@ struct ClinicInfo: Identifiable, Hashable {
     var clinicName: String
     var address: String?
     var phoneNumber: String?
+    var email: String?
+    var registrationNumber: String?
 
     /// Links to Vet from CareModel
     var linkedVetId: UUID?
 
     static let sample = ClinicInfo(
         id: UUID(),
-        vetName: "Dr. Sharma",
+        vetName: "Dr. Ananya Sharma(BVSc)",
         clinicName: "PupiLife Pet Clinic",
-        address: "123 Main St, Dankour",
-        phoneNumber: "9876543210",
+        address: "Saket, New Delhi, 11034",
+        phoneNumber: "+91 62839 87239",
+        email: "contact@pupilife.com",
+        registrationNumber: "DL/VCI/2021/4587",
         linkedVetId: nil
     )
 }
@@ -74,7 +78,7 @@ struct ClinicInfo: Identifiable, Hashable {
 struct VaccineRecord: Identifiable {
 
     let id: UUID
-    var dogId: UUID
+    var petId: UUID
     var vaccineName: VaccineName
     var dateGiven: Date
     var clinicInfo: ClinicInfo?
@@ -85,7 +89,20 @@ struct VaccineRecord: Identifiable {
 
     var status: VaccineStatus {
         guard let nextDose = nextDoseDate else { return .done }
-        return nextDose <= Date() ? .overdue : .upcoming
+        let now = Date()
+        
+        if nextDose <= now {
+            return .overdue
+        }
+        
+        // If the next dose is strictly within 1 month, flag as upcoming.
+        // Otherwise, it is considered done for the time being.
+        if let oneMonthFromNow = Calendar.current.date(byAdding: .month, value: 1, to: now),
+           nextDose <= oneMonthFromNow {
+            return .upcoming
+        } else {
+            return .done
+        }
     }
 
     var displayName: String {
@@ -163,27 +180,27 @@ struct VaccineRecord: Identifiable {
 
         VaccineRecord(
             id: UUID(),
-            dogId: UUID(),
+            petId: UUID(),
             vaccineName: .dhppBooster,
             dateGiven: Calendar.current.date(byAdding: .month, value: -2, to: Date())!,
-            clinicInfo: nil,
+            clinicInfo: .sample,
             nextDoseDate: Calendar.current.date(byAdding: .weekOfYear, value: 3, to: Date()),
             notes: ""
         ),
 
         VaccineRecord(
             id: UUID(),
-            dogId: UUID(),
+            petId: UUID(),
             vaccineName: .leptospirosis,
             dateGiven: Calendar.current.date(byAdding: .month, value: -4, to: Date())!,
-            clinicInfo: nil,
+            clinicInfo: .sample,
             nextDoseDate: Calendar.current.date(byAdding: .day, value: -5, to: Date()),
             notes: ""
         ),
 
         VaccineRecord(
             id: UUID(),
-            dogId: UUID(),
+            petId: UUID(),
             vaccineName: .rabiesBooster,
             dateGiven: Calendar.current.date(byAdding: .month, value: -2, to: Date())!,
             clinicInfo: .sample,

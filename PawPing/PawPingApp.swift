@@ -11,9 +11,21 @@ import SwiftUI
 // Think of it like main() in other languages.
 @main
 struct PawPingApp: App {
+    // MARK: - Stores (single source of truth for the whole app)
+    @State private var petStore      = PetStore()
+    @State private var activityStore = ActivityStore()
+    @State private var careStore     = CareStore()
+    @State private var vaccineStore  = VaccineStore()
+    @State private var symptomStore  = SymptomStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(petStore)
+                .environment(activityStore)
+                .environment(careStore)
+                .environment(vaccineStore)
+                .environment(symptomStore)
         }
     }
 }

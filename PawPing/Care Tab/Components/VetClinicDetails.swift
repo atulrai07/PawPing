@@ -2,8 +2,9 @@
 //  VetClinicDetails.swift
 //  PawPing
 //
-//  Created by AI on 23/03/26.
+//  Created by Atul on 23/03/26.
 //
+ 
 //  A detail sheet that pops up when you tap on a vet/daycare card.
 //  Shows stats, quick actions (call, navigate), gallery, about, and contact info.
 //
@@ -30,7 +31,7 @@ struct VetClinicDetails: View {
                         VStack(spacing: 4) {
                             Text(item.name)
                                 .font(.system(size: 20, weight: .bold))
-                                .foregroundStyle(.pawSecondary)
+                                .foregroundStyle(.primary)
                             
                             Text(item.subType ?? "Veterinary Clinic")
                                 .font(.system(size: 14))
@@ -45,9 +46,9 @@ struct VetClinicDetails: View {
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(.pawSecondary)
+                                .foregroundStyle(.primary)
                                 .frame(width: 36, height: 36)
-                                .background(Color.pawNeutral)
+                                .background(Color(.systemGray6))
                                 .clipShape(Circle())
                         }
                     } // ZStack — header
@@ -62,7 +63,7 @@ struct VetClinicDetails: View {
                         HStack(spacing: 2) {
                             Text(String(format: "%.1f", item.rating))
                                 .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(.pawSecondary)
+                                .foregroundStyle(Color("baseColor"))
                             Image(systemName: "star.fill")
                                 .font(.system(size: 12))
                                 .foregroundStyle(.yellow)
@@ -77,7 +78,7 @@ struct VetClinicDetails: View {
                     VStack(spacing: 4) {
                         Text(item.petSeen ?? "N/A")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.pawSecondary)
+                            .foregroundStyle(Color("baseColor"))
                         Text("Pet Seen")
                             .font(.system(size: 14))
                             .foregroundStyle(.gray)
@@ -88,7 +89,7 @@ struct VetClinicDetails: View {
                     VStack(spacing: 4) {
                         Text(item.experience ?? "N/A")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.pawSecondary)
+                            .foregroundStyle(Color("baseColor"))
                         Text("Experience")
                             .font(.system(size: 14))
                             .foregroundStyle(.gray)
@@ -112,7 +113,7 @@ struct VetClinicDetails: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.pawPrimary)
+                        .background(Color("baseColor"))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     
@@ -126,10 +127,10 @@ struct VetClinicDetails: View {
                             Text("Call")
                                 .font(.system(size: 14))
                         } // VStack — call button
-                        .foregroundStyle(.pawPrimary)
+                        .foregroundStyle(Color("baseColor"))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.pawPrimary.opacity(0.15))
+                        .background(Color("baseColor").opacity(0.15))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     
@@ -143,10 +144,10 @@ struct VetClinicDetails: View {
                             Text("Website")
                                 .font(.system(size: 14))
                         } // VStack — website button
-                        .foregroundStyle(.pawPrimary)
+                        .foregroundStyle(Color("baseColor"))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.pawPrimary.opacity(0.15))
+                        .background(Color("baseColor").opacity(0.15))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                 } // HStack — quick actions
@@ -176,13 +177,13 @@ struct VetClinicDetails: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("About")
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(.pawSecondary)
+                        .foregroundStyle(.primary)
                     
                     Text("\(item.about ?? "No description available.") [MORE...](#)")
-                        .foregroundStyle(.pawSecondary)
+                        .foregroundStyle(.primary)
                         .font(.system(size: 15))
                         .lineSpacing(4)
-                        .tint(.pawPrimary)
+                        .tint(Color("baseColor"))
                 } // VStack — about
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
@@ -190,7 +191,7 @@ struct VetClinicDetails: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Details")
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(.pawSecondary)
+                        .foregroundStyle(.primary)
                     
                     VStack(spacing: 0) {
                         detailRow(title: "Phone", value: item.contactNumber ?? "N/A")
@@ -226,7 +227,7 @@ struct VetClinicDetails: View {
                 
                 Text(value)
                     .font(.system(size: 16))
-                    .foregroundStyle(.pawPrimary)
+                    .foregroundStyle(Color("baseColor"))
             } // HStack — detail row content
             
             if !isLast {

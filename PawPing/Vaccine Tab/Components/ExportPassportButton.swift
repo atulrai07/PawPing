@@ -4,9 +4,6 @@
 //
 //  Created by Atul on 15/03/26.
 //
-//  A full-width blue CTA button at the bottom of the Vaccine tab.
-//  Will eventually generate a PDF vaccine passport for sharing.
-//
 
 import SwiftUI
 
@@ -27,7 +24,7 @@ struct ExportPassportButton: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(Color.pawPrimary)
+            .background(Color("baseColor"))
             .clipShape(Capsule())
         }
     }
@@ -36,5 +33,5 @@ struct ExportPassportButton: View {
 #Preview {
     ExportPassportButton()
         .padding()
-        .background(Color.pawNeutral)
+        .background(Color("baseBackground"))
 }

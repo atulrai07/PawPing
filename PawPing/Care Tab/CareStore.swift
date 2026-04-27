@@ -8,7 +8,6 @@
 //  Everything here is mock data for now, will be swapped with real API later.
 //
 
-
 import Foundation
 import Observation
 
@@ -22,12 +21,13 @@ class CareStore {
 
     init() {
         // MARK: - Mock Vets
+        // All coordinates placed around Dankaur, Gautam Buddh Nagar, UP (28.42°N, 77.53°E)
         vets = [
             CareLocation(
                 id: UUID(), name: "PupiLife Pet Clinic",
-                subType: nil, // Defaults to "Veterinary Clinic" in the UI
+                subType: nil,
                 rating: 4.8, distance: 1.2, imageName: "profilePhoto",
-                latitude: 28.525211, longitude: 77.218489, contactNumber: "91-9876543210",
+                latitude: 28.4235, longitude: 77.5310, contactNumber: "91-9876543210",
                 email: "contact@pupilife.com", address: "123 Beta Street, Dankaur",
                 openingTime: "09:00 AM", closingTime: "08:00 PM",
                 petSeen: "850+", experience: "12 Years",
@@ -37,7 +37,7 @@ class CareStore {
                 id: UUID(), name: "Samaria Pet Clinic",
                 subType: nil,
                 rating: 4.8, distance: 2.3, imageName: "profilePhoto",
-                latitude: 28.538211, longitude: 77.212489, contactNumber: "91-9876543211",
+                latitude: 28.4190, longitude: 77.5280, contactNumber: "91-9876543211",
                 email: "hello@samariapet.com", address: "45 Alpha Ave, Dankaur",
                 openingTime: "10:00 AM", closingTime: "07:00 PM",
                 petSeen: "400+", experience: "4 Years",
@@ -47,7 +47,7 @@ class CareStore {
                 id: UUID(), name: "Canine Pet Care",
                 subType: nil,
                 rating: 4.0, distance: 3.3, imageName: "profilePhoto",
-                latitude: 28.512211, longitude: 77.235489, contactNumber: "91-9876543212",
+                latitude: 28.4260, longitude: 77.5390, contactNumber: "91-9876543212",
                 email: "info@caninecare.com", address: "78 Gamma Blvd, Dankaur",
                 openingTime: "08:30 AM", closingTime: "09:00 PM",
                 petSeen: "1.2k+", experience: "18 Years",
@@ -57,7 +57,7 @@ class CareStore {
                 id: UUID(), name: "Ziggly Pet Care",
                 subType: nil,
                 rating: 3.8, distance: 4.2, imageName: "profilePhoto",
-                latitude: 28.542211, longitude: 77.248489, contactNumber: "91-9876543213",
+                latitude: 28.4175, longitude: 77.5420, contactNumber: "91-9876543213",
                 email: "support@ziggly.com", address: "12 Delta Road, Dankaur",
                 openingTime: "09:30 AM", closingTime: "06:30 PM",
                 petSeen: "250+", experience: "2 Years",
@@ -67,7 +67,7 @@ class CareStore {
                 id: UUID(), name: "Atulya's Care",
                 subType: nil,
                 rating: 4.8, distance: 4.8, imageName: "profilePhoto",
-                latitude: 28.558211, longitude: 77.221489, contactNumber: "91-9876543214",
+                latitude: 28.4150, longitude: 77.5360, contactNumber: "91-9876543214",
                 email: "atulya@petcare.com", address: "89 Epsilon Lane, Dankaur",
                 openingTime: "24 Hours", closingTime: "24 Hours",
                 petSeen: "3k+", experience: "25 Years",
@@ -81,7 +81,7 @@ class CareStore {
                 id: UUID(), name: "Paw's Dayout",
                 subType: "Pet Boarding Service",
                 rating: 4.8, distance: 2.0, imageName: "profilePhoto",
-                latitude: 28.548211, longitude: 77.231232, contactNumber: "91-9876543215",
+                latitude: 28.4245, longitude: 77.5320, contactNumber: "91-9876543215",
                 email: "book@pawsdayout.com", address: "12 Boarding St, Dankaur",
                 openingTime: "07:00 AM", closingTime: "08:00 PM",
                 petSeen: "150+", experience: "5 Years",
@@ -91,7 +91,7 @@ class CareStore {
                 id: UUID(), name: "High Paws Home",
                 subType: "Pet Boarding Service",
                 rating: 4.8, distance: 2.2, imageName: "profilePhoto",
-                latitude: 28.528211, longitude: 77.246232, contactNumber: "91-9876543216",
+                latitude: 28.4200, longitude: 77.5370, contactNumber: "91-9876543216",
                 email: "stay@highpaws.com", address: "34 Playful Ave, Dankaur",
                 openingTime: "08:00 AM", closingTime: "08:00 PM",
                 petSeen: "500+", experience: "9 Years",
@@ -101,7 +101,7 @@ class CareStore {
                 id: UUID(), name: "Rainer's DayCare",
                 subType: "Pet DayCare",
                 rating: 4.6, distance: 2.8, imageName: "profilePhoto",
-                latitude: 28.555211, longitude: 77.258232, contactNumber: "91-9876543217",
+                latitude: 28.4270, longitude: 77.5410, contactNumber: "91-9876543217",
                 email: "hello@rainers.com", address: "56 Happy Tails Rd, Dankaur",
                 openingTime: "06:30 AM", closingTime: "09:00 PM",
                 petSeen: "300+", experience: "3 Years",
@@ -111,7 +111,7 @@ class CareStore {
                 id: UUID(), name: "Scooter's HomeCare",
                 subType: "Pet Homecare",
                 rating: 4.4, distance: 3.2, imageName: "profilePhoto",
-                latitude: 28.535211, longitude: 77.265232, contactNumber: "91-9876543218",
+                latitude: 28.4180, longitude: 77.5450, contactNumber: "91-9876543218",
                 email: "scooter@homecare.com", address: "78 Pet Friendly Blvd, Dankaur",
                 openingTime: "24 Hours", closingTime: "24 Hours",
                 petSeen: "100+", experience: "1 Year",

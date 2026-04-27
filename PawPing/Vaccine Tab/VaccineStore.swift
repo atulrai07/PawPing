@@ -6,7 +6,6 @@
 //
 //  Data source for the Vaccine tab.
 //  Holds all vaccine records and a computed summary (done/upcoming/overdue counts).
-//  Mock data for now — same pattern as ActivityStore and CareStore.
 //
 
 import Foundation
@@ -26,84 +25,13 @@ class VaccineStore {
     }
 
     init() {
-        let sampleDogId = UUID()
-
-        let sampleClinic = ClinicInfo(
-            id: UUID(),
-            vetName: "Dr. Sharma",
-            clinicName: "PupiLife Pet Clinic",
-            address: "123 Main St, Dankour",
-            phoneNumber: "9876543210",
-            linkedVetId: nil
-        )
-
-        vaccineRecords = [
-            // Upcoming — next dose is in the future
-            VaccineRecord(
-                id: UUID(), dogId: sampleDogId,
-                vaccineName: .dhppBooster,
-                dateGiven: Calendar.current.date(byAdding: .month, value: -2, to: Date())!,
-                clinicInfo: nil,
-                nextDoseDate: Calendar.current.date(byAdding: .weekOfYear, value: 3, to: Date()),
-                notes: ""
-            ),
-            // Overdue — next dose is in the past
-            VaccineRecord(
-                id: UUID(), dogId: sampleDogId,
-                vaccineName: .leptospirosis,
-                dateGiven: Calendar.current.date(byAdding: .month, value: -4, to: Date())!,
-                clinicInfo: nil,
-                nextDoseDate: Calendar.current.date(byAdding: .day, value: -5, to: Date()),
-                notes: ""
-            ),
-            VaccineRecord(
-                id: UUID(), dogId: sampleDogId,
-                vaccineName: .deworming,
-                dateGiven: Calendar.current.date(byAdding: .month, value: -11, to: Date())!,
-                clinicInfo: nil,
-                nextDoseDate: Calendar.current.date(byAdding: .month, value: -1, to: Date()),
-                notes: ""
-            ),
-            // Done — no nextDoseDate means the vaccine is complete
-            VaccineRecord(
-                id: UUID(), dogId: sampleDogId,
-                vaccineName: .rabiesBooster,
-                dateGiven: Calendar.current.date(byAdding: .month, value: -2, to: Date())!,
-                clinicInfo: sampleClinic,
-                nextDoseDate: nil,
-                notes: ""
-            ),
-            VaccineRecord(
-                id: UUID(), dogId: sampleDogId,
-                vaccineName: .bordetella,
-                dateGiven: Calendar.current.date(byAdding: .month, value: -7, to: Date())!,
-                clinicInfo: sampleClinic,
-                nextDoseDate: nil,
-                notes: ""
-            ),
-            VaccineRecord(
-                id: UUID(), dogId: sampleDogId,
-                vaccineName: .dhpp,
-                dateGiven: Calendar.current.date(byAdding: .month, value: -2, to: Date())!,
-                clinicInfo: sampleClinic,
-                nextDoseDate: nil,
-                notes: ""
-            ),
-            VaccineRecord(
-                id: UUID(), dogId: sampleDogId,
-                vaccineName: .rabies,
-                dateGiven: Calendar.current.date(byAdding: .month, value: -3, to: Date())!,
-                clinicInfo: sampleClinic,
-                nextDoseDate: nil,
-                notes: ""
-            )
-        ] // vaccineRecords
-    } // init
+        vaccineRecords = []
+    }
 
     // MARK: - Methods
 
-    func records(for dogId: UUID) -> [VaccineRecord] {
-        vaccineRecords.filter { $0.dogId == dogId }
+    func records(for petId: UUID) -> [VaccineRecord] {
+        vaccineRecords.filter { $0.petId == petId }
     }
 
     func addRecord(_ record: VaccineRecord) {
@@ -113,4 +41,13 @@ class VaccineStore {
     func deleteRecord(id: UUID) {
         vaccineRecords.removeAll { $0.id == id }
     }
-} // VaccineStore
+
+    func markAsDone(id: UUID) {
+        if let index = vaccineRecords.firstIndex(where: { $0.id == id }) {
+            // Setting nextDoseDate to nil automatically updates the status to .done
+            vaccineRecords[index].nextDoseDate = nil
+            // Optional: update dateGiven to today if marking it done implies taking it right now
+            vaccineRecords[index].dateGiven = Date()
+        }
+    }
+}

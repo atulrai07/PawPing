@@ -1,0 +1,566 @@
+[
+  {
+    "id": "parvovirus",
+    "name": "Parvovirus",
+    "symptoms": [
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "vomiting",
+        "weight": 1.0
+      },
+      {
+        "name": "lethargy",
+        "weight": 0.95
+      },
+      {
+        "name": "diarrhea",
+        "weight": 0.86
+      },
+      {
+        "name": "coughing",
+        "weight": 0.86
+      },
+      {
+        "name": "fever",
+        "weight": 0.62
+      },
+      {
+        "name": "limping",
+        "weight": 0.48
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 0.48
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 0.33
+      },
+      {
+        "name": "runny_nose",
+        "weight": 0.29
+      }
+    ],
+    "severity": "critical",
+    "advice": "Seek emergency veterinary care immediately. Parvovirus is life-threatening and requires IV fluids and intensive supportive care."
+  },
+  {
+    "id": "gastroenteritis",
+    "name": "Gastroenteritis",
+    "symptoms": [
+      {
+        "name": "diarrhea",
+        "weight": 1.0
+      },
+      {
+        "name": "vomiting",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "lethargy",
+        "weight": 0.62
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 0.5
+      },
+      {
+        "name": "limping",
+        "weight": 0.38
+      },
+      {
+        "name": "runny_nose",
+        "weight": 0.38
+      },
+      {
+        "name": "eye_discharge",
+        "weight": 0.38
+      },
+      {
+        "name": "fever",
+        "weight": 0.25
+      }
+    ],
+    "severity": "moderate",
+    "advice": "Withhold food for 12\u201324 hours, then reintroduce a bland diet. If vomiting or diarrhea persists beyond 24 hours, see your vet."
+  },
+  {
+    "id": "lyme_disease",
+    "name": "Lyme Disease",
+    "symptoms": [
+      {
+        "name": "limping",
+        "weight": 1.0
+      },
+      {
+        "name": "fever",
+        "weight": 1.0
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 1.0
+      },
+      {
+        "name": "lethargy",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      }
+    ],
+    "severity": "serious",
+    "advice": "Consult your vet for antibiotics and tick prevention strategies. Joint pain may persist."
+  },
+  {
+    "id": "distemper",
+    "name": "Distemper",
+    "symptoms": [
+      {
+        "name": "coughing",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "vomiting",
+        "weight": 1.0
+      },
+      {
+        "name": "runny_nose",
+        "weight": 0.92
+      },
+      {
+        "name": "lethargy",
+        "weight": 0.83
+      },
+      {
+        "name": "fever",
+        "weight": 0.75
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 0.67
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 0.67
+      },
+      {
+        "name": "limping",
+        "weight": 0.5
+      },
+      {
+        "name": "diarrhea",
+        "weight": 0.42
+      },
+      {
+        "name": "eye_discharge",
+        "weight": 0.33
+      }
+    ],
+    "severity": "critical",
+    "advice": "This is a medical emergency. Rush to the vet immediately. Distemper is highly contagious and can be fatal without aggressive treatment."
+  },
+  {
+    "id": "kennel_cough",
+    "name": "Kennel Cough",
+    "symptoms": [
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "coughing",
+        "weight": 1.0
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 1.0
+      },
+      {
+        "name": "lethargy",
+        "weight": 0.82
+      },
+      {
+        "name": "runny_nose",
+        "weight": 0.73
+      },
+      {
+        "name": "eye_discharge",
+        "weight": 0.64
+      },
+      {
+        "name": "fever",
+        "weight": 0.64
+      },
+      {
+        "name": "limping",
+        "weight": 0.64
+      },
+      {
+        "name": "vomiting",
+        "weight": 0.45
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 0.36
+      },
+      {
+        "name": "diarrhea",
+        "weight": 0.27
+      }
+    ],
+    "severity": "moderate",
+    "advice": "Keep your dog isolated from other dogs. Most cases resolve within 1\u20133 weeks. Visit your vet if symptoms worsen or persist beyond a week."
+  },
+  {
+    "id": "tick_borne_disease",
+    "name": "Tick-Borne Disease",
+    "symptoms": [
+      {
+        "name": "limping",
+        "weight": 1.0
+      },
+      {
+        "name": "fever",
+        "weight": 1.0
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 1.0
+      },
+      {
+        "name": "lethargy",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      }
+    ],
+    "severity": "serious",
+    "advice": "See your vet for blood work and antibiotic treatment. Remove any visible ticks and start a tick prevention plan."
+  },
+  {
+    "id": "arthritis",
+    "name": "Arthritis",
+    "symptoms": [
+      {
+        "name": "limping",
+        "weight": 1.0
+      },
+      {
+        "name": "swollen_lymph_nodes",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "fever",
+        "weight": 1.0
+      }
+    ],
+    "severity": "moderate",
+    "advice": "Consult your vet about pain management options. Keep your dog at a healthy weight and provide joint supplements if recommended."
+  },
+  {
+    "id": "heartworm_disease",
+    "name": "Heartworm Disease",
+    "symptoms": [
+      {
+        "name": "lethargy",
+        "weight": 1.0
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 1.0
+      },
+      {
+        "name": "coughing",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "vomiting",
+        "weight": 1.0
+      },
+      {
+        "name": "fever",
+        "weight": 0.5
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 0.5
+      },
+      {
+        "name": "eye_discharge",
+        "weight": 0.5
+      }
+    ],
+    "severity": "serious",
+    "advice": "Requires intensive veterinary treatment. Prevention is the best approach."
+  },
+  {
+    "id": "chronic_bronchitis",
+    "name": "Chronic Bronchitis",
+    "symptoms": [
+      {
+        "name": "coughing",
+        "weight": 1.0
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 1.0
+      },
+      {
+        "name": "lethargy",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      }
+    ],
+    "severity": "moderate",
+    "advice": "Requires long-term management with your vet, often involving cough suppressants or anti-inflammatories."
+  },
+  {
+    "id": "allergic_rhinitis",
+    "name": "Allergic Rhinitis",
+    "symptoms": [
+      {
+        "name": "sneezing",
+        "weight": 1.0
+      },
+      {
+        "name": "eye_discharge",
+        "weight": 1.0
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 1.0
+      },
+      {
+        "name": "lethargy",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "coughing",
+        "weight": 1.0
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 1.0
+      }
+    ],
+    "severity": "mild",
+    "advice": "Identify and minimize exposure to allergens. Your vet may prescribe antihistamines."
+  },
+  {
+    "id": "canine_flu",
+    "name": "Canine Flu",
+    "symptoms": [
+      {
+        "name": "coughing",
+        "weight": 1.0
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "lethargy",
+        "weight": 1.0
+      },
+      {
+        "name": "diarrhea",
+        "weight": 1.0
+      },
+      {
+        "name": "limping",
+        "weight": 0.5
+      },
+      {
+        "name": "fever",
+        "weight": 0.5
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 0.5
+      },
+      {
+        "name": "runny_nose",
+        "weight": 0.5
+      }
+    ],
+    "severity": "moderate",
+    "advice": "Keep your dog isolated and well-hydrated. Consult your vet if breathing becomes labored."
+  },
+  {
+    "id": "pancreatitis",
+    "name": "Pancreatitis",
+    "symptoms": [
+      {
+        "name": "vomiting",
+        "weight": 1.0
+      },
+      {
+        "name": "diarrhea",
+        "weight": 1.0
+      },
+      {
+        "name": "weight_loss",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "runny_nose",
+        "weight": 1.0
+      },
+      {
+        "name": "dehydration",
+        "weight": 0.5
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 0.5
+      },
+      {
+        "name": "lethargy",
+        "weight": 0.5
+      },
+      {
+        "name": "limping",
+        "weight": 0.5
+      }
+    ],
+    "severity": "serious",
+    "advice": "Visit your vet promptly. Treatment includes fasting, IV fluids, and a long-term low-fat diet."
+  },
+  {
+    "id": "canine_hepatitis",
+    "name": "Canine Hepatitis",
+    "symptoms": [
+      {
+        "name": "lethargy",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "vomiting",
+        "weight": 1.0
+      },
+      {
+        "name": "diarrhea",
+        "weight": 1.0
+      },
+      {
+        "name": "fever",
+        "weight": 0.75
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 0.75
+      },
+      {
+        "name": "eye_discharge",
+        "weight": 0.75
+      },
+      {
+        "name": "coughing",
+        "weight": 0.75
+      },
+      {
+        "name": "limping",
+        "weight": 0.5
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 0.5
+      }
+    ],
+    "severity": "serious",
+    "advice": "Requires immediate veterinary attention. Keep your dog isolated and comfortable."
+  },
+  {
+    "id": "leptospirosis",
+    "name": "Leptospirosis",
+    "symptoms": [
+      {
+        "name": "lethargy",
+        "weight": 1.0
+      },
+      {
+        "name": "vomiting",
+        "weight": 1.0
+      },
+      {
+        "name": "loss_of_appetite",
+        "weight": 1.0
+      },
+      {
+        "name": "coughing",
+        "weight": 0.86
+      },
+      {
+        "name": "limping",
+        "weight": 0.86
+      },
+      {
+        "name": "fever",
+        "weight": 0.86
+      },
+      {
+        "name": "rapid_breathing",
+        "weight": 0.71
+      },
+      {
+        "name": "eye_discharge",
+        "weight": 0.71
+      },
+      {
+        "name": "diarrhea",
+        "weight": 0.57
+      },
+      {
+        "name": "red_bumps_on_skin",
+        "weight": 0.57
+      },
+      {
+        "name": "runny_nose",
+        "weight": 0.29
+      }
+    ],
+    "severity": "serious",
+    "advice": "Requires antibiotics and supportive care from your vet. Can be transmitted to humans, so handle with care."
+  }
+]

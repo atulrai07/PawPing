@@ -4,24 +4,19 @@
 //
 //  Created by Atul on 19/01/26.
 //
-//  The home screen of the app — shows walk progress, upcoming vaccines,
-//  meals, allergies, and a weekly walk graph.
-//
 
 import SwiftUI
-import Combine
-import UIKit   // needed for UIFont in textWidth() at the bottom
 
 struct ActivityView: View {
-    // Not @State because we don't own the store — ContentView does.
-    // We just read from it. Since ActivityStore is @Observable,
-    // SwiftUI still picks up changes automatically.
-    var store: ActivityStore
+    @Environment(ActivityStore.self) var store
+    @Environment(PetStore.self) var petStore
+    @Environment(SymptomStore.self) var symptomStore
 
-    // @State = local UI state that only this view cares about.
-    // These control whether the walk flow sheet is showing.
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
+    @State private var showMealsLog = false
+    @State private var showDistanceSummary = false
+    @State private var showSymptomChecker = false
 
     var body: some View {
         NavigationStack {
@@ -29,8 +24,8 @@ struct ActivityView: View {
 
                 // MARK: - Walked Card
                 ZStack {
-                    RoundedRectangle(cornerRadius: 34)
-                        .fill(Color.pawNeutral)
+                    RoundedRectangle(cornerRadius: 28)
+                        .fill(Color("cardBackground"))
                         .frame(height: 160)
 
                     HStack(spacing: 20) {
@@ -42,15 +37,19 @@ struct ActivityView: View {
 
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Walked")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundStyle(.pawPrimary)
-
-                            Text("\(store.walkActivity.currentMinutes)/\(store.walkActivity.goalMinutes)min")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundStyle(.pawSecondary)
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundStyle(Color("secondaryText"))
+                            
+                            HStack (spacing:0){
+                                Text("\(store.walkActivity.currentMinutes)/")
+                                Text("\(store.walkActivity.goalMinutes)min")
+                                    .foregroundStyle(Color("baseColor"))
+                            }
+                            .bold()
+                            .font(.system(size: 28, weight: .bold))
 
                             if store.isWalking {
-                                // Walk is active — tapping reopens the tracking view (skips countdown)
+                                // reopens the tracking view (no countdown)
                                 Button {
                                     countdownFinished = true
                                     showWalkFlow = true
@@ -65,124 +64,126 @@ struct ActivityView: View {
                                 } label: {
                                     Text("START")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(.pawPrimary)
+                                        .foregroundStyle(Color("baseColor"))
                                         .padding(.horizontal, 24)
                                         .padding(.vertical, 8)
                                         .background(
                                             Capsule()
-                                                .stroke(Color.pawPrimary, lineWidth: 1.5)
+                                                .stroke(Color("baseColor"), lineWidth: 1.5)
                                         )
-                                } // START button
+                                }
                                 .padding(.top, 4)
                             }
-                        } // VStack — walk stats
+                        }
                         Spacer()
-                    } // HStack — progress ring + stats
-                } // ZStack — Walked Card
+                    }
+                }
                 .frame(height: 160)
                 .padding(.horizontal)
 
                 // MARK: - Vaccine & Meals Row
                 HStack(spacing: 16) {
-                    // Upcoming Vaccine mini-card
+                    // Vaccine Card
+                    Button {
+                        // TODO: Direct navigation to Vaccine Tab
+                    } label: {
+                        VaccineCardView()
+                    }
+                    .buttonStyle(.plain)
+
+                    // Meals Card
+                    Button {
+                        showMealsLog = true
+                    } label: {
+                        MealsCardView(store: store)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal)
+
+                // MARK: - Symptom Checker Card
+                Button {
+                    symptomStore.reset()
+                    showSymptomChecker = true
+                } label: {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 34)
-                            .fill(Color.pawNeutral)
-                            .frame(width: 175, height: 190)
-                        VStack(alignment: .leading) {
-                            HStack(spacing: 15) {
-                                Text("Upcoming")
-                                    .font(.system(size: 22, weight: .regular))
-                                Button {
-                                    // TODO: navigate to vaccine detail
-                                } label: {
-                                    Circle()
-                                        .fill(Color.pawPrimary.opacity(0.15))
-                                        .frame(width: 22, height: 22)
-                                        .overlay(
-                                            Image(systemName: "chevron.right")
-                                                .foregroundStyle(.pawSecondary)
-                                                .font(.system(size: 12))
-                                        )
-                                }
-                            } // HStack — title + chevron
-                            Image(systemName: "syringe")
-                                .foregroundStyle(.pawPrimary)
-                                .rotationEffect(.degrees(270))
-                                .font(.system(size: 65))
-                            Text(store.vaccines.first?.name ?? "No vaccine")
-                                .font(.system(size: 18, weight: .medium))
-                            Text("\(store.vaccines.first?.daysLeft ?? 0) days left")
-                                .font(.system(size: 12, weight: .semibold))
-                        } // VStack — vaccine info
-                        .frame(height: 175)
-                    } // ZStack — vaccine mini-card
-
-                    // Meals Card (separate component)
-                    MealsCardView(store: store)
-                } // HStack — vaccine + meals row
-
-                // MARK: - Allergies Card
-                ZStack {
-                    RoundedRectangle(cornerRadius: 23)
-                        .fill(Color.pawNeutral)
-                        .frame(width: 370, height: 95)
-                    HStack(spacing: 20) {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.pawNeutral)
-                            .frame(width: 78, height: 78)
-                            .overlay(
-                                Image("allergiesIcon")
-                                    .resizable()
-                                    .frame(width: 66, height: 63)
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color("baseColor").opacity(0.12),
+                                        Color("baseColor").opacity(0.04)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack(spacing: 130) {
-                                Text("Allergies")
-                                    .font(.system(size: 24, weight: .regular))
-                                    .padding(.top, 5)
-                                Button {
-                                    // TODO: navigate to allergies detail
-                                } label: {
-                                    Circle()
-                                        .fill(Color.pawPrimary.opacity(0.15))
-                                        .frame(width: 22, height: 22)
-                                        .overlay(
-                                            Image(systemName: "chevron.right")
-                                                .foregroundStyle(.pawSecondary)
-                                                .font(.system(size: 12))
-                                        )
-                                }
-                            } // HStack — allergies title + chevron
-                            HStack {
-                                // Show up to 3 allergy badges
-                                ForEach(store.allergies.prefix(3)) { allergies in
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 6)
-                                            .fill(.pawPrimary)
-                                            .frame(width: 62, height: 27)
-                                        RoundedRectangle(cornerRadius: 5)
-                                            .fill(Color.pawNeutral)
-                                            .frame(width: 60, height: 25)
-                                            .overlay(
-                                                Text(allergies.allergen ?? "none")
-                                                    .font(.system(size: 10, weight: .medium))
-                                            )
-                                    } // ZStack — single badge
-                                }
-                            } // HStack — allergy badges
-                        } // VStack — allergies content
-                    } // HStack — icon + allergies
-                } // ZStack — Allergies Card
+                            .frame(height: 95)
+
+                        HStack(spacing: 16) {
+                            // Icon Container
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color("baseColor").opacity(0.15))
+                                .frame(width: 78, height: 78)
+                                .overlay(
+                                    Image(systemName: "stethoscope")
+                                        .font(.system(size: 32))
+                                        .foregroundStyle(Color("baseColor"))
+                                )
+                                .padding(.leading, 8)
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Check Symptoms")
+                                    .font(.system(size: 20, weight: .semibold))
+
+                                Text("Get guidance")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Color("secondaryText"))
+                            }
+
+                            Spacer()
+
+                            Circle()
+                                .fill(Color("baseColor").opacity(0.2))
+                                .frame(width: 28, height: 28)
+                                .overlay(
+                                    Image(systemName: "chevron.right")
+                                        .foregroundStyle(Color("baseColor"))
+                                        .font(.system(size: 12, weight: .bold))
+                                )
+                                .padding(.trailing, 12)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal)
 
                 // MARK: - Graph Card
-                WalkTimeGraphView(model: store.timeWalkedGraph)
-            } // VStack — main content
+                Button {
+                    showDistanceSummary = true
+                } label: {
+                    WalkTimeGraphView(model: store.timeWalkedGraph)
+                }
+                .buttonStyle(.plain)
+            }
             .padding(.top, 10)
             .padding(.bottom, 80)
-            .customNavigationScroll(title: "Activity", profileImage: store.dogProfile.dogImage)
-        } // NavigationStack
-        // fullScreenCover shows the walk flow as a modal over everything
+            .customNavigationScroll(
+                title: "Activity",
+                petStore: petStore
+            )
+            .navigationDestination(isPresented: $showMealsLog) {
+                MealLogView(store: store)
+            }
+            .navigationDestination(isPresented: $showDistanceSummary) {
+                DistanceSummaryView(store: store)
+            }
+            .navigationDestination(isPresented: $showSymptomChecker) {
+                SymptomCheckerView()
+                    .environment(symptomStore)
+                    .environment(store)
+            }
+        }
         .fullScreenCover(isPresented: $showWalkFlow) {
             WalkFlowContainer(
                 store: store,
@@ -193,26 +194,21 @@ struct ActivityView: View {
             )
         }
     }
-} // ActivityView
+}
 
 // MARK: - Walk Flow Container (Countdown → Tracking)
-// Decides whether to show the 3-2-1 countdown or jump straight
-// to the walk tracking screen (if user tapped "WALKING..." to reopen).
 
 private struct WalkFlowContainer: View {
     var store: ActivityStore
     var startWithTracking: Bool
-    var onDismiss: () -> Void
+    var onDismiss: () -> Void //what does this do ?
 
-    // We initialise @State in the init so it picks up startWithTracking
-    // before the first render. You can't set @State in the body.
     @State private var showTracking: Bool
 
     init(store: ActivityStore, startWithTracking: Bool, onDismiss: @escaping () -> Void) {
         self.store = store
         self.startWithTracking = startWithTracking
         self.onDismiss = onDismiss
-        // _showTracking accesses the underlying State wrapper directly
         _showTracking = State(initialValue: startWithTracking)
     }
 
@@ -236,23 +232,17 @@ private struct WalkFlowContainer: View {
             .transition(.opacity)
         }
     }
-} // WalkFlowContainer
+}
 
-// MARK: - Animated "WALKING..." Label (fixed width)
-// The dots animate (. → .. → ...) on a timer.
-// We pre-measure the widest text ("WALKING...") so the button
-// doesn't jump around as dots change.
+// MARK: - Animated "WALKING..." Label
 
 private struct WalkingLabel: View {
     @State private var dotCount = 0
-    // Combine timer that fires every 0.5s on the main thread
-    private let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
     private var dots: String {
         String(repeating: ".", count: dotCount + 1)
     }
 
-    // We measure this string to keep the button width constant
     private var hiddenText: String { "WALKING..." }
 
     var body: some View {
@@ -264,15 +254,16 @@ private struct WalkingLabel: View {
             .padding(.vertical, 8)
             .background(
                 Capsule()
-                    .fill(Color.pawPrimary)
+                    .fill(Color("baseColor"))
             )
-            .onReceive(timer) { _ in
-                dotCount = (dotCount + 1) % 3
+            .task {
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(0.5))
+                    dotCount = (dotCount + 1) % 3
+                }
             }
     }
 
-    /// Uses UIKit to measure the exact pixel width of a string.
-    /// This way the capsule button stays the same size no matter how many dots.
     private func textWidth(_ text: String) -> CGFloat {
         let font = UIFont.systemFont(ofSize: 14, weight: .medium)
         let attributes: [NSAttributedString.Key: Any] = [.font: font]
@@ -284,8 +275,21 @@ private struct WalkingLabel: View {
         ).size
         return ceil(size.width)
     }
-} // WalkingLabel
+}
+
+struct ActivityViewPreviewWrapper: View {
+    @State private var store = ActivityStore()
+    @State private var petStore = PetStore()
+    @State private var symptomStore = SymptomStore()
+    
+    var body: some View {
+        ActivityView()
+            .environment(store)
+            .environment(petStore)
+            .environment(symptomStore)
+    }
+}
 
 #Preview {
-    ActivityView(store: ActivityStore())
+    ActivityViewPreviewWrapper()
 }

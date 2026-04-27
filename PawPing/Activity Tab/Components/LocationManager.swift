@@ -20,6 +20,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     // MARK: - Public State
     var totalDistance: Double = 0          // metres
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
+    var routeLocations: [CLLocationCoordinate2D] = []
 
     // MARK: - Private
     // CLLocationManager is the Apple class that talks to the GPS hardware
@@ -44,6 +45,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     func startTracking() {
         totalDistance = 0
         lastLocation = nil
+        routeLocations.removeAll()
         manager.startUpdatingLocation()
     }
 
@@ -68,7 +70,10 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
             // Ignore unrealistic jumps (> 50m in one update) — usually GPS drift
             if delta < 50 {
                 totalDistance += delta
+                routeLocations.append(newLocation.coordinate)
             }
+        } else {
+            routeLocations.append(newLocation.coordinate)
         }
         lastLocation = newLocation
     }

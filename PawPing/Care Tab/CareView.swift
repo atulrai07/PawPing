@@ -22,10 +22,10 @@ struct CareView: View {
     @State private var position: MapCameraPosition = .automatic
     // When a user taps a card, we store the location here to trigger the detail sheet
     @State private var selectedLocation: CareLocation?
+    @State private var showProfile = false;
 
-    // Passed in from ContentView — we don't own these, just read them
-    var store: CareStore
-    var profile: DogProfile
+    @Environment(CareStore.self) var store
+    @Environment(PetStore.self) var petStore
 
     // Switches between vets and dayCares based on the selected segment,
     // then filters by search text if the user typed something
@@ -48,7 +48,10 @@ struct CareView: View {
             } // VStack — main content
             .padding(.top, 10)
             .padding(.bottom, 80)
-            .customNavigationScroll(title: "Care", profileImage: profile.dogImage)
+            .customNavigationScroll(
+                title: "Care",
+                petStore: petStore
+            )
             // .sheet presents VetClinicDetails as a half-sheet when a card is tapped.
             // `item:` binding means the sheet shows whenever selectedLocation != nil.
             .sheet(item: $selectedLocation) { location in
@@ -73,7 +76,7 @@ struct CareView: View {
                 } label: {
                     Text(type.rawValue)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(selectedCareType == type ? .white : Color.pawPrimary.opacity(0.8))
+                        .foregroundStyle(selectedCareType == type ? .white : Color("baseColor").opacity(0.8))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background {
@@ -81,7 +84,7 @@ struct CareView: View {
                                 // matchedGeometryEffect makes this capsule animate
                                 // smoothly from one tab to the other
                                 Capsule()
-                                    .fill(Color.pawPrimary)
+                                    .fill(Color("baseColor"))
                                     .matchedGeometryEffect(id: "SegmentIndicator", in: animationNamespace)
                             }
                         }
@@ -89,9 +92,9 @@ struct CareView: View {
             }
         } // HStack — segment buttons
         .padding(4)
-        .background(Color.pawPrimary.opacity(0.15))
+        .background(Color("baseColor").opacity(0.15))
         .clipShape(Capsule())
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 16)
         .padding(.top, 10)
     }
 
@@ -101,7 +104,7 @@ struct CareView: View {
             UserAnnotation()
 
             // "Home" pin — pulls lat/lng from the dog's profile
-            Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: profile.homeLatitude, longitude: profile.homeLongitude)) {
+            Annotation("Home", coordinate: CLLocationCoordinate2D(latitude: petStore.activePet?.homeLatitude ?? 28.4210, longitude: petStore.activePet?.homeLongitude ?? 77.5340)) {
                 ZStack {
                     Circle()
                         .fill(Color.white)
@@ -109,14 +112,14 @@ struct CareView: View {
                         .shadow(color: .black.opacity(0.15), radius: 3)
                     Image(systemName: "house.fill")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.pawTertiary)
+                        .foregroundStyle(Color("baseColor"))
                 } // ZStack — home pin
             }
 
             // Drop a marker for each vet/daycare in the filtered list
             ForEach(filteredLocations) { item in
                 Marker(item.name, coordinate: item.coordinate)
-                    .tint(.pawPrimary)
+                    .tint(Color("baseColor"))
             }
         } // Map
         .frame(height: 180)
@@ -124,11 +127,11 @@ struct CareView: View {
         .overlay(alignment: .bottomTrailing) {
             // Recenter button — snaps the map back to the pet's home area
             Button {
-                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: profile.homeLatitude, longitude: profile.homeLongitude), latitudinalMeters: 3000, longitudinalMeters: 3000))
+                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: petStore.activePet?.homeLatitude ?? 28.4210, longitude: petStore.activePet?.homeLongitude ?? 77.5340), latitudinalMeters: 3000, longitudinalMeters: 3000))
             } label: {
                 Image(systemName: "location.fill")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.pawSecondary)
+                    .foregroundStyle(Color("baseColor"))
                     .padding(12)
                     .background(Color.white)
                     .clipShape(Circle())
@@ -150,7 +153,7 @@ struct CareView: View {
         } // HStack — search bar
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(Color.pawNeutral)
+        .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .padding(.horizontal)
     }
@@ -170,6 +173,17 @@ struct CareView: View {
     }
 } // CareView
 
+struct CareViewPreviewWrapper: View {
+    @State private var store = CareStore()
+    @State private var petStore = PetStore()
+    
+    var body: some View {
+        CareView()
+            .environment(store)
+            .environment(petStore)
+    }
+}
+
 #Preview {
-    CareView(store: CareStore(), profile: DogProfile.sampleProfile)
+    CareViewPreviewWrapper()
 }
