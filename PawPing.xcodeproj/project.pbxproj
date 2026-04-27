@@ -160,7 +160,7 @@
 			mainGroup = B76A5F3F2F1DEA7400B89ED9;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				B7F57B042F9F6DB20025B138 /* XCLocalSwiftPackageReference "../../Downloads/supabase-swift-main" */,
+				A66ED7692F9FDAE4003C078B /* XCLocalSwiftPackageReference "../../../Downloads/supabase-swift-main" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B76A5F3F2F1DEA7400B89ED9;
@@ -408,9 +408,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		B7F57B042F9F6DB20025B138 /* XCLocalSwiftPackageReference "../../Downloads/supabase-swift-main" */ = {
+		A66ED7692F9FDAE4003C078B /* XCLocalSwiftPackageReference "../../../Downloads/supabase-swift-main" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../Downloads/supabase-swift-main";
+			relativePath = "../../../Downloads/supabase-swift-main";
 		};
 /* End XCLocalSwiftPackageReference section */
 
