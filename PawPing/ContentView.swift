@@ -13,16 +13,16 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
-            Tab("Activity", systemImage: "dog.fill") {
+            Tab("Home", systemImage: "house.fill") {
                 ActivityView()
             }
 
-            Tab("Care", systemImage: "heart.fill") {
-                CareView()
+            Tab("Vaccines", systemImage: "syringe.fill") {
+                HealthView()
             }
 
-            Tab("Health", systemImage: "syringe.fill") {
-                HealthView()
+            Tab("Care", systemImage: "pet.carrier.fill") {
+                CareView()
             }
 
             Tab("Profile", systemImage: "person.fill") {
