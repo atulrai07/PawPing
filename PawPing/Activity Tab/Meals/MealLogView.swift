@@ -50,8 +50,20 @@ struct MealLogView: View {
     }
 
     private var totalCalories: Double {
-        store.meals.filter { $0.isTaken }.reduce(0) { $0 + $1.calories }
+        let date = weekDates[selectedDateIndex]
+        return store.mealDietStore.totalCalories(on: date)
     }
+    
+    private var mealsLoggedCount: Int {
+        let date = weekDates[selectedDateIndex]
+        return store.mealDietStore.mealsLoggedCount(on: date)
+    }
+    
+    private var displayedMeals: [Meal] {
+        let date = weekDates[selectedDateIndex]
+        return store.getMeals(for: date)
+    }
+
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -68,9 +80,8 @@ struct MealLogView: View {
                 dailySummary
                     .padding(.horizontal)
                 
-                // Meal Cards
                 VStack(spacing: 14) {
-                    ForEach(store.meals, id: \.id) { meal in
+                    ForEach(displayedMeals, id: \.id) { meal in
                         Button {
                             selectedMealType = meal.mealType
                             showMealSheet = true
@@ -110,7 +121,7 @@ struct MealLogView: View {
             selectedDateIndex = todayIndex
         }
         .sheet(isPresented: $showMealSheet) {
-            MealLoggingSheet(store: store, mealType: selectedMealType)
+            MealLoggingSheet(store: store, mealType: selectedMealType, logDate: weekDates[selectedDateIndex])
                 .presentationDetents([.large])
         }
         .sheet(isPresented: $showDietSetup) {
@@ -273,7 +284,7 @@ struct MealLogView: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 16))
                     .foregroundStyle(Color("baseColor"))
-                Text("\(store.mealsLoggedToday)/3")
+                Text("\(mealsLoggedCount)/3")
                     .font(.system(size: 22, weight: .bold))
                 Text("logged")
                     .font(.system(size: 11))

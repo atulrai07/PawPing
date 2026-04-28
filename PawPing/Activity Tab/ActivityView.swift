@@ -109,16 +109,8 @@ struct ActivityView: View {
                 } label: {
                     ZStack {
                         RoundedRectangle(cornerRadius: 24)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color("baseColor").opacity(0.12),
-                                        Color("baseColor").opacity(0.04)
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .fill(Color("cardBackground"))
+                            .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
                             .frame(height: 95)
 
                         HStack(spacing: 16) {

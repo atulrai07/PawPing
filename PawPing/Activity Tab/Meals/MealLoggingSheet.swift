@@ -16,6 +16,7 @@ struct MealLoggingSheet: View {
 
     var store: ActivityStore
     var mealType: MealType
+    var logDate: Date = Date()
 
     // MARK: - Local State
 
@@ -119,7 +120,8 @@ struct MealLoggingSheet: View {
     // MARK: - Pre-fill from existing meal data
 
     private func prefillFromExisting() {
-        if let meal = store.meals.first(where: { $0.mealType == mealType }), meal.isTaken {
+        let mealsForDate = store.getMeals(for: logDate)
+        if let meal = mealsForDate.first(where: { $0.mealType == mealType }), meal.isTaken {
             selectedFood = meal.foodType
             selectedQuantity = meal.quantity
             ingredients = meal.ingredients
@@ -337,7 +339,8 @@ struct MealLoggingSheet: View {
                 unit: unit,
                 ingredients: ingredients,
                 time: selectedTime,
-                isTaken: true
+                isTaken: true,
+                forDate: logDate
             )
             dismiss()
         } label: {

@@ -98,6 +98,11 @@ struct Meal: Identifiable, Codable {
     var calories: Double = 0
     var ingredients: [MealIngredient] = []
     var isTaken: Bool
+    
+    /// Returns true if this meal's date is today
+    var isToday: Bool {
+        Calendar.current.isDateInToday(date)
+    }
 }
 
 struct MealIngredient: Codable, Identifiable {
@@ -118,10 +123,34 @@ struct USDAFood: Codable, Identifiable {
     let caloriesPer100g: Double
 }
 
-enum MealType: String, Codable {
+enum MealType: String, Codable, CaseIterable {
     case breakfast = "Breakfast"
     case lunch     = "Lunch"
     case dinner    = "Dinner"
+    
+    var icon: String {
+        switch self {
+        case .breakfast: return "sun.max"
+        case .lunch:     return "sunset.fill"
+        case .dinner:    return "moon"
+        }
+    }
+    
+    var defaultTime: String {
+        switch self {
+        case .breakfast: return "8:00"
+        case .lunch:     return "12:30"
+        case .dinner:    return "8:30"
+        }
+    }
+    
+    var defaultMeridian: String {
+        switch self {
+        case .breakfast: return "AM"
+        case .lunch:     return "PM"
+        case .dinner:    return "PM"
+        }
+    }
 }
 
 // MARK: - Vaccines

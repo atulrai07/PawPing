@@ -11,6 +11,7 @@ import Supabase
 @Observable
 class ActivityStore {
 
+    var activePetId: UUID?
     var meals: [Meal] = []
     var vaccines: [Vaccine] = []
     var allergies: [Allergy] = []
@@ -54,6 +55,7 @@ class ActivityStore {
     }
 
     func switchPet(to petId: UUID?) {
+        self.activePetId = petId
         // Sync sub-stores
         mealDietStore.switchPet(to: petId)
         
@@ -250,11 +252,47 @@ class ActivityStore {
             startTimer()
         }
     }
-
+    
     // MARK: - Meal Update (delegates calorie calculation to MealDietStore)
-
-    func updateMeal(type: MealType, foodType: FoodType?, quantity: Double, unit: String, ingredients: [MealIngredient], time: Date, isTaken: Bool) {
-        if let index = meals.firstIndex(where: { $0.mealType == type }) {
+    
+    func updateMeal(type: MealType, foodType: FoodType?, quantity: Double, unit: String, ingredients: [MealIngredient], time: Date, isTaken: Bool, forDate: Date = Date()) {
+        let isToday = Calendar.current.isDateInToday(forDate)
+        
+        // 1. If it's today, update the "live" meals array for the Home tab
+        if isToday {
+            if let index = meals.firstIndex(where: { $0.mealType == type }) {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "h:mm"
+                let timeStr = formatter.string(from: time)
+                
+                formatter.dateFormat = "a"
+                let meridianStr = formatter.string(from: time)
+                
+                meals[index].foodType = foodType
+                meals[index].quantity = quantity
+                meals[index].unit = unit
+                meals[index].ingredients = ingredients
+                meals[index].time = timeStr
+                meals[index].meridian = meridianStr
+                meals[index].isTaken = isTaken
+                
+                // Calculate calories
+                if let food = foodType {
+                    if food.isEstimateOnly {
+                        meals[index].calories = ingredients.reduce(0) { $0 + $1.calculatedCalories }
+                    } else {
+                        meals[index].calories = mealDietStore.caloriesFor(food: food, quantity: quantity)
+                    }
+                } else {
+                    meals[index].calories = 0
+                }
+                
+                saveData(for: activePetId)
+            }
+        }
+        
+        // 2. Persist to historical mealLogs in MealDietStore
+        if let food = foodType {
             let formatter = DateFormatter()
             formatter.dateFormat = "h:mm"
             let timeStr = formatter.string(from: time)
@@ -262,41 +300,54 @@ class ActivityStore {
             formatter.dateFormat = "a"
             let meridianStr = formatter.string(from: time)
             
-            meals[index].foodType = foodType
-            meals[index].quantity = quantity
-            meals[index].unit = unit
-            meals[index].ingredients = ingredients
-            meals[index].time = timeStr
-            meals[index].meridian = meridianStr
-            meals[index].isTaken = isTaken
-
-            // Calculate calories via MealDietStore or ingredients
-            if let food = foodType {
-                if food.isEstimateOnly {
-                    let sum = ingredients.reduce(0) { $0 + $1.calculatedCalories }
-                    meals[index].calories = sum
-                } else {
-                    meals[index].calories = mealDietStore.caloriesFor(food: food, quantity: quantity)
-                }
-
-                // Also persist to MealDietStore
-                if isTaken {
-                    mealDietStore.logMeal(
-                        mealType: type,
-                        foodType: food,
-                        quantity: quantity,
-                        unit: unit,
-                        ingredients: ingredients,
-                        time: timeStr,
-                        meridian: meridianStr,
-                        date: Date()
-                    )
-                }
+            mealDietStore.logMeal(
+                mealType: type,
+                foodType: food,
+                quantity: quantity,
+                unit: unit,
+                ingredients: ingredients,
+                time: timeStr,
+                meridian: meridianStr,
+                date: forDate
+            )
+        }
+    }
+    
+    /// Reconstructs a list of Meal objects for a specific date from persisted logs.
+    func getMeals(for date: Date) -> [Meal] {
+        if Calendar.current.isDateInToday(date) {
+            return meals
+        }
+        
+        return MealType.allCases.map { type in
+            if let log = mealDietStore.mealLog(for: type, on: date) {
+                return Meal(
+                    id: log.id,
+                    petId: activePetId ?? UUID(),
+                    icon: type.icon,
+                    time: log.time,
+                    meridian: log.meridian,
+                    date: log.date,
+                    mealType: log.mealType,
+                    foodType: log.foodType,
+                    quantity: log.quantity ?? 0,
+                    unit: log.unit ?? "",
+                    calories: log.calories,
+                    ingredients: log.ingredients ?? [],
+                    isTaken: log.isTaken
+                )
             } else {
-                meals[index].calories = 0
+                return Meal(
+                    id: UUID(),
+                    petId: activePetId ?? UUID(),
+                    icon: type.icon,
+                    time: type.defaultTime,
+                    meridian: type.defaultMeridian,
+                    date: date,
+                    mealType: type,
+                    isTaken: false
+                )
             }
-            
-            saveData(for: meals.first?.petId)
         }
     }
 
