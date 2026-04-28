@@ -12,22 +12,23 @@ struct LoginView: View {
     
     @State private var email = ""
     @State private var password = ""
+    @State private var isPasswordVisible = false
     @State private var isLoading = false
     @State private var errorMessage = ""
     
     var body: some View {
-        ScrollView {
+        VStack {
             VStack(alignment: .leading, spacing: 32) {
                 // Header (Logo)
                 HStack {
                     Spacer()
-                    Text("PawPing")
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color("baseColor"))
+                    Image("Pawping_logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 62.5)
                     Spacer()
                 }
-                .padding(.top, 40)
-                .padding(.bottom, 20)
+                .padding(.top, 33)
                 
                 // Welcome Text
                 Text("Welcome back")
@@ -41,12 +42,20 @@ struct LoginView: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.gray)
                         
-                        TextField("you@gmail.com", text: $email)
-                            .keyboardType(.emailAddress)
-                            .textInputAutocapitalization(.never)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        ZStack(alignment: .leading) {
+                            if email.isEmpty {
+                                Text("you@gmail.com")
+                                    .foregroundStyle(.gray)
+                                    .opacity(0.5)
+                                    .padding(.leading, 16)
+                            }
+                            TextField("", text: $email)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .padding(14)
+                        }
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     
                     // Password Field
@@ -55,10 +64,23 @@ struct LoginView: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.gray)
                         
-                        SecureField("...............", text: $password)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        HStack {
+                            if isPasswordVisible {
+                                TextField("...............", text: $password)
+                            } else {
+                                SecureField("...............", text: $password)
+                            }
+                            
+                            Button {
+                                isPasswordVisible.toggle()
+                            } label: {
+                                Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                                    .foregroundStyle(.gray)
+                            }
+                        }
+                        .padding(14)
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     
                     // Forgot Password
@@ -148,7 +170,7 @@ struct LoginView: View {
                     }
                 }
                 
-                Spacer(minLength: 40)
+                Spacer(minLength: 20)
                 
                 // Bottom link
                 HStack(spacing: 4) {
