@@ -109,7 +109,9 @@ struct MealLogView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "chevron.left")
+                        Image(systemName: "chevron.backward")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.primary)
                     }
                 }
             }

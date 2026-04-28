@@ -94,12 +94,9 @@ struct OTPVerificationView: View {
                 Button {
                     dismiss()
                 } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(.black)
-                        .frame(width: 40, height: 40)
-                        .background(Color(.systemGray6))
-                        .clipShape(Circle())
+                    Image(systemName: "chevron.backward")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.primary)
                 }
             }
         }
