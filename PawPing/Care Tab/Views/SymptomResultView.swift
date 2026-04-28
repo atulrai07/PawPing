@@ -2,7 +2,7 @@
 //  SymptomResultView.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 //  Displays the triage analysis results with severity, possible causes,
 //  recommended actions, and an emergency CTA when needed.

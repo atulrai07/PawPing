@@ -11,7 +11,7 @@ struct ActivityView: View {
     @Environment(ActivityStore.self) var store
     @Environment(PetStore.self) var petStore
     @Environment(SymptomStore.self) var symptomStore
-    @Environment(VaccineStore.self) var vaccineStore
+    @Environment(HealthStore.self) var healthStore
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
@@ -178,7 +178,7 @@ struct ActivityView: View {
                     if let activeId = petStore.activePetId {
                         // Re-sync all stores for the active pet
                         store.switchPet(to: activeId)
-                        await vaccineStore.fetchRecords(for: activeId)
+                        await healthStore.fetchVaccines(for: activeId)
                     }
                 }
             )

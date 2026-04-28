@@ -21,8 +21,8 @@ struct ContentView: View {
                 CareView()
             }
 
-            Tab("Vaccine", systemImage: "syringe.fill") {
-                VaccineView()
+            Tab("Health", systemImage: "syringe.fill") {
+                HealthView()
             }
 
             Tab("Profile", systemImage: "person.fill") {

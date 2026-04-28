@@ -1,17 +1,18 @@
 //
-//  VaccineReportConfigView.swift
+//  HealthReportConfigView.swift
 //  PawPing
 //
 //  Created by Atul on 01/04/26.
+//  Updated for Health system on 28/04/26.
 //
 
 import SwiftUI
 
-struct VaccineReportConfigView: View {
+struct HealthReportConfigView: View {
     @Environment(PetStore.self) var petStore
-    @Environment(VaccineStore.self) var vaccineStore
+    @Environment(HealthStore.self) var healthStore
     
-    @State private var config = VaccineReportConfig.defaultConfig
+    @State private var config = HealthReportConfig()
     @State private var showingPreview = false
     
     var body: some View {
@@ -27,24 +28,25 @@ struct VaccineReportConfigView: View {
                     .font(.system(size: 18, weight: .bold))
                     .padding(.horizontal, 4)
                     .padding(.top, 8)
+                
                 VStack(spacing: 0) {
-                    Toggle("Include Clinic Contact info", isOn: $config.includeClinicContactInfo)
+                    Toggle("Include Vaccinations", isOn: $config.includeVaccinations)
                         .padding(.vertical, 12)
                     
                     Divider()
                     
-                    Toggle("Include Missed Alerts", isOn: $config.includeMissedAlerts)
+                    Toggle("Include Deworming", isOn: $config.includeDeworming)
                         .padding(.vertical, 12)
                     
                     Divider()
                     
-                    Toggle("Include app Watermark", isOn: $config.includeAppWatermark)
+                    Toggle("Include Medications", isOn: $config.includeMedications)
                         .padding(.vertical, 12)
                 }
                 .padding(.horizontal, 16)
                 .background(RoundedRectangle(cornerRadius: 16).fill(Color("cardBackground")))
                 .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-                .tint(.green)
+                .tint(Color("baseColor"))
                 
                 // MARK: Next Button
                 Button {
@@ -66,12 +68,12 @@ struct VaccineReportConfigView: View {
             .padding(.horizontal, 16)
         }
         .background(Color("baseBackground"))
-        .navigationTitle("Vaccine Report")
+        .navigationTitle("Health Report")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $showingPreview) {
-            VaccineReportPreviewView(config: config)
-                .environment(petStore)
-                .environment(vaccineStore)
+            if let pet = petStore.activePet {
+                HealthReportPreviewView(pet: pet, config: config)
+            }
         }
     }
     
@@ -92,7 +94,7 @@ struct VaccineReportConfigView: View {
                 Text("Breed : \(petStore.activePet?.breed ?? "—")")
                     .font(.system(size: 14))
                 
-                Text("Age : \(petStore.activePet?.age ?? "?") yrs")
+                Text("Age : \(petStore.activePet?.age ?? "?")")
                     .font(.system(size: 14))
                 
                 Text("Owner : Rahul Kumar")
@@ -106,13 +108,5 @@ struct VaccineReportConfigView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color("cardBackground")))
         .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-    }
-}
-
-#Preview {
-    NavigationStack {
-        VaccineReportConfigView()
-            .environment(PetStore())
-            .environment(VaccineStore())
     }
 }

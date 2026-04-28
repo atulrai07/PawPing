@@ -2,7 +2,7 @@
 //  ConditionModel.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 //  Codable models for dog conditions loaded from the JSON knowledge base.
 //

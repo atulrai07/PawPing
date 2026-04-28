@@ -15,6 +15,7 @@ struct Pet: Identifiable, Codable, Hashable {
     var age: String
     var weightKg: Double
     var imageName: String          // asset catalog name (e.g. "dog1")
+    var profileImageUrl: String? = nil // Public URL for uploaded avatars
     var homeLatitude: Double
     var homeLongitude: Double
     var birthday: String? = nil    // Stored as "yyyy-MM-dd" to match Supabase date column
@@ -33,6 +34,7 @@ struct Pet: Identifiable, Codable, Hashable {
         case age
         case weightKg = "weight_kg"
         case imageName = "image_name"
+        case profileImageUrl = "profile_image_url"
         case homeLatitude = "home_latitude"
         case homeLongitude = "home_longitude"
         case birthday

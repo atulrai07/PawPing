@@ -14,6 +14,8 @@ class PetStore {
     
     var pets: [Pet] = []
     var activePetId: UUID?
+    var currentUserProfile: UserModel? = nil
+    var savedVets: [SavedVet] = []
     var lastError: String? = nil
     
     var activePet: Pet? {
@@ -121,8 +123,8 @@ class PetStore {
             try await SupabaseConfig.storageClient.storage
                 .from("pet-avatars")
                 .upload(
-                    path: fileName,
-                    file: data,
+                    fileName,
+                    data: data,
                     options: FileOptions(contentType: "image/jpeg")
                 )
             
@@ -135,6 +137,63 @@ class PetStore {
         } catch {
             print("❌ Error uploading image: \(error)")
             return nil
+        }
+    }
+    
+    // MARK: - User Profile
+    
+    @MainActor
+    func fetchUserProfile() async {
+        do {
+            let session = try await client.auth.session
+            let userId = session.user.id.uuidString.lowercased()
+            
+            let profiles: [UserModel] = try await client
+                .from("profiles")
+                .select()
+                .eq("id", value: userId)
+                .execute()
+                .value
+            
+            self.currentUserProfile = profiles.first
+        } catch {
+            print("❌ Error fetching user profile: \(error)")
+        }
+    }
+    
+    // MARK: - Saved Vets
+    
+    @MainActor
+    func fetchSavedVets() async {
+        do {
+            let session = try await client.auth.session
+            let userId = session.user.id.uuidString.lowercased()
+            
+            let vets: [SavedVet] = try await client
+                .from("saved_vets")
+                .select()
+                .eq("user_id", value: userId)
+                .execute()
+                .value
+            
+            self.savedVets = vets
+        } catch {
+            print("❌ Error fetching saved vets: \(error)")
+        }
+    }
+    
+    @MainActor
+    func deleteSavedVet(id: UUID) async {
+        do {
+            try await client
+                .from("saved_vets")
+                .delete()
+                .eq("id", value: id)
+                .execute()
+            
+            await fetchSavedVets()
+        } catch {
+            print("❌ Error deleting saved vet: \(error)")
         }
     }
 }

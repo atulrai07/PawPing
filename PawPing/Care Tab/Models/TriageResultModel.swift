@@ -2,7 +2,7 @@
 //  TriageResultModel.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 //  The output model produced by SymptomStore.analyze().
 //  Contains the overall severity, emergency flag, matched conditions, and advice.

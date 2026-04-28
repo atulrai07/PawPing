@@ -2,7 +2,7 @@
 //  SymptomStore.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 //  The brain of the Symptom Checker feature.
 //  Loads the JSON knowledge base, manages symptom selection state,

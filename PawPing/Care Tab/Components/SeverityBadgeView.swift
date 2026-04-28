@@ -2,7 +2,7 @@
 //  SeverityBadgeView.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 //  A color-coded capsule badge that displays the severity level.
 //  Green (mild), Orange (moderate), Red-orange (serious), Red (critical).

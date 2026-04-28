@@ -9,6 +9,7 @@
 
 import Foundation
 import CoreLocation
+import MapKit
 
 // MARK: - Care Type
 
@@ -21,13 +22,15 @@ enum CareType: String, CaseIterable {
 // MARK: - Place Model
 // Dynamic model for MapKit results
 
-struct PlaceModel: Identifiable {
+struct PlaceModel: Identifiable, Equatable {
     let id = UUID()
     var name: String
     var latitude: Double
     var longitude: Double
     var distance: Double       // in km
     var category: CareType
+    var address: String?
+    var mapItem: MKMapItem?    // Store the original map item to avoid deprecations
 
     /// Convenience — converts lat/lng into the type MapKit needs
     var coordinate: CLLocationCoordinate2D {
@@ -37,5 +40,15 @@ struct PlaceModel: Identifiable {
     /// Formatted distance string for display (e.g. "1.2 km away")
     var distanceString: String {
         String(format: "%.1f km away", distance)
+    }
+    
+    // Manual Equatable implementation since MKMapItem is not Equatable
+    static func == (lhs: PlaceModel, rhs: PlaceModel) -> Bool {
+        lhs.name == rhs.name &&
+        lhs.latitude == rhs.latitude &&
+        lhs.longitude == rhs.longitude &&
+        lhs.distance == rhs.distance &&
+        lhs.category == rhs.category &&
+        lhs.address == rhs.address
     }
 }

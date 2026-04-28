@@ -12,20 +12,33 @@ struct PawPingApp: App {
     @State private var petStore      = PetStore()
     @State private var activityStore = ActivityStore()
     @State private var careStore     = CareStore()
-    @State private var vaccineStore  = VaccineStore()
+    @State private var healthStore   = HealthStore()
     @State private var symptomStore  = SymptomStore()
     @State private var appState      = AppState()
     @State private var authStore: AuthStore?
     
-    // BUG FIX 2: Prevent premature routing by adding a loading state
+    // Initial loading and splash
     @State private var isInitialLoading = true
+    @State private var showSplash = true
 
     var body: some Scene {
         WindowGroup {
             ZStack {
+                if showSplash {
+                    SplashView(showSplash: $showSplash)
+                        .transition(.opacity)
+                        .zIndex(10) // Ensure splash is on top
+                }
+                
                 if let authStore {
                     Group {
-                        if isInitialLoading {
+                        if !appState.hasSeenOnboarding {
+                            OnboardingView {
+                                withAnimation {
+                                    appState.hasSeenOnboarding = true
+                                }
+                            }
+                        } else if isInitialLoading {
                             // Show loading while we verify pets in Supabase
                             ProgressView("Syncing your data...")
                         } else if !appState.isAuthenticated {
@@ -48,7 +61,7 @@ struct PawPingApp: App {
             .environment(petStore)
             .environment(activityStore)
             .environment(careStore)
-            .environment(vaccineStore)
+            .environment(healthStore)
             .environment(symptomStore)
             .task {
                 // Initialize authStore with appState reference
@@ -82,7 +95,7 @@ struct PawPingApp: App {
                 
                 if let newPetId {
                     Task {
-                        await vaccineStore.fetchRecords(for: newPetId)
+                        await healthStore.fetchVaccines(for: newPetId)
                     }
                 }
             }

@@ -25,9 +25,14 @@ class AppState {
         didSet { UserDefaults.standard.set(currentUserName, forKey: "currentUserName") }
     }
     
+    var hasSeenOnboarding: Bool {
+        didSet { UserDefaults.standard.set(hasSeenOnboarding, forKey: "hasSeenOnboarding") }
+    }
+    
     init() {
         self.isAuthenticated = UserDefaults.standard.bool(forKey: "isAuthenticated")
         self.hasPets = UserDefaults.standard.bool(forKey: "hasPets")
+        self.hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
         self.currentUserId = UserDefaults.standard.string(forKey: "currentUserId") ?? ""
         self.currentUserName = UserDefaults.standard.string(forKey: "currentUserName") ?? "Pet Owner"
     }

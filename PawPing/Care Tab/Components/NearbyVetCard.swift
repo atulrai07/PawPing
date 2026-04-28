@@ -2,7 +2,7 @@
 //  NearbyVetCard.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 
 import SwiftUI

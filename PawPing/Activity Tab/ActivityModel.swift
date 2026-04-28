@@ -35,7 +35,7 @@ struct WalkActivity: Codable {
 }
 
 struct TimeWalkedData: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let day: String
     var minutes: Int
 }
@@ -50,7 +50,7 @@ struct TimeWalkedGraphModel: Codable {
 }
 
 struct DistanceData: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let date: Date
     let distanceInKm: Double
     
@@ -92,11 +92,11 @@ struct Meal: Identifiable, Codable {
     var meridian: String
     var date: Date = Date()
     var mealType: MealType
-    var foodType: FoodType?                // nil = not yet selected (replaces old mealName)
-    var quantity: Double = 1.0              // default 1.0 (cup, grams, or units)
+    var foodType: FoodType?
+    var quantity: Double = 1.0
     var unit: String = "cup"
-    var calories: Double = 0               // calculated from food × quantity
-    var ingredients: [MealIngredient] = []  // for custom/homemade meals
+    var calories: Double = 0
+    var ingredients: [MealIngredient] = []
     var isTaken: Bool
 }
 

@@ -19,7 +19,7 @@ struct CareView: View {
     @State private var searchText: String = ""
 
     // .automatic tells MapKit to frame all annotations automatically
-    @State private var position: MapCameraPosition = .automatic
+    @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     // When a user taps a card, we store the location here to trigger the detail sheet
     @State private var selectedLocation: PlaceModel?
     @State private var showProfile = false;
@@ -32,16 +32,26 @@ struct CareView: View {
     var filteredLocations: [PlaceModel] {
         let sourceList = selectedCareType == .vet ? store.vets : store.dayCares
         if searchText.isEmpty {
-            return sourceList
+            return sourceList.sorted { $0.distance < $1.distance }
         } else {
-            return sourceList.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return sourceList
+                .filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+                .sorted { $0.distance < $1.distance }
         }
     }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                customSegmentedControl
+                Picker("Care Type", selection: $selectedCareType) {
+                    ForEach(CareType.allCases, id: \.self) { type in
+                        Text(type.rawValue).tag(type)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.top, 10)
+                
                 mapSection
                 searchBarSection
                 cardsList
@@ -67,45 +77,20 @@ struct CareView: View {
                 store.requestLocationAndFetch()
             }
         }
+        .onChange(of: store.vets) { _, _ in
+            withAnimation {
+                position = .automatic
+            }
+        }
+        .onChange(of: store.dayCares) { _, _ in
+            withAnimation {
+                position = .automatic
+            }
+        }
     }
-
-    // @Namespace creates a shared animation ID space so the capsule
-    // indicator can smoothly slide between "Vet Care" and "Day Care".
-    @Namespace private var animationNamespace
 
     // MARK: - Subviews
 
-    private var customSegmentedControl: some View {
-        HStack(spacing: 0) {
-            ForEach(CareType.allCases, id: \.self) { type in
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedCareType = type
-                    }
-                } label: {
-                    Text(type.rawValue)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(selectedCareType == type ? .white : Color("baseColor").opacity(0.8))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background {
-                            if selectedCareType == type {
-                                // matchedGeometryEffect makes this capsule animate
-                                // smoothly from one tab to the other
-                                Capsule()
-                                    .fill(Color("baseColor"))
-                                    .matchedGeometryEffect(id: "SegmentIndicator", in: animationNamespace)
-                            }
-                        }
-                }
-            }
-        } // HStack — segment buttons
-        .padding(4)
-        .background(Color("baseColor").opacity(0.15))
-        .clipShape(Capsule())
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
-    }
 
     private var mapSection: some View {
         Map(position: $position) {
@@ -127,16 +112,51 @@ struct CareView: View {
 
             // Drop a marker for each vet/daycare in the filtered list
             ForEach(filteredLocations) { item in
-                Marker(item.name, coordinate: item.coordinate)
-                    .tint(Color("baseColor"))
+                Annotation(item.name, coordinate: item.coordinate) {
+                    VStack(spacing: 0) {
+                        Image(systemName: item.category == .vet ? "cross.case.fill" : "pawprint.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(Color("baseColor"))
+                            .clipShape(Circle())
+                            .shadow(radius: 3)
+                        
+                        Image(systemName: "triangle.fill")
+                            .resizable()
+                            .frame(width: 8, height: 4)
+                            .rotationEffect(.degrees(180))
+                            .foregroundStyle(Color("baseColor"))
+                            .offset(y: -3)
+                    }
+                }
             }
         } // Map
         .frame(height: 180)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .overlay(alignment: .bottomTrailing) {
-            // Recenter button — snaps the map back to the pet's home area
             Button {
-                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: petStore.activePet?.homeLatitude ?? 28.4210, longitude: petStore.activePet?.homeLongitude ?? 77.5340), latitudinalMeters: 3000, longitudinalMeters: 3000))
+                if let userCoord = store.lastLocation?.coordinate {
+                    withAnimation {
+                        position = .region(MKCoordinateRegion(
+                            center: userCoord,
+                            latitudinalMeters: 10000,
+                            longitudinalMeters: 10000
+                        ))
+                    }
+                } else {
+                    // Fallback to home if location not yet available
+                    withAnimation {
+                        position = .region(MKCoordinateRegion(
+                            center: CLLocationCoordinate2D(
+                                latitude: petStore.activePet?.homeLatitude ?? 28.4210,
+                                longitude: petStore.activePet?.homeLongitude ?? 77.5340
+                            ),
+                            latitudinalMeters: 10000,
+                            longitudinalMeters: 10000
+                        ))
+                    }
+                }
             } label: {
                 Image(systemName: "location.fill")
                     .font(.system(size: 16, weight: .bold))

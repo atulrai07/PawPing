@@ -1,14 +1,15 @@
 //
-//  VaccineSummaryCard.swift
+//  HealthSummaryCard.swift
 //  PawPing
 //
 //  Created by Atul on 15/03/26.
+//  Updated for Health system on 27/04/26.
 //
 
 import SwiftUI
 
-struct VaccineSummaryCard: View {
-    let summary: VaccineSummary
+struct HealthSummaryCard: View {
+    let summary: HealthSummary
     
     var body: some View {
         HStack(spacing: 0) {
@@ -43,10 +44,4 @@ struct VaccineSummaryCard: View {
         }
         .frame(maxWidth: .infinity)
     }
-}
-
-#Preview {
-    VaccineSummaryCard(summary: VaccineStore().summary)
-        .padding()
-        .background(Color("baseBackground"))
 }

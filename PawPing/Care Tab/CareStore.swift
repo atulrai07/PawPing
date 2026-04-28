@@ -22,7 +22,7 @@ class CareStore: NSObject, CLLocationManagerDelegate {
     var isLocationDenied: Bool = false
     
     private let locationManager = CLLocationManager()
-    private var lastLocation: CLLocation?
+    var lastLocation: CLLocation?
     
     override init() {
         super.init()
@@ -129,12 +129,17 @@ class CareStore: NSObject, CLLocationManagerDelegate {
                 latitude: destLoc.coordinate.latitude,
                 longitude: destLoc.coordinate.longitude,
                 distance: distanceInKm,
-                category: category
+                category: category,
+                address: item.address?.fullAddress ?? item.name ?? "Address not available",
+                mapItem: item
             ))
         }
         
-        // Sort by nearest and limit to 10
+        // Filter out results that are too far away (e.g. > 50km) to ensure they are actually "nearby"
+        // Also sort by distance strictly.
+        results = results.filter { $0.distance < 50.0 }
         results.sort { $0.distance < $1.distance }
-        return Array(results.prefix(10))
+        
+        return Array(results.prefix(15))
     }
 }

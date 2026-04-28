@@ -2,7 +2,7 @@
 //  EmergencyHelpView.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 //  Emergency guidance screen shown when critical symptoms are detected.
 //  Provides immediate action steps and a quick-call button.
