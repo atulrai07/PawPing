@@ -40,7 +40,7 @@ class SymptomStore {
     /// Reads dog_conditions.json from the app bundle and decodes it.
     func loadConditions() {
         guard let url = Bundle.main.url(forResource: "dog_conditions", withExtension: "json") else {
-            print("[SymptomStore] ⚠️ dog_conditions.json not found in bundle")
+            print("[SymptomStore]  dog_conditions.json not found in bundle")
             return
         }
 
@@ -48,7 +48,7 @@ class SymptomStore {
             let data = try Data(contentsOf: url)
             conditions = try JSONDecoder().decode([DogCondition].self, from: data)
         } catch {
-            print("[SymptomStore] ⚠️ Failed to decode conditions: \(error)")
+            print("[SymptomStore]  Failed to decode conditions: \(error)")
         }
     }
 
@@ -149,7 +149,7 @@ class SymptomStore {
 
     private func recommendedAction(for severity: ConditionSeverity, isEmergency: Bool) -> String {
         if isEmergency {
-            return "⚠️ Emergency symptoms detected. Please contact your nearest emergency vet or animal hospital immediately."
+            return " Emergency symptoms detected. Please contact your nearest emergency vet or animal hospital immediately."
         }
         switch severity {
         case .critical:

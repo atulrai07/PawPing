@@ -16,17 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		25094D6FB7B8759D282FE686 /* CreateProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CreateProfileView.swift; path = PawPing/Auth/Views/CreateProfileView.swift; sourceTree = "<group>"; };
-		2B5AA6954DFAA71BE4507B0B /* AppState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppState.swift; path = PawPing/Auth/AppState.swift; sourceTree = "<group>"; };
-		57303545F63472DD1F289E89 /* AuthFlowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthFlowView.swift; path = PawPing/Auth/Views/AuthFlowView.swift; sourceTree = "<group>"; };
-		64DC976822BF842F8997437C /* ForgotPasswordView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ForgotPasswordView.swift; path = PawPing/Auth/Views/ForgotPasswordView.swift; sourceTree = "<group>"; };
-		8AC7BC616C492CA9EC04253D /* OTPVerificationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OTPVerificationView.swift; path = PawPing/Auth/Views/OTPVerificationView.swift; sourceTree = "<group>"; };
-		9C8067AE010A937E65039E75 /* AuthStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthStore.swift; path = PawPing/Auth/Stores/AuthStore.swift; sourceTree = "<group>"; };
-		AA6F8DBE50D690C1ECD039CE /* UserModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UserModel.swift; path = PawPing/Auth/Models/UserModel.swift; sourceTree = "<group>"; };
 		B796F63D2F6721BC00233CB5 /* PawPing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PawPing.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BAC4759E3AB26A4DC55C8937 /* LoginView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LoginView.swift; path = PawPing/Auth/Views/LoginView.swift; sourceTree = "<group>"; };
-		C189E3EBFCBF61B9D258B53E /* ResetPasswordView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ResetPasswordView.swift; path = PawPing/Auth/Views/ResetPasswordView.swift; sourceTree = "<group>"; };
-		CAEA77D2F60A5AE81377E98D /* SignupView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SignupView.swift; path = PawPing/Auth/Views/SignupView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */

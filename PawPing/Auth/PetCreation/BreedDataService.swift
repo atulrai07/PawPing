@@ -23,7 +23,7 @@ class BreedDataService {
     
     private func loadBreedTraits() {
         guard let url = Bundle.main.url(forResource: "breed_traits", withExtension: "csv") else {
-            print("❌ breed_traits.csv not found in bundle")
+            print("  breed_traits.csv not found in bundle")
             return
         }
         
@@ -56,15 +56,15 @@ class BreedDataService {
                 )
                 breedTraits.append(trait)
             }
-            print("✅ Breeds loaded: \(breedTraits.count)")
+            print(" Breeds loaded: \(breedTraits.count)")
         } catch {
-            print("❌ Error loading breed traits: \(error)")
+            print("  Error loading breed traits: \(error)")
         }
     }
     
     private func loadTraitDescriptions() {
         guard let url = Bundle.main.url(forResource: "trait_description", withExtension: "csv") else {
-            print("❌ trait_description.csv not found in bundle")
+            print("  trait_description.csv not found in bundle")
             return
         }
         
@@ -83,7 +83,7 @@ class BreedDataService {
                 traitDescriptions.append(desc)
             }
         } catch {
-            print("❌ Error loading trait descriptions: \(error)")
+            print("  Error loading trait descriptions: \(error)")
         }
     }
     

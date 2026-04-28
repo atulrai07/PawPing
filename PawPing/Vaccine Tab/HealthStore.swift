@@ -75,9 +75,9 @@ class HealthStore {
             self.healthRecords = rows.map { row in
                 toHealthRecord(row, petId: petId)
             }
-            print("✅ Successfully fetched \(self.healthRecords.count) health records for pet \(petId)")
+            print(" Successfully fetched \(self.healthRecords.count) health records for pet \(petId)")
         } catch {
-            print("❌ Error fetching health records: \(error)")
+            print("  Error fetching health records: \(error)")
         }
     }
 
@@ -91,14 +91,14 @@ class HealthStore {
 
     @MainActor
     func addHealthRecord(_ record: HealthRecord) async {
-        print("💾 Saving record to Supabase...")
+        print("Saving record to Supabase...")
         let success = await saveToSupabase(record)
         
         if success {
-            print("✅ Record saved successfully, refetching...")
+            print(" Record saved successfully, refetching...")
             await fetchVaccines(for: record.petId)
         } else {
-            print("⚠️ Failed to save record to Supabase.")
+            print("Failed to save record to Supabase.")
         }
     }
 
@@ -141,10 +141,10 @@ class HealthStore {
                 .eq("id", value: vaccineId)
                 .execute()
             
-            print("✅ Successfully updated status for vaccine \(vaccineId)")
+            print("Successfully updated status for vaccine \(vaccineId)")
             await fetchVaccines(for: petId)
         } catch {
-            print("❌ Error updating vaccine status: \(error.localizedDescription)")
+            print("  Error updating vaccine status: \(error.localizedDescription)")
         }
     }
 
@@ -156,7 +156,7 @@ class HealthStore {
             let userIdString = session.user.id.uuidString.lowercased()
             let row = toDBRecord(record, ownerId: userIdString)
             
-            print("📤 Inserting record into 'vaccines': \(record.name)")
+            print("Inserting record into 'vaccines': \(record.name)")
             
             try await client
                 .from("vaccines")
@@ -164,7 +164,7 @@ class HealthStore {
                 .execute()
             return true
         } catch {
-            print("❌ Error saving health record: \(error.localizedDescription)")
+            print("  Error saving health record: \(error.localizedDescription)")
             return false
         }
     }
@@ -177,7 +177,7 @@ class HealthStore {
                 .eq("id", value: id)
                 .execute()
         } catch {
-            print("❌ Error deleting health record: \(error)")
+            print("  Error deleting health record: \(error)")
         }
     }
 
@@ -193,7 +193,7 @@ class HealthStore {
                 .eq("id", value: record.id)
                 .execute()
         } catch {
-            print("❌ Error updating health record: \(error.localizedDescription)")
+            print("  Error updating health record: \(error.localizedDescription)")
         }
     }
 

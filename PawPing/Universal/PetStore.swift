@@ -55,7 +55,7 @@ class PetStore {
                 activePetId = pets.first?.id
             }
         } catch {
-            print("❌ Error fetching pets: \(error)")
+            print("  Error fetching pets: \(error)")
         }
     }
     
@@ -78,7 +78,7 @@ class PetStore {
             return true
         } catch {
             self.lastError = error.localizedDescription
-            print("❌ Error adding pet: \(error.localizedDescription)")
+            print("Error adding pet: \(error.localizedDescription)")
             return false
         }
     }
@@ -98,7 +98,7 @@ class PetStore {
             
             await fetchPets()
         } catch {
-            print("❌ Error updating pet: \(error)")
+            print("Error updating pet: \(error)")
         }
     }
     
@@ -117,7 +117,7 @@ class PetStore {
                 activePetId = pets.first?.id
             }
         } catch {
-            print("❌ Error deleting pet: \(error)")
+            print("  Error deleting pet: \(error)")
         }
     }
     
@@ -143,7 +143,7 @@ class PetStore {
             
             return publicURL.absoluteString
         } catch {
-            print("❌ Error uploading image: \(error)")
+            print("  Error uploading image: \(error)")
             return nil
         }
     }
@@ -180,7 +180,7 @@ class PetStore {
                 self.currentUserProfile = dbProfile
             }
         } catch {
-            print("❌ Error fetching user profile: \(error)")
+            print("  Error fetching user profile: \(error)")
         }
     }
     
@@ -201,7 +201,7 @@ class PetStore {
             
             self.savedVets = vets
         } catch {
-            print("❌ Error fetching saved vets: \(error)")
+            print("  Error fetching saved vets: \(error)")
         }
     }
     
@@ -216,7 +216,7 @@ class PetStore {
             
             await fetchSavedVets()
         } catch {
-            print("❌ Error deleting saved vet: \(error)")
+            print("  Error deleting saved vet: \(error)")
         }
     }
 }

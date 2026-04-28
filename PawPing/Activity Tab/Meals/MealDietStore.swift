@@ -343,11 +343,11 @@ class MealDietStore {
         let target = dietPlan.dailyCalorieTarget
 
         if total > target * 1.1 {
-            return "⚠️ Overfeeding detected today"
+            return " Overfeeding detected today"
         } else if total > 0 && total < target * 0.5 {
             return "📉 Low appetite detected"
         } else if total >= target * 0.9 && total <= target * 1.1 {
-            return "✅ On track today!"
+            return " On track today!"
         }
         return nil
     }
@@ -460,7 +460,7 @@ class MealDietStore {
                     .upsert(payload)
                     .execute()
             } catch {
-                print("❌ Failed to sync meal state to Supabase: \(error)")
+                print("  Failed to sync meal state to Supabase: \(error)")
             }
         }
     }
@@ -495,7 +495,7 @@ class MealDietStore {
                 }
             }
         } catch {
-            print("⚠️ No cloud meal state found or failed to fetch: \(error)")
+            print(" No cloud meal state found or failed to fetch: \(error)")
         }
     }
 }

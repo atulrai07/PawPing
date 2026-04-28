@@ -153,7 +153,7 @@ class ActivityStore {
                             .upsert(payload)
                             .execute()
                     } catch {
-                        print("❌ Failed to sync activity state to Supabase: \(error)")
+                        print("  Failed to sync activity state to Supabase: \(error)")
                     }
                 }
             }
@@ -193,7 +193,7 @@ class ActivityStore {
                 }
             }
         } catch {
-            print("⚠️ No cloud activity state found or failed to fetch: \(error)")
+            print(" No cloud activity state found or failed to fetch: \(error)")
         }
     }
 
