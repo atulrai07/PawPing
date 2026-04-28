@@ -76,7 +76,7 @@ struct HealthView: View {
                         }
                         .padding(.top, 10)
                     }
-                    .background(Color.pawBackground)
+                    .background(Color("baseBackground"))
                     .task(id: petId) {
                         await store.fetchVaccines(for: petId)
                     }
@@ -89,7 +89,7 @@ struct HealthView: View {
                 }
             }
             .customNavigationScroll(
-                title: "Vaccines",
+                title: "Vaccine",
                 petStore: petStore,
                 onAddTap: {
                     if petStore.activePetId != nil {
@@ -151,7 +151,7 @@ struct HealthView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 24)
                 .fill(Color("cardBackground"))
                 .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
         )

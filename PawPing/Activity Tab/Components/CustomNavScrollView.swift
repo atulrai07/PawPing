@@ -39,7 +39,6 @@ private struct StickyNavHeader: View {
                                 Circle()
                                     .fill(.ultraThinMaterial)
                                     .frame(width: 36, height: 36)
-                                    .shadow(color: Color("baseColor").opacity(0.3), radius: 6, x: 0, y: 2)
 
                                 Image(systemName: "plus")
                                     .font(.system(size: 16, weight: .bold))

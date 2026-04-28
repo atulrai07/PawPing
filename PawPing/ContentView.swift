@@ -17,7 +17,7 @@ struct ContentView: View {
                 ActivityView()
             }
 
-            Tab("Vaccines", systemImage: "syringe.fill") {
+            Tab("Vaccine", systemImage: "syringe.fill") {
                 HealthView()
             }
 
