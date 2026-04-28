@@ -81,7 +81,16 @@ struct EditPetView: View {
                 }
                 
                 Section("Details") {
-                    Stepper("Weight: \(Int(weight))kg", value: $weight, in: 1...100)
+                    HStack {
+                        Text("Weight")
+                        Spacer()
+                        TextField("20", value: $weight, format: .number)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 60)
+                        Text("kg")
+                            .foregroundStyle(.secondary)
+                    }
                     DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
                     Toggle("Neutered", isOn: $isNeutered)
                 }
