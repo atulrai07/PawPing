@@ -19,6 +19,18 @@ class PetStore {
         pets.first { $0.id == activePetId } ?? pets.first
     }
     
+    /// Static instance for Xcode Previews
+    static var preview: PetStore {
+        let store = PetStore()
+        store.pets = [
+            Pet(id: UUID(), name: "Buddy", breed: "Golden Retriever", gender: .male, age: "2", weightKg: 25.0, imageName: "dog1", homeLatitude: 0, homeLongitude: 0),
+            Pet(id: UUID(), name: "Luna", breed: "Husky", gender: .female, age: "3", weightKg: 20.0, imageName: "dog2", homeLatitude: 0, homeLongitude: 0)
+        ]
+        store.activePetId = store.pets.first?.id
+        store.currentUserProfile = Owner(id: UUID(), name: "Preview User", email: "preview@example.com")
+        return store
+    }
+    
     init() {
         // We will fetch pets when the user is authenticated
     }

@@ -104,9 +104,8 @@ struct VetSearchView: View {
             }
             .onAppear {
                 viewModel.requestLocationPermission()
-                // Initial search for nearby clinics
-                viewModel.searchText = ""
-                viewModel.performSearch()
+                // Initial automatic search for nearby clinics
+                viewModel.performSearch(isInitial: true)
             }
         }
     }

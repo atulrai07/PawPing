@@ -45,14 +45,27 @@ struct DietSetupSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
-                        Image(systemName: "xmark.circle.fill").foregroundStyle(Color("secondaryText").opacity(0.5)).font(.system(size: 24))
+                        ZStack {
+                            Circle()
+                                .fill(Color("cardBackground"))
+                                .frame(width: 30, height: 30)
+                                .shadow(color: .black.opacity(0.1), radius: 5)
+                            
+                            Image(systemName: "xmark")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(Color("secondaryText"))
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }
         .onAppear {
-            let currentKg = petStore.activePet?.weightKg ?? 10.0
-            weightInput = String(format: "%.1f", weightUnit.fromKg(currentKg))
+            if let currentKg = petStore.activePet?.weightKg, currentKg > 0 {
+                weightInput = String(format: "%.1f", weightUnit.fromKg(currentKg))
+            } else {
+                weightInput = ""
+            }
         }
     }
 

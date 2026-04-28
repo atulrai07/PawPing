@@ -290,7 +290,7 @@ private struct WalkingLabel: View {
 
 struct ActivityViewPreviewWrapper: View {
     @State private var store = ActivityStore()
-    @State private var petStore = PetStore()
+    @State private var petStore = PetStore.preview
     @State private var healthStore = HealthStore()
     @State private var mealStore = MealStore()
     @State private var symptomStore = SymptomStore()

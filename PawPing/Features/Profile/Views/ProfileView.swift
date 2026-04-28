@@ -290,7 +290,7 @@ private extension ProfileView {
 
 struct ProfileViewPreviewWrapper: View {
     @State private var appState = AppState()
-    @State private var petStore = PetStore()
+    @State private var petStore = PetStore.preview
     
     var body: some View {
         NavigationStack {
