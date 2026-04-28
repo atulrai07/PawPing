@@ -14,17 +14,13 @@ struct AboutView: View {
                 // MARK: - Logo & App Info
                 VStack(spacing: 16) {
                     // Custom Logo matching design
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 32)
-                            .fill(LinearGradient(colors: [Color("baseColor"), Color("baseColor").opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: 140, height: 140)
-                            .shadow(color: Color("baseColor").opacity(0.3), radius: 15, x: 0, y: 10)
-                        
-                        Image(systemName: "pawprint.fill")
-                            .font(.system(size: 70))
-                            .foregroundStyle(.white)
-                    }
-                    .padding(.top, 20)
+                    Image("AboutIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 140, height: 140)
+                        .clipShape(RoundedRectangle(cornerRadius: 32))
+                        .shadow(color: Color("baseColor").opacity(0.3), radius: 15, x: 0, y: 10)
+                        .padding(.top, 20)
 
                     VStack(spacing: 4) {
                         Text("PawPing")
