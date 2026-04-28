@@ -30,6 +30,8 @@ struct PlaceModel: Identifiable, Equatable {
     var distance: Double       // in km
     var category: CareType
     var address: String?
+    var phone: String?
+    var websiteURL: URL?
     var mapItem: MKMapItem?    // Store the original map item to avoid deprecations
 
     /// Convenience — converts lat/lng into the type MapKit needs

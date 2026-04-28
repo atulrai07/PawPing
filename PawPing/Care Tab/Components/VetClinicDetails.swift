@@ -69,13 +69,16 @@ struct VetClinicDetails: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     
-                    // Call Button (Disabled)
+                    // Call Button
                     Button {
+                        if let phone = item.phone, let url = URL(string: "tel://\(phone.replacingOccurrences(of: " ", with: ""))") {
+                            UIApplication.shared.open(url)
+                        }
                     } label: {
                         VStack(spacing: 6) {
                             Image(systemName: "phone.fill")
                                 .font(.system(size: 20))
-                            Text("Unavailable")
+                            Text(item.phone != nil ? "Call" : "Unavailable")
                                 .font(.system(size: 14))
                         }
                         .foregroundStyle(Color("baseColor"))
@@ -84,16 +87,19 @@ struct VetClinicDetails: View {
                         .background(Color("baseColor").opacity(0.15))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
-                    .disabled(true)
-                    .opacity(0.6)
+                    .disabled(item.phone == nil)
+                    .opacity(item.phone != nil ? 1.0 : 0.6)
                     
-                    // Website Button (Disabled)
+                    // Website Button
                     Button {
+                        if let url = item.websiteURL {
+                            UIApplication.shared.open(url)
+                        }
                     } label: {
                         VStack(spacing: 6) {
                             Image(systemName: "globe")
                                 .font(.system(size: 20))
-                            Text("Unavailable")
+                            Text(item.websiteURL != nil ? "Website" : "Unavailable")
                                 .font(.system(size: 14))
                         }
                         .foregroundStyle(Color("baseColor"))
@@ -102,8 +108,8 @@ struct VetClinicDetails: View {
                         .background(Color("baseColor").opacity(0.15))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
-                    .disabled(true)
-                    .opacity(0.6)
+                    .disabled(item.websiteURL == nil)
+                    .opacity(item.websiteURL != nil ? 1.0 : 0.6)
                 }
                 
                 // MARK: - Details Section
@@ -113,8 +119,8 @@ struct VetClinicDetails: View {
                         .foregroundStyle(.primary)
                     
                     VStack(spacing: 0) {
-                        detailRow(title: "Phone", value: "Not available")
-                        detailRow(title: "Website", value: "Not available")
+                        detailRow(title: "Phone", value: item.phone ?? "Not available")
+                        detailRow(title: "Website", value: item.websiteURL?.absoluteString ?? "Not available")
                         detailRow(title: "Address", value: item.address ?? "Not available")
                         detailRow(title: "Timing", value: "Not available", isLast: true)
                     }

@@ -131,6 +131,8 @@ class CareStore: NSObject, CLLocationManagerDelegate {
                 distance: distanceInKm,
                 category: category,
                 address: item.address?.fullAddress ?? item.name ?? "Address not available",
+                phone: item.phoneNumber,
+                websiteURL: item.url,
                 mapItem: item
             ))
         }
