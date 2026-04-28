@@ -18,6 +18,14 @@ class PetStore {
     var savedVets: [SavedVet] = []
     var lastError: String? = nil
     
+    func clear() {
+        self.pets = []
+        self.activePetId = nil
+        self.currentUserProfile = nil
+        self.savedVets = []
+        self.lastError = nil
+    }
+    
     var activePet: Pet? {
         pets.first { $0.id == activePetId } ?? pets.first
     }
@@ -146,8 +154,21 @@ class PetStore {
     func fetchUserProfile() async {
         do {
             let session = try await client.auth.session
-            let userId = session.user.id.uuidString.lowercased()
+            let user = session.user
+            let userId = user.id.uuidString.lowercased()
             
+            // Start with session data as a reliable source
+            let sessionName: String
+            if case let .string(val) = user.userMetadata["full_name"] {
+                sessionName = val
+            } else {
+                sessionName = "Pet Owner"
+            }
+            
+            // Create initial profile from session to avoid "Loading..."
+            self.currentUserProfile = UserModel(id: userId, name: sessionName, email: user.email ?? "")
+            
+            // Then attempt to fetch/sync from profiles table
             let profiles: [UserModel] = try await client
                 .from("profiles")
                 .select()
@@ -155,7 +176,9 @@ class PetStore {
                 .execute()
                 .value
             
-            self.currentUserProfile = profiles.first
+            if let dbProfile = profiles.first {
+                self.currentUserProfile = dbProfile
+            }
         } catch {
             print("❌ Error fetching user profile: \(error)")
         }

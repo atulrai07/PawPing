@@ -10,6 +10,7 @@ import SwiftUI
 struct MyPetsView: View {
     @Environment(PetStore.self) var petStore
     @State private var showingAddPet = false
+    @State private var selectedPet: Pet? = nil
     
     var body: some View {
         List {
@@ -49,6 +50,7 @@ struct MyPetsView: View {
                 .contentShape(Rectangle())
                 .onTapGesture {
                     petStore.switchPet(to: pet.id)
+                    selectedPet = pet
                 }
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
@@ -75,6 +77,9 @@ struct MyPetsView: View {
             AddPetView {
                 showingAddPet = false
             }
+        }
+        .sheet(item: $selectedPet) { pet in
+            EditPetView()
         }
     }
 }

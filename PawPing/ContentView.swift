@@ -26,7 +26,9 @@ struct ContentView: View {
             }
 
             Tab("Profile", systemImage: "person.fill") {
-                ProfileView()
+                NavigationStack {
+                    ProfileView()
+                }
             }
         }
         .tint(Color("baseColor"))

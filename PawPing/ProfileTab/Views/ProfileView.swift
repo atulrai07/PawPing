@@ -29,10 +29,6 @@ struct ProfileView: View {
                     NavigationLink(destination: MyPetsView()) {
                         settingsRow(label: "My Pets", icon: "pawprint.fill", badge: "\(petStore.pets.count)")
                     }
-                    Divider().padding(.leading, 56)
-                    NavigationLink(destination: HealthView()) { 
-                        settingsRow(label: "Health History", icon: "heart.fill")
-                    }
                 }
 
                 // MARK: - Owner Information
@@ -78,7 +74,8 @@ struct ProfileView: View {
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            if petStore.currentUserProfile == nil {
+            // Force fetch if profile is missing OR if it belongs to a previous user session
+            if petStore.currentUserProfile == nil || petStore.currentUserProfile?.id != authStore.appState?.currentUserId {
                 await petStore.fetchUserProfile()
             }
         }
@@ -93,6 +90,7 @@ struct ProfileView: View {
         .alert("Are you sure you want to log out?", isPresented: $showingLogoutAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Log Out", role: .destructive) {
+                petStore.clear()
                 Task {
                     await authStore.logout()
                 }

@@ -76,6 +76,7 @@ class AuthStore {
         struct ProfileUpdate: Encodable {
             let id: String
             let full_name: String
+            let email: String
         }
         
         let name: String
@@ -86,7 +87,7 @@ class AuthStore {
         }
         
         // BUG FIX: Ensure the ID being upserted is lowercase
-        let profile = ProfileUpdate(id: user.id.uuidString.lowercased(), full_name: name)
+        let profile = ProfileUpdate(id: user.id.uuidString.lowercased(), full_name: name, email: user.email ?? "")
         
         do {
             try await client
