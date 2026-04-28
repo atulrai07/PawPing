@@ -116,19 +116,19 @@ private struct StickyNavHeader: View {
                 .opacity(isCollapsed ? 1 : 0)
         }
         .padding(.horizontal, 16)
-        .padding(.top, isCollapsed ? -8 : 8)
-        .padding(.bottom, isCollapsed ? 12 : 6)
+        .frame(height: 60)
 
         // ── Background gradient
         .background {
             Rectangle()
-                .fill(Color("baseBackground"))
-                .opacity(isCollapsed ? 1 : 0.8)
+                .fill(.ultraThinMaterial)
+                .opacity(isCollapsed ? 1 : 0)
                 .mask {
                     LinearGradient(
                         stops: [
                             .init(color: .black,           location: 0.0),
-                            .init(color: .black.opacity(0.8), location: 0.7),
+                            .init(color: .black.opacity(0.7), location: 0.4),
+                            .init(color: .black.opacity(0.3), location: 0.7),
                             .init(color: .clear,           location: 1.0),
                         ],
                         startPoint: .top,
@@ -149,7 +149,7 @@ private struct StickyNavHeader: View {
                 showingAddPet = false
             }
         }
-        .animation(.spring(response: 0.15, dampingFraction: 0.9), value: isCollapsed)
+        .animation(.easeInOut(duration: 0.2), value: isCollapsed)
     }
 }
 
@@ -167,7 +167,10 @@ private struct CustomNavigationScrollModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         ScrollView(showsIndicators: false) {
-            content
+            VStack(spacing: 0) {
+                Color.clear.frame(height: 60)
+                content
+            }
                 // Attach the geometry reader to the content so its minY in
                 // the named coordinate space gives us the raw scroll offset.
                 .background(
@@ -192,10 +195,8 @@ private struct CustomNavigationScrollModifier: ViewModifier {
         }
         .coordinateSpace(name: "_customNavScroll")
         .background(Color("baseBackground"))
-        // Hide the system nav bar — the modifier supplies its own header.
         .toolbar(.hidden, for: .navigationBar)
-        // Pin the header above the scroll content without participating in scrolling.
-        .safeAreaInset(edge: .top, spacing: 0) {
+        .overlay(alignment: .top) {
             StickyNavHeader(
                 title: title,
                 petStore: petStore,
