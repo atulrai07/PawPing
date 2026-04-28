@@ -79,7 +79,7 @@ private struct StickyNavHeader: View {
                                 .frame(width: 36, height: 36)
                                 .overlay(
                                     Group {
-                                        if let imageName = petStore.activePet?.imageName, imageName.hasPrefix("http"), let url = URL(string: imageName) {
+                                        if let urlString = petStore.activePet?.profileImageUrl, let url = URL(string: urlString) {
                                             AsyncImage(url: url) { image in
                                                 image.resizable().scaledToFill()
                                             } placeholder: {

@@ -170,7 +170,7 @@ struct ActivityView: View {
             .padding(.top, 10)
             .padding(.bottom, 80)
             .customNavigationScroll(
-                title: "Activity",
+                title: "Home",
                 petStore: petStore,
                 refreshAction: {
                     // Pull to Refresh Logic

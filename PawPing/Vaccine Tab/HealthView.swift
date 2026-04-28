@@ -89,7 +89,7 @@ struct HealthView: View {
                 }
             }
             .customNavigationScroll(
-                title: "Health",
+                title: "Vaccines",
                 petStore: petStore,
                 onAddTap: {
                     if petStore.activePetId != nil {
