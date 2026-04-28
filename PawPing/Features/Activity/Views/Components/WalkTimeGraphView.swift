@@ -1,17 +1,18 @@
 //
-//  WalkTimeGraph.swift
+//  WalkTimeGraphView.swift
 //  PawPing
 //
-//  Created by Atul on 01/02/26.
-//
+
 import SwiftUI
 import Charts
 
+/// A component that renders a line/area chart showing the pet's walking time over the week.
 struct WalkTimeGraphView: View {
-
+    // MARK: - Properties
     var model: TimeWalkedGraphModel
     
-    var currentDay: String {
+    /// Helper to identify the current weekday for highlighting the X-axis label
+    private var currentDay: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE"
         return formatter.string(from: Date()).uppercased()
@@ -19,18 +20,20 @@ struct WalkTimeGraphView: View {
 
     var body: some View {
         ZStack {
+            // MARK: - Card Background
             RoundedRectangle(cornerRadius: 28)
                 .fill(Color("cardBackground"))
 
             VStack(alignment: .leading, spacing: 12) {
-
+                // MARK: - Header
                 Text("Time Walked")
-                    .font(.system(size: 16, weight: .regular))
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.primary)
 
+                // MARK: - Chart Content
                 Chart {
-
                     ForEach(model.data) { item in
-
+                        // Main Line
                         LineMark(
                             x: .value("Day", item.day),
                             y: .value("Minutes", item.minutes)
@@ -39,6 +42,7 @@ struct WalkTimeGraphView: View {
                         .foregroundStyle(Color("baseColor"))
                         .lineStyle(StrokeStyle(lineWidth: 3))
 
+                        // Gradient Area fill below the line
                         AreaMark(
                             x: .value("Day", item.day),
                             y: .value("Minutes", item.minutes)
@@ -55,6 +59,7 @@ struct WalkTimeGraphView: View {
                             )
                         )
 
+                        // Data Points
                         PointMark(
                             x: .value("Day", item.day),
                             y: .value("Minutes", item.minutes)
@@ -63,22 +68,21 @@ struct WalkTimeGraphView: View {
                         .foregroundStyle(Color("baseColor"))
                     }
 
+                    // Horizontal Daily Goal Line
                     RuleMark(
                         y: .value("Goal", model.goalMinutes)
                     )
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4,4]))
                     .foregroundStyle(Color("secondaryText"))
                 }
-
-                // Only modification: custom X labels
                 .chartXAxis {
                     AxisMarks(values: model.data.map{$0.day}) { value in
-                        AxisGridLine()   // keeps vertical mesh
+                        AxisGridLine()
                         AxisTick()
 
                         AxisValueLabel {
                             if let day = value.as(String.self) {
-
+                                // Highlight the current day label
                                 Text(day)
                                     .font(.system(size: 11, weight: .medium))
                                     .foregroundStyle(day == currentDay ? .white : Color("secondaryText"))
@@ -94,12 +98,9 @@ struct WalkTimeGraphView: View {
                         }
                     }
                 }
-
-                // keep minute labels and horizontal grid
                 .chartYAxis {
                     AxisMarks(position: .trailing)
                 }
-
                 .frame(height: 100)
             }
             .padding()

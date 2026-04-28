@@ -2,18 +2,20 @@
 //  WalkTrackingView.swift
 //  PawPing
 //
-//  Created by Atul on 21/03/26.
-//
 
 import SwiftUI
 
+/// A fullscreen view that tracks an active walk in real-time.
+/// Shows the live map, duration timer, distance covered, and progress toward the goal.
 struct WalkTrackingView: View {
-
+    // MARK: - Properties
     var store: ActivityStore
     var petId: UUID
     var onDismiss: () -> Void
 
+    // MARK: - Calculated Properties
     
+    /// Formats the total distance into a human-readable string (M or KM)
     private var distanceText: String {
         let d = store.locationManager.totalDistance
         if (d >= 1000) {
@@ -22,6 +24,7 @@ struct WalkTrackingView: View {
         return "\(Int(d))M"
     }
 
+    /// Formats the elapsed seconds into a MM:SS.cc stopwatch format
     private var timerText: String {
         let total = store.elapsedSeconds
         let mins = Int(total) / 60
@@ -30,6 +33,7 @@ struct WalkTrackingView: View {
         return String(format: "%02d:%02d.%02d", mins, secs, centis)
     }
 
+    /// Calculates percentage completion based on the time goal
     private var progressPercent: Int {
         guard store.walkActivity.goalMinutes > 0 else { return 0 }
         let pct = (store.elapsedSeconds / 60.0) / Double(store.walkActivity.goalMinutes) * 100
@@ -43,7 +47,7 @@ struct WalkTrackingView: View {
 
             VStack(alignment: .leading, spacing: 0) {
 
-                // Minimize button (go back to activity tab, walk keeps running)
+                // MARK: - Header & Navigation
                 HStack {
                     Button(action: onDismiss) {
                         Image(systemName: "chevron.down")
@@ -51,19 +55,20 @@ struct WalkTrackingView: View {
                             .foregroundStyle(.secondary)
                             .padding(12)
                             .background(Circle().fill(.ultraThinMaterial))
+                    }
+                    .padding(.leading, 20)
+                    .padding(.top, 10)
+                    Spacer()
                 }
-                .padding(.leading, 20)
-                .padding(.top, 10)
-                Spacer()
-            }
 
-            WalkMapView(routeLocations: store.locationManager.routeLocations)
-                .clipShape(RoundedRectangle(cornerRadius: 28))
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .padding(.bottom, 20)
+                // MARK: - Live Map
+                WalkMapView(routeLocations: store.locationManager.routeLocations)
+                    .clipShape(RoundedRectangle(cornerRadius: 28))
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
 
-            // MARK: - Distance
+                // MARK: - Statistics Summary
                 VStack(alignment: .leading, spacing: 4) {
                     Text("TOTAL DISTANCE")
                         .font(.system(size: 14, weight: .bold))
@@ -80,7 +85,7 @@ struct WalkTrackingView: View {
 
                 Spacer().frame(height: 30)
 
-                // MARK: - Goal + Progress
+                // MARK: - Goal Progress
                 HStack(spacing: 40) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("TIME OBJECTIVE")
@@ -112,16 +117,17 @@ struct WalkTrackingView: View {
 
                 Spacer()
 
-                // MARK: - Timer Card
+                // MARK: - Controls Panel
                 VStack(spacing: 20) {
+                    // Stopwatch Display
                     Text(timerText)
                         .font(.system(size: 56, weight: .bold, design: .rounded))
                         .foregroundStyle(Color("baseColor"))
                         .monospacedDigit()
 
-                    // Pause/Play + Stop buttons
+                    // Action Buttons
                     HStack(spacing: 24) {
-                        // Pause / Play
+                        // Pause / Play Button
                         Button {
                             store.togglePause()
                         } label: {
@@ -135,7 +141,7 @@ struct WalkTrackingView: View {
                                 )
                         }
 
-                        // Stop
+                        // Stop & Save Button
                         Button {
                             store.stopWalk(petId: petId)
                             onDismiss()

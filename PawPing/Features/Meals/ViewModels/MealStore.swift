@@ -20,6 +20,7 @@ class MealStore {
     
     // MARK: - State
     var meals: [Meal] = []
+    var selectedDate: Date = Date()
     var dietPlan: DietPlan = DietPlan()
     private(set) var foodDatabase: [String: FoodCalorieEntry] = [:]
     private(set) var usdaFoods: [USDAFood] = []
@@ -60,33 +61,31 @@ class MealStore {
                 .execute()
                 .value
             
-            if fetched.isEmpty {
-                // Keep / refresh the default template with the correct petId
-                self.meals = Self.defaultMeals(for: petId)
-            } else {
-                // Merge fetched meals with defaults to ensure all 3 types are present in dashboard
-                var merged: [Meal] = []
-                for type in [MealType.breakfast, .lunch, .dinner] {
-                    if let existing = fetched.first(where: { $0.mealType == type && Calendar.current.isDateInToday($0.date) }) {
-                        merged.append(existing)
-                    } else {
-                        merged.append(Meal(
-                            id: UUID(),
-                            petId: petId,
-                            icon: type == .breakfast ? "sun.max" : (type == .lunch ? "sunset.fill" : "moon"),
-                            time: type == .breakfast ? "8:00" : (type == .lunch ? "1:00" : "8:00"),
-                            meridian: type == .breakfast ? "AM" : "PM",
-                            mealType: type,
-                            isTaken: false
-                        ))
-                    }
+            // Filter and Merge for the selectedDate
+            var merged: [Meal] = []
+            for type in [MealType.breakfast, .lunch, .dinner] {
+                if let existing = fetched.first(where: { 
+                    $0.mealType == type && 
+                    Calendar.current.isDate($0.date, inSameDayAs: selectedDate) 
+                }) {
+                    merged.append(existing)
+                } else {
+                    merged.append(Meal(
+                        id: UUID(),
+                        petId: petId,
+                        icon: type == .breakfast ? "sun.max" : (type == .lunch ? "sunset.fill" : "moon"),
+                        time: type == .breakfast ? "8:00" : (type == .lunch ? "1:00" : "8:00"),
+                        meridian: type == .breakfast ? "AM" : "PM",
+                        date: selectedDate,
+                        mealType: type,
+                        isTaken: false
+                    ))
                 }
-                self.meals = merged
             }
+            self.meals = merged
         } catch {
-            // On error, ensure defaults are shown with the correct petId
-            self.meals = Self.defaultMeals(for: petId)
             print("❌ Error fetching meals: \(error)")
+            self.meals = Self.defaultMeals(for: petId)
         }
     }
     
@@ -165,11 +164,11 @@ class MealStore {
     }
     
     var totalCaloriesToday: Double {
-        meals.filter { $0.isTaken && Calendar.current.isDateInToday($0.date) }.reduce(0) { $0 + $1.calories }
+        meals.filter { $0.isTaken && Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }.reduce(0) { $0 + $1.calories }
     }
     
     var mealsLoggedToday: Int {
-        meals.filter { $0.isTaken && Calendar.current.isDateInToday($0.date) }.count
+        meals.filter { $0.isTaken && Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }.count
     }
     
     func remainingCalories(on date: Date) -> Double {

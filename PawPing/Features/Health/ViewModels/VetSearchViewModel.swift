@@ -22,7 +22,7 @@ class VetSearchViewModel: NSObject, CLLocationManagerDelegate {
     override init() {
         super.init()
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
         // Start updates immediately if already authorized
         if locationManager.authorizationStatus == .authorizedWhenInUse || 
@@ -43,10 +43,10 @@ class VetSearchViewModel: NSObject, CLLocationManagerDelegate {
             return
         }
         
-        // Only perform initial search if we have a valid location
+        // STRICT: Only search if we have a confirmed location to avoid Delhi/US defaults
         guard let location = currentUserLocation else {
             if isInitial {
-                print("⏳ Waiting for location fix before searching...")
+                print("⏳ Waiting for Greater Noida location fix...")
             }
             return
         }
@@ -55,13 +55,14 @@ class VetSearchViewModel: NSObject, CLLocationManagerDelegate {
         errorMessage = nil
         
         let request = MKLocalSearch.Request()
+        // Use a generic query if searchText is empty (for initial load)
         let query = searchText.isEmpty ? "Veterinary Clinic" : "veterinary clinic \(searchText)"
         request.naturalLanguageQuery = query
         
-        // Biasing search to current coordinates
+        // Tight biasing to ensure we stay in Greater Noida
         request.region = MKCoordinateRegion(
             center: location.coordinate,
-            latitudinalMeters: 5000, 
+            latitudinalMeters: 5000,
             longitudinalMeters: 5000
         )
         
@@ -73,13 +74,8 @@ class VetSearchViewModel: NSObject, CLLocationManagerDelegate {
                 self.isSearching = false
                 if let error = error {
                     self.errorMessage = "Search failed: \(error.localizedDescription)"
-                    return
-                }
-                
-                self.searchResults = response?.mapItems ?? []
-                if self.searchResults.isEmpty {
-                    let searchContext = self.searchText.isEmpty ? "nearby" : "for \"\(self.searchText)\""
-                    self.errorMessage = "No clinics found \(searchContext). Try searching a different area."
+                } else {
+                    self.searchResults = response?.mapItems ?? []
                 }
             }
         }
@@ -88,20 +84,28 @@ class VetSearchViewModel: NSObject, CLLocationManagerDelegate {
     // MARK: - CLLocationManagerDelegate
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.first else { return }
+        guard let location = locations.last else { return }
         
-        // Check if the location is fresh (within last 30 seconds)
+        // 1. Check if the location is fresh (within last 30 seconds)
         let howRecent = location.timestamp.timeIntervalSinceNow
-        guard abs(howRecent) < 30 else { return }
+        guard abs(howRecent) < 30 else {
+            print("⏳ Ignoring old/cached location...")
+            return
+        }
         
-        // Check if accuracy is decent
-        guard location.horizontalAccuracy < 1000 else { return }
+        // 2. Check if accuracy is decent (less than 1km)
+        // This prevents the "General Delhi" result before GPS has a solid lock
+        guard location.horizontalAccuracy > 0 && location.horizontalAccuracy < 1000 else {
+            print("⏳ Location accuracy too low (\(Int(location.horizontalAccuracy))m), waiting for better fix...")
+            return
+        }
         
-        let isFirstFix = currentUserLocation == nil
+        let firstUpdate = currentUserLocation == nil
         currentUserLocation = location
         
-        // If this is the first high-accuracy fix, trigger the search
-        if isFirstFix && searchResults.isEmpty {
+        // If this is the first high-quality location fix, trigger a search
+        if firstUpdate {
+            print("📍 High-accuracy fix acquired! Searching nearby...")
             performSearch(isInitial: true)
         }
     }
@@ -110,5 +114,16 @@ class VetSearchViewModel: NSObject, CLLocationManagerDelegate {
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             locationManager.startUpdatingLocation()
         }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        // Ignore transient error 0 (Location Unknown)
+        if let clError = error as? CLError, clError.code == .locationUnknown {
+            return
+        }
+        
+        print("❌ Location manager failed: \(error.localizedDescription)")
+        isSearching = false
+        errorMessage = error.localizedDescription
     }
 }

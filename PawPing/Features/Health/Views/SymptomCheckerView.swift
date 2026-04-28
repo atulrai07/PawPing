@@ -2,7 +2,7 @@
 //  SymptomCheckerView.swift
 //  PawPing
 //
-//  Created by Antigravity on 27/04/26.
+//  Created by SidMoon on 27/04/26.
 //
 
 import SwiftUI

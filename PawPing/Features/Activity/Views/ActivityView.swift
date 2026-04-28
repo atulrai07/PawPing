@@ -2,171 +2,41 @@
 //  ActivityView.swift
 //  PawPing
 //
-//  Created by Atul on 19/01/26.
-//
 
 import SwiftUI
 
+/// The main dashboard for the Activity tab.
+/// Displays daily walk progress, health alerts, meal status, and weekly trends.
 struct ActivityView: View {
+    // MARK: - Dependencies
     @Environment(ActivityStore.self) var store
     @Environment(PetStore.self) var petStore
     @Environment(MealStore.self) var mealStore
     @Environment(HealthStore.self) var healthStore
     @Environment(SymptomStore.self) var symptomStore
-    @Environment(\.activeTab) var activeTab
 
+    // MARK: - Navigation State
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
     @State private var showMealsLog = false
     @State private var showDistanceSummary = false
     @State private var showSymptomChecker = false
+    @State private var showHealthView = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-
-                // MARK: - Walked Card
-                ZStack {
-                    RoundedRectangle(cornerRadius: 28)
-                        .fill(Color("cardBackground"))
-                        .frame(height: 160)
-
-                    HStack(spacing: 20) {
-                        CircularProgressView(progress: store.walkActivity.progress)
-                            .frame(width: 100, height: 100)
-                            .padding(.leading, 20)
-
-                        Spacer()
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Walked")
-                                .font(.system(size: 18, weight: .medium))
-                                .foregroundStyle(Color("secondaryText"))
-                            
-                            HStack (spacing:0){
-                                Text("\(store.walkActivity.currentMinutes)/")
-                                Text("\(store.walkActivity.goalMinutes)min")
-                                    .foregroundStyle(Color("baseColor"))
-                            }
-                            .bold()
-                            .font(.system(size: 28, weight: .bold))
-
-                            if store.isWalking {
-                                // reopens the tracking view (no countdown)
-                                Button {
-                                    countdownFinished = true
-                                    showWalkFlow = true
-                                } label: {
-                                    WalkingLabel()
-                                }
-                                .padding(.top, 4)
-                            } else {
-                                Button {
-                                    countdownFinished = false
-                                    showWalkFlow = true
-                                } label: {
-                                    Text("START")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Color("baseColor"))
-                                        .padding(.horizontal, 24)
-                                        .padding(.vertical, 8)
-                                        .background(
-                                            Capsule()
-                                                .stroke(Color("baseColor"), lineWidth: 1.5)
-                                        )
-                                }
-                                .padding(.top, 4)
-                            }
-                        }
-                        Spacer()
-                    }
-                }
-                .frame(height: 160)
-                .padding(.horizontal)
-
-                // MARK: - Vaccine & Meals Row
-                HStack(spacing: 16) {
-                    Button {
-                        activeTab.wrappedValue = 2 // Switch to Health Tab
-                    } label: {
-                        HealthCardView()
-                    }
-                    .buttonStyle(.plain)
-
-                    // Meals Card
-                    Button {
-                        showMealsLog = true
-                    } label: {
-                        MealsCardView()
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal)
-
-                // MARK: - Symptom Checker Card
-                Button {
-                    symptomStore.reset()
-                    showSymptomChecker = true
-                } label: {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color("baseColor").opacity(0.12),
-                                        Color("baseColor").opacity(0.04)
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(height: 95)
-
-                        HStack(spacing: 16) {
-                            // Icon Container
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(Color("baseColor").opacity(0.15))
-                                .frame(width: 78, height: 78)
-                                .overlay(
-                                    Image(systemName: "stethoscope")
-                                        .font(.system(size: 32))
-                                        .foregroundStyle(Color("baseColor"))
-                                )
-                                .padding(.leading, 8)
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Check Symptoms")
-                                    .font(.system(size: 20, weight: .semibold))
-
-                                Text("Get guidance")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Color("secondaryText"))
-                            }
-
-                            Spacer()
-
-                            Circle()
-                                .fill(Color("baseColor").opacity(0.2))
-                                .frame(width: 28, height: 28)
-                                .overlay(
-                                    Image(systemName: "chevron.right")
-                                        .foregroundStyle(Color("baseColor"))
-                                        .font(.system(size: 12, weight: .bold))
-                                )
-                                .padding(.trailing, 12)
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal)
-
-                // MARK: - Graph Card
-                Button {
-                    showDistanceSummary = true
-                } label: {
-                    WalkTimeGraphView(model: store.timeWalkedGraph)
-                }
-                .buttonStyle(.plain)
+                // MARK: - Daily Walk Progress
+                walkProgressCard
+                
+                // MARK: - Vaccine & Meals Section
+                atAGlanceSection
+                
+                // MARK: - Symptom Checker Shortcut
+                symptomCheckerShortcut
+                
+                // MARK: - Activity Trend Graph
+                activityTrendSection
             }
             .padding(.top, 10)
             .padding(.bottom, 80)
@@ -174,6 +44,7 @@ struct ActivityView: View {
                 title: "Activity",
                 petStore: petStore
             )
+            // MARK: - Navigation Destinations
             .navigationDestination(isPresented: $showMealsLog) {
                 MealLogView(store: mealStore)
             }
@@ -185,6 +56,10 @@ struct ActivityView: View {
                     .environment(symptomStore)
                     .environment(store)
             }
+            .navigationDestination(isPresented: $showHealthView) {
+                HealthView()
+            }
+            // MARK: - Data Refresh
             .task(id: petStore.activePetId) {
                 if let petId = petStore.activePetId {
                     await store.fetchWalks(for: petId)
@@ -192,6 +67,7 @@ struct ActivityView: View {
                 }
             }
         }
+        // MARK: - Modal Overlays
         .fullScreenCover(isPresented: $showWalkFlow) {
             WalkFlowContainer(
                 store: store,
@@ -202,6 +78,174 @@ struct ActivityView: View {
                 }
             )
         }
+    }
+}
+
+// MARK: - Subviews Extension
+extension ActivityView {
+    
+    /// Top card showing the current daily walk minutes vs goal
+    private var walkProgressCard: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 28)
+                .fill(Color("cardBackground"))
+                .frame(height: 160)
+
+            HStack(spacing: 20) {
+                CircularProgressView(progress: store.walkActivity.progress)
+                    .frame(width: 100, height: 100)
+                    .padding(.leading, 20)
+
+                Spacer()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Walked")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(Color("secondaryText"))
+                    
+                    HStack(spacing: 0) {
+                        Text("\(store.walkActivity.currentMinutes)/")
+                        Text("\(store.walkActivity.goalMinutes)min")
+                            .foregroundStyle(Color("baseColor"))
+                    }
+                    .bold()
+                    .font(.system(size: 28, weight: .bold))
+
+                    if store.isWalking {
+                        activeWalkButton
+                    } else {
+                        startWalkButton
+                    }
+                }
+                Spacer()
+            }
+        }
+        .frame(height: 160)
+        .padding(.horizontal)
+    }
+    
+    private var activeWalkButton: some View {
+        Button {
+            countdownFinished = true
+            showWalkFlow = true
+        } label: {
+            WalkingLabel()
+        }
+        .padding(.top, 4)
+    }
+    
+    private var startWalkButton: some View {
+        Button {
+            countdownFinished = false
+            showWalkFlow = true
+        } label: {
+            Text("START")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color("baseColor"))
+                .padding(.horizontal, 24)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .stroke(Color("baseColor"), lineWidth: 1.5)
+                )
+        }
+        .padding(.top, 4)
+    }
+    
+    /// Middle section for Vaccine and Meals cards
+    private var atAGlanceSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("At a glance")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.primary)
+                .padding(.horizontal)
+            
+            HStack(spacing: 16) {
+                // Vaccine Card
+                Button {
+                    showHealthView = true
+                } label: {
+                    HealthCardView()
+                }
+                .buttonStyle(.plain)
+
+                // Meals Card
+                Button {
+                    showMealsLog = true
+                } label: {
+                    MealsCardView()
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    /// Quick access to the AI symptom checker
+    private var symptomCheckerShortcut: some View {
+        Button {
+            symptomStore.reset()
+            showSymptomChecker = true
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color("baseColor").opacity(0.12),
+                                Color("baseColor").opacity(0.04)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 95)
+
+                HStack(spacing: 16) {
+                    // Icon Container
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color("baseColor").opacity(0.15))
+                        .frame(width: 78, height: 78)
+                        .overlay(
+                            Image(systemName: "stethoscope")
+                                .font(.system(size: 32))
+                                .foregroundStyle(Color("baseColor"))
+                        )
+                        .padding(.leading, 8)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Check Symptoms")
+                            .font(.system(size: 20, weight: .semibold))
+
+                        Text("Get guidance")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color("secondaryText"))
+                    }
+
+                    Spacer()
+
+                    Circle()
+                        .fill(Color("baseColor").opacity(0.2))
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(Color("baseColor"))
+                                .font(.system(size: 12, weight: .bold))
+                        )
+                        .padding(.trailing, 12)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal)
+    }
+    
+    /// Bottom section showing the weekly activity graph
+    private var activityTrendSection: some View {
+        WalkTimeGraphView(model: store.timeWalkedGraph)
+            .onTapGesture {
+                showDistanceSummary = true
+            }
     }
 }
 
@@ -286,28 +330,4 @@ private struct WalkingLabel: View {
         ).size
         return ceil(size.width)
     }
-}
-
-struct ActivityViewPreviewWrapper: View {
-    @State private var store = ActivityStore()
-    @State private var petStore = PetStore.preview
-    @State private var healthStore = HealthStore()
-    @State private var mealStore = MealStore()
-    @State private var symptomStore = SymptomStore()
-    @State private var appState = AppState()
-    
-    var body: some View {
-        ActivityView()
-            .environment(store)
-            .environment(petStore)
-            .environment(mealStore)
-            .environment(healthStore)
-            .environment(symptomStore)
-            .environment(AuthStore(appState: appState))
-            .environment(appState)
-    }
-}
-
-#Preview {
-    ActivityViewPreviewWrapper()
 }

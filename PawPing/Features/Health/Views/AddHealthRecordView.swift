@@ -193,10 +193,10 @@ struct AddHealthRecordView: View {
     
     private func handleVetSelection(_ item: MKMapItem) {
         vetName = item.name ?? ""
-        vetAddress = item.placemark.title ?? ""
+        vetAddress = item.name ?? "" 
         vetPhone = item.phoneNumber ?? ""
-        vetLatitude = item.placemark.coordinate.latitude
-        vetLongitude = item.placemark.coordinate.longitude
+        vetLatitude = item.location.coordinate.latitude
+        vetLongitude = item.location.coordinate.longitude
     }
     
     private func updateNextDoseDate() {
@@ -221,6 +221,8 @@ struct AddHealthRecordView: View {
             dateGiven: dateGiven,
             nextDoseDate: hasNextDose ? (nextDoseDate ?? Calendar.current.date(byAdding: .year, value: 1, to: dateGiven)) : nil,
             notes: notes,
+            isCompleted: false,
+            completedDate: nil,
             vetName: vetName.isEmpty ? nil : vetName,
             vetAddress: vetAddress.isEmpty ? nil : vetAddress,
             vetPhone: vetPhone.isEmpty ? nil : vetPhone,
@@ -229,15 +231,9 @@ struct AddHealthRecordView: View {
         )
         
         Task {
-            do {
-                await healthStore.addHealthRecord(record)
-                isSaving = false
-                dismiss()
-            } catch {
-                errorMessage = error.localizedDescription
-                showError = true
-                isSaving = false
-            }
+            await healthStore.addHealthRecord(record)
+            isSaving = false
+            dismiss()
         }
     }
 }

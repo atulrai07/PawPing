@@ -55,7 +55,8 @@ enum SupabaseConfig {
         supabaseURL: url,
         supabaseKey: key,
         options: SupabaseClientOptions(
-            db: .init(encoder: encoder, decoder: decoder)
+            db: .init(encoder: encoder, decoder: decoder),
+            auth: .init(emitLocalSessionAsInitialSession: true)
         )
     )
 }

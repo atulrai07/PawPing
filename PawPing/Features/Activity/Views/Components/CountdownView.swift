@@ -2,32 +2,33 @@
 //  CountdownView.swift
 //  PawPing
 //
-//  Created by Atul on 21/03/26.
-//
 
 import SwiftUI
 import Combine
 
+/// A fullscreen countdown view (3-2-1) displayed before a walk session begins.
 struct CountdownView: View {
-
+    // MARK: - Actions
     var onComplete: () -> Void
     var onCancel: () -> Void
 
+    // MARK: - Internal State
     @State private var count = 3
     @State private var ringProgress: CGFloat = 0
     @State private var numberScale: CGFloat = 0.5
     @State private var numberOpacity: Double = 0
 
-    // Drives a per-second ring animation
+    /// Timer to drive the 1-second ticks
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ZStack {
+            // MARK: - Background
             Color(.systemGroupedBackground)
                 .ignoresSafeArea()
 
             VStack(spacing: 30) {
-                // Person walking dog icon
+                // MARK: - Branding Icon
                 HStack(spacing: -4) {
                     Image(systemName: "figure.walk")
                         .font(.system(size: 36, weight: .bold))
@@ -37,11 +38,13 @@ struct CountdownView: View {
                         .foregroundStyle(Color("baseColor"))
                 }
 
-                // Circular ring + number
+                // MARK: - Animated Progress Ring
                 ZStack {
+                    // Background track
                     Circle()
                         .stroke(Color("baseColor").opacity(0.15), lineWidth: 14)
 
+                    // Growing progress arc
                     Circle()
                         .trim(from: 0, to: ringProgress)
                         .stroke(
@@ -50,6 +53,7 @@ struct CountdownView: View {
                         )
                         .rotationEffect(.degrees(-90))
 
+                    // Pulsing countdown number
                     Text("\(count)")
                         .font(.system(size: 100, weight: .bold, design: .rounded))
                         .foregroundStyle(Color("baseColor"))
@@ -63,7 +67,7 @@ struct CountdownView: View {
                     .foregroundStyle(.primary)
             }
 
-            // X (close) button — top leading
+            // MARK: - Cancel Button
             VStack {
                 HStack {
                     Button(action: onCancel) {
@@ -85,18 +89,25 @@ struct CountdownView: View {
             animateRing(for: count)
         }
         .onReceive(timer) { _ in
-            if count > 1 {
-                count -= 1
-                animateNumber()
-                animateRing(for: count)
-            } else {
-                onComplete()
-            }
+            handleTimerTick()
+        }
+    }
+
+    // MARK: - Logic
+    
+    private func handleTimerTick() {
+        if count > 1 {
+            count -= 1
+            animateNumber()
+            animateRing(for: count)
+        } else {
+            onComplete()
         }
     }
 
     // MARK: - Animations
 
+    /// Creates a pulsing pop-in effect for the number
     private func animateNumber() {
         numberScale = 0.5
         numberOpacity = 0
@@ -106,8 +117,10 @@ struct CountdownView: View {
         }
     }
 
+    /// Animates the progress ring completion percentage
     private func animateRing(for remaining: Int) {
-        let target: CGFloat = CGFloat(4 - remaining) / 3.0
+        let totalTime: CGFloat = 3.0
+        let target: CGFloat = CGFloat(Int(totalTime) + 1 - remaining) / totalTime
         withAnimation(.easeInOut(duration: 0.9)) {
             ringProgress = target
         }

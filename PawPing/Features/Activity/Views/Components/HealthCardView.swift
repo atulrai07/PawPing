@@ -2,15 +2,14 @@
 //  HealthCardView.swift
 //  PawPing
 //
-//  Created by Antigravity on 01/04/26.
-//  Updated for Health system on 27/04/26.
-//
 
 import SwiftUI
 
+/// A component that displays the upcoming vaccine or health task for the active pet.
 struct HealthCardView: View {
     @Environment(HealthStore.self) var healthStore
     
+    /// Computes the closest upcoming health record (vaccine, deworming, etc.)
     private var nearestRecord: HealthRecord? {
         healthStore.healthRecords
             .filter { $0.nextDoseDate != nil && $0.nextDoseDate! > Date() }
@@ -20,14 +19,17 @@ struct HealthCardView: View {
     
     var body: some View {
         ZStack {
+            // Card Background
             RoundedRectangle(cornerRadius: 28)
                 .fill(Color("cardBackground"))
                 .frame(width: 175, height: 190)
             
             VStack(alignment: .leading) {
+                // MARK: - Header
                 HStack {
-                    Text("Health")
+                    Text("Vaccine")
                         .font(.system(size: 22, weight: .regular))
+                        .foregroundStyle(.black)
                     
                     Spacer()
                 }
@@ -35,12 +37,14 @@ struct HealthCardView: View {
                 
                 Spacer()
                 
+                // MARK: - Status Icon
                 Image(systemName: nearestRecord?.recordType == .deworming ? "pills.fill" : "heart.text.square.fill")
                     .foregroundStyle(Color("baseColor"))
                     .font(.system(size: 65))
                 
                 Spacer()
                 
+                // MARK: - Record Details
                 VStack(alignment: .leading, spacing: 2) {
                     if let record = nearestRecord {
                         Text(record.name)
@@ -49,14 +53,14 @@ struct HealthCardView: View {
                         
                         Text(record.timeRemainingText)
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Color("secondaryText"))
+                            .foregroundStyle(.primary.opacity(0.7))
                     } else {
                         Text("All Good")
                             .font(.system(size: 18, weight: .medium))
                         
                         Text("No upcoming tasks")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Color("secondaryText"))
+                            .foregroundStyle(.primary.opacity(0.7))
                     }
                 }
             }

@@ -2,7 +2,7 @@
 //  VetSearchView.swift
 //  PawPing
 //
-//  Created by Antigravity on 27/04/26.
+//  Created by SidMoon on 27/04/26.
 //
 
 import SwiftUI
@@ -77,7 +77,7 @@ struct VetSearchView: View {
                                     .font(.headline)
                                     .foregroundStyle(.primary)
                                 
-                                Text(item.placemark.title ?? "")
+                                Text(item.name ?? "Nearby Vet")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 

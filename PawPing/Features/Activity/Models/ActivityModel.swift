@@ -7,22 +7,8 @@
 
 import Foundation
 
-// MARK: - Owner
-
-
-// Removed legacy aliases. Use Pet and PetGender instead.
-
-// MARK: - Activity
-
-struct WalkActivity {
-    var currentMinutes: Int
-    var goalMinutes: Int
-
-    var progress: Double {
-        guard goalMinutes > 0 else { return 0 }
-        return Double(currentMinutes) / Double(goalMinutes)
-    }
-}
+ 
+// MARK: - Core Walk Data
 
 struct WalkSession: Identifiable, Codable {
     let id: UUID
@@ -46,6 +32,20 @@ struct WalkPoint: Codable {
     let longitude: Double
 }
 
+// MARK: - Activity Summary
+
+struct WalkActivity {
+    var currentMinutes: Int
+    var goalMinutes: Int
+
+    var progress: Double {
+        guard goalMinutes > 0 else { return 0 }
+        return Double(currentMinutes) / Double(goalMinutes)
+    }
+}
+
+// MARK: - Graph Models
+
 struct TimeWalkedData: Identifiable {
     let id = UUID()
     let day: String
@@ -61,14 +61,16 @@ struct TimeWalkedGraphModel {
     }
 }
 
+// MARK: - Distance Summary
+
 struct DistanceData: Identifiable {
     let id = UUID()
     let date: Date
     let distanceInKm: Double
     
     var dayLabel: String {
-        let formatter = DateFormatter() // date to String
-        formatter.dateFormat = "EEE" //it will be like MON, TUE
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
         return formatter.string(from: date)
     }
     
@@ -93,7 +95,3 @@ struct DistanceSummaryModel {
         monthData.reduce(0) { $0 + $1.distanceInKm }
     }
 }
-
-// MARK: - Activity Logic (moved to Meals for meal specific logic)
-
-// Removed Vaccine and Allergy models to consolidate architecture.

@@ -10,33 +10,25 @@ import SwiftUI
 struct ContentView: View {
     @Environment(PetStore.self) var petStore
     @Environment(MealStore.self) var mealStore
-
     @State private var selectedTab: Int = 0
 
     var body: some View {
-        Group {
-            tabBarView
-        }
-        .environment(\.activeTab, $selectedTab)
-    }
-    
-    private var tabBarView: some View {
         TabView(selection: $selectedTab) {
             ActivityView()
                 .tabItem {
-                    Label("Activity", systemImage: "dog.fill")
+                    Label("Activity", systemImage: selectedTab == 0 ? "dog.fill" : "dog")
                 }
                 .tag(0)
 
-            MealLogView(store: mealStore)
+            HealthView()
                 .tabItem {
-                    Label("Meals", systemImage: "fork.knife")
+                    Label("Vaccine", systemImage: selectedTab == 1 ? "syringe.fill" : "syringe")
                 }
                 .tag(1)
 
-            HealthView()
+            CareTabView()
                 .tabItem {
-                    Label("Health", systemImage: "heart.text.square.fill")
+                    Label("Care", systemImage: selectedTab == 2 ? "cross.case.fill" : "cross.case")
                 }
                 .tag(2)
 
@@ -44,23 +36,11 @@ struct ContentView: View {
                 ProfileView()
             }
             .tabItem {
-                Label("Profile", systemImage: "person.fill")
+                Label("Profile", systemImage: selectedTab == 3 ? "person.fill" : "person")
             }
             .tag(3)
         }
         .tint(.pawPrimary)
-    }
-}
-
-// MARK: - Environment Key for Tab Selection
-private struct ActiveTabKey: EnvironmentKey {
-    static let defaultValue: Binding<Int> = .constant(0)
-}
-
-extension EnvironmentValues {
-    var activeTab: Binding<Int> {
-        get { self[ActiveTabKey.self] }
-        set { self[ActiveTabKey.self] = newValue }
     }
 }
 

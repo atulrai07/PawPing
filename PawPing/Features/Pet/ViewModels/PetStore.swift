@@ -117,30 +117,67 @@ class PetStore {
     }
     
     @MainActor
-    func updatePet(_ pet: Pet) async {
-        do {
-            try await client
-                .from("pets")
-                .update(pet)
-                .eq("id", value: pet.id)
-                .execute()
-            
-            await fetchPets()
-        } catch {
-            print("❌ Error updating pet: \(error)")
+    func updatePet(_ pet: Pet) async throws {
+        // 1. Confirm Identity (Debug)
+        let session = try await client.auth.session
+        let userId = session.user.id
+        
+        print("🔍 [DEBUG] Auth UID:", userId.uuidString)
+        print("🔍 [DEBUG] Pet ownerId:", pet.ownerId?.uuidString ?? "nil")
+        
+        // 2. Define an Encodable payload to satisfy RLS and Type Safety
+        struct PetUpdatePayload: Encodable {
+            let name: String
+            let breed: String
+            let gender: String
+            let age: String
+            let weight_kg: Double
+            let profile_image_url: String?
+            let is_neutered: Bool
+            let owner_id: String
+            let birthday: String?
         }
+        
+        var birthdayString: String? = nil
+        if let birthday = pet.birthday {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime]
+            birthdayString = formatter.string(from: birthday)
+        }
+        
+        let payload = PetUpdatePayload(
+            name: pet.name,
+            breed: pet.breed,
+            gender: pet.gender.rawValue,
+            age: pet.age,
+            weight_kg: pet.weightKg,
+            profile_image_url: pet.profileImageUrl,
+            is_neutered: pet.isNeutered ?? false,
+            owner_id: userId.uuidString,
+            birthday: birthdayString
+        )
+        
+        try await client
+            .from("pets")
+            .update(payload)
+            .eq("id", value: pet.id)
+            .execute()
+        
+        print("✅ Pet updated successfully with explicit payload")
+        await fetchPets()
     }
 
     @MainActor
     func uploadPetAvatar(petId: UUID, imageData: Data) async throws -> String {
-        let path = "\(petId.uuidString).jpg"
+        let userId = try await client.auth.session.user.id.uuidString
+        let path = "\(userId)/\(petId.uuidString).jpg"
         
         _ = try await client.storage
             .from("pet-avatars")
-            .upload(path: path, file: imageData, options: FileOptions(contentType: "image/jpeg", upsert: true))
+            .upload(path, data: imageData, options: FileOptions(contentType: "image/jpeg", upsert: true))
         
-        let publicUrl = try client.storage.from("pet-avatars").getPublicURL(path: path)
-        return publicUrl.absoluteString
+        let publicUrl = try client.storage.from("pet-avatars").getPublicURL(path: path).absoluteString
+        return publicUrl
     }
     
     @MainActor

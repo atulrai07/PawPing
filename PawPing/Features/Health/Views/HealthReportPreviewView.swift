@@ -2,9 +2,6 @@
 //  HealthReportPreviewView.swift
 //  PawPing
 //
-//  Created by Atul on 01/04/26.
-//  Updated for Health system on 27/04/26.
-//
 
 import SwiftUI
 
@@ -17,102 +14,16 @@ struct HealthReportPreviewView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                
-                // MARK: Report Header
-                VStack(spacing: 8) {
-                    if config.includeAppWatermark {
-                        HStack(spacing: 4) {
-                            Text("PawPing")
-                                .font(.system(size: 32, weight: .black, design: .rounded))
-                                .foregroundStyle(Color("baseColor"))
-                            
-                            Image(systemName: "pawprint.fill")
-                                .font(.system(size: 20))
-                                .foregroundStyle(Color("baseColor"))
-                        }
-                    }
-                    
-                    Text("Health Report")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(.primary)
-                    
-                    Text("Generated on \(Date().formatted(date: .abbreviated, time: .omitted))")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.top, 16)
-                
-                // MARK: Dog Profile
-                dogProfileCard
-                
-                // MARK: Health Records
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Medical Records")
-                        .font(.system(size: 16, weight: .bold))
-                        .padding(.horizontal, 4)
-                    
-                    VStack(spacing: 0) {
-                        // Header
-                        HStack {
-                            Text("Treatment")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text("Date")
-                                .frame(maxWidth: .infinity, alignment: .center)
-                            Text("Status")
-                                .frame(width: 60, alignment: .trailing)
-                        }
-                        .font(.system(size: 14, weight: .bold))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color(.systemGray5))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        
-                        // Rows
-                        let displayRecords = filteredRecords()
-                        ForEach(Array(displayRecords.enumerated()), id: \.offset) { index, record in
-                            healthRow(record)
-                            if index < displayRecords.count - 1 {
-                                Divider().padding(.leading, 16)
-                            }
-                        }
-                    }
-                    .background(Color("cardBackground"))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-                }
-                
-                // MARK: Vet Clinic Details
-                if config.includeClinicContactInfo,
-                   let clinicRecord = healthStore.healthRecords.first(where: { $0.vetName != nil }) {
-                    
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Vet Clinic Details")
-                            .font(.system(size: 16, weight: .bold))
-                            .padding(.horizontal, 4)
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            clinicRow(clinicRecord.vetName ?? "Unknown Clinic")
-                            Divider()
-                            if let add = clinicRecord.vetAddress {
-                                clinicRow("Address: \(add)")
-                                Divider()
-                            }
-                            if let phone = clinicRecord.vetPhone {
-                                clinicRow("Phone: \(phone)")
-                            }
-                        }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 16).fill(Color("cardBackground")))
-                        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-                    }
-                }
+                // The actual report content (Preview)
+                ReportExportView(config: config)
+                    .environment(petStore)
+                    .environment(healthStore)
                 
                 // MARK: Download Button
                 Button {
-                    print("Download PDF logic placeholder")
+                    shareReport()
                 } label: {
-                    Text("Download Report")
+                    Text("Download & Share PDF")
                         .font(.system(size: 17, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -134,7 +45,7 @@ struct HealthReportPreviewView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    print("Share tapped")
+                    shareReport()
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 16, weight: .semibold))
@@ -144,79 +55,210 @@ struct HealthReportPreviewView: View {
         }
     }
     
-    // MARK: - Subviews & Helpers
+    // MARK: - REAL PDF GENERATION & SHARING
     
-    private var dogProfileCard: some View {
-        HStack(spacing: 16) {
-            Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 70, height: 70)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+    @MainActor
+    private func shareReport() {
+        // 1. Prepare metadata
+        let petName = petStore.activePet?.name ?? "Pet"
+        let exportView = ReportExportView(config: config)
+            .environment(petStore)
+            .environment(healthStore)
+            .frame(width: 595) // A4 width
+        
+        // 2. Render to Image first (most stable way to get high quality)
+        let renderer = ImageRenderer(content: exportView)
+        guard let image = renderer.uiImage else { return }
+        
+        // 3. Create PDF from Image
+        let pdfData = NSMutableData()
+        let pdfRect = CGRect(origin: .zero, size: image.size)
+        
+        UIGraphicsBeginPDFContextToData(pdfData, pdfRect, nil)
+        UIGraphicsBeginPDFPageWithInfo(pdfRect, nil)
+        image.draw(at: .zero)
+        UIGraphicsEndPDFContext()
+        
+        // 4. Save to temporary URL
+        let url = URL.documentsDirectory.appending(path: "\(petName)_Health_Report.pdf")
+        do {
+            try pdfData.write(to: url)
+        } catch {
+            print("❌ Failed to save PDF: \(error)")
+            return
+        }
+        
+        // 5. Present Share Sheet
+        let activityVC = UIActivityViewController(
+            activityItems: [url],
+            applicationActivities: nil
+        )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
             
-            VStack(alignment: .leading, spacing: 4) {
-                Text(petStore.activePet?.name ?? "Pet")
-                    .font(.system(size: 16, weight: .bold))
-                
-                Text("Breed : \(petStore.activePet?.breed ?? "—")")
-                    .font(.system(size: 14))
-                
-                Text("Age : \(petStore.activePet?.age ?? "?") yrs")
-                    .font(.system(size: 14))
-                
-                Text("Owner : \(petStore.currentUserProfile?.name ?? "Owner")")
-                    .font(.system(size: 14))
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = rootVC.view
+                let bounds = rootVC.view.bounds
+                popover.sourceRect = CGRect(x: bounds.midX, y: bounds.midY, width: 0, height: 0)
+                popover.permittedArrowDirections = []
             }
-            .foregroundStyle(.primary)
+            
+            rootVC.present(activityVC, animated: true)
+        }
+    }
+}
+
+// MARK: - Export Content View (Simplified for PDF)
+
+struct ReportExportView: View {
+    @Environment(PetStore.self) var petStore
+    @Environment(HealthStore.self) var healthStore
+    let config: VaccineReportConfig
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            // Header
+            VStack(spacing: 10) {
+                HStack {
+                    Text("PawPing")
+                        .font(.system(size: 40, weight: .black, design: .rounded))
+                        .foregroundStyle(Color("baseColor"))
+                    Image(systemName: "pawprint.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Color("baseColor"))
+                }
+                
+                Text("OFFICIAL HEALTH PASSPORT")
+                    .font(.system(size: 14, weight: .bold))
+                    .tracking(4)
+                    .foregroundStyle(.secondary)
+            }
+            
+            // Pet Details Card
+            VStack(spacing: 15) {
+                HStack(spacing: 20) {
+                    if let imageName = petStore.activePet?.imageName {
+                        Image(imageName)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 100, height: 100)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(petStore.activePet?.name ?? "Name")
+                            .font(.system(size: 28, weight: .bold))
+                        Text(petStore.activePet?.breed ?? "Breed")
+                            .font(.system(size: 18))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+                
+                Divider()
+                
+                HStack {
+                    detailItem(label: "AGE", value: "\(petStore.activePet?.age ?? "?") Years")
+                    Spacer()
+                    detailItem(label: "OWNER", value: petStore.currentUserProfile?.name ?? "Owner")
+                    Spacer()
+                    detailItem(label: "STATUS", value: "Verified")
+                }
+            }
+            .padding(25)
+            .background(Color(.systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            
+            // Records Table
+            VStack(alignment: .leading, spacing: 15) {
+                Text("VACCINATION HISTORY")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(Color("baseColor"))
+                
+                VStack(spacing: 0) {
+                    tableHeader
+                    ForEach(filteredRecords()) { record in
+                        tableRow(record)
+                    }
+                }
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.systemGray4), lineWidth: 1))
+            }
+            
+            // Footer Info
+            if config.includeClinicContactInfo,
+               let clinic = healthStore.healthRecords.first(where: { $0.vetName != nil }) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("PRIMARY VETERINARY CLINIC")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(.secondary)
+                    Text(clinic.vetName ?? "")
+                        .font(.system(size: 16, weight: .bold))
+                    Text(clinic.vetAddress ?? "")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(20)
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
             
             Spacer()
+            
+            Text("This report is an automated summary of records provided by the owner via PawPing app.")
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Color("cardBackground")))
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+        .padding(40)
+        .background(Color.white)
+    }
+    
+    // Helpers
+    private var tableHeader: some View {
+        HStack {
+            Text("VACCINE").frame(maxWidth: .infinity, alignment: .leading)
+            Text("DATE").frame(maxWidth: .infinity, alignment: .center)
+            Text("STATUS").frame(width: 80, alignment: .trailing)
+        }
+        .font(.system(size: 12, weight: .bold))
+        .padding()
+        .background(Color(.systemGray5))
+    }
+    
+    private func tableRow(_ record: HealthRecord) -> some View {
+        VStack(spacing: 0) {
+            Divider()
+            HStack {
+                Text(record.name).frame(maxWidth: .infinity, alignment: .leading)
+                Text(record.formattedDateGiven).frame(maxWidth: .infinity, alignment: .center)
+                Text(record.status == .done ? "DONE" : "MISSED")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(record.status == .done ? .green : .red)
+                    .frame(width: 80, alignment: .trailing)
+            }
+            .font(.system(size: 14))
+            .padding()
+        }
+    }
+    
+    private func detailItem(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label).font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
+            Text(value).font(.system(size: 16, weight: .semibold))
+        }
     }
     
     private func filteredRecords() -> [HealthRecord] {
-        if config.includeMissedAlerts {
-            return healthStore.healthRecords.filter { $0.status == .done || $0.status == .overdue }
-        } else {
-            return healthStore.healthRecords.filter { $0.status == .done }
-        }
+        healthStore.healthRecords.filter { $0.status == .done || (config.includeMissedAlerts && $0.status == .overdue) }
     }
-    
-    private func healthRow(_ record: HealthRecord) -> some View {
-        HStack {
-            Text(record.name)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .font(.system(size: 15))
-            
-            Text(record.formattedDateGiven)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .font(.system(size: 15))
-            
-            Group {
-                if record.status == .done {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.white, .green)
-                } else if record.status == .overdue {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.white, .red)
-                } else {
-                    Image(systemName: "circle")
-                        .foregroundStyle(.gray)
-                }
-            }
-            .font(.system(size: 18))
-            .frame(width: 60, alignment: .trailing)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-    }
-    
-    private func clinicRow(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 15))
-            .foregroundStyle(.primary)
-    }
+}
+
+#Preview {
+    HealthReportPreviewView(config: .defaultConfig)
+        .environment(PetStore.preview)
+        .environment(HealthStore())
 }

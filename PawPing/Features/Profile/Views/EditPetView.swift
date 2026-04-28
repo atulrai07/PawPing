@@ -2,10 +2,6 @@
 //  EditPetView.swift
 //  PawPing
 //
-//  Created by SidMoon on 28/04/26.
-//  Description: This screen allows users to edit an existing pet's profile.
-//  It includes image uploading and detailed pet information.
-//
 
 import SwiftUI
 import PhotosUI
@@ -26,8 +22,12 @@ struct EditPetView: View {
     @State private var birthday: Date = Date()
     @State private var isNeutered: Bool = false
     
+    // Image Handling
     @State private var selectedPhotoItem: PhotosPickerItem? = nil
     @State private var uiImage: UIImage? = nil
+    @State private var showPhotoOptions = false
+    @State private var showCamera = false
+    @State private var showGallery = false
     
     // MARK: - State (UI Control)
     
@@ -51,6 +51,20 @@ struct EditPetView: View {
             .overlay {
                 loadingOverlay
             }
+            // MARK: - Sheets & Dialogs
+            .confirmationDialog("Change Photo", isPresented: $showPhotoOptions, titleVisibility: .visible) {
+                Button("Camera") { showCamera = true }
+                Button("Photo Library") { showGallery = true }
+                Button("Cancel", role: .cancel) { }
+            }
+            .fullScreenCover(isPresented: $showCamera) {
+                ImagePicker(selectedImage: $uiImage, sourceType: .camera)
+                    .ignoresSafeArea()
+            }
+            .photosPicker(isPresented: $showGallery, selection: $selectedPhotoItem, matching: .images)
+            .onChange(of: selectedPhotoItem) { _, newItem in
+                handlePhotoSelection(newItem)
+            }
             .alert("Error", isPresented: $showingError) {
                 Button("OK", role: .cancel) { }
             } message: {
@@ -72,12 +86,12 @@ struct EditPetView: View {
             HStack {
                 Spacer()
                 VStack(spacing: 12) {
-                    PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
+                    Button {
+                        showPhotoOptions = true
+                    } label: {
                         avatarImage
                     }
-                    .onChange(of: selectedPhotoItem) { _, newItem in
-                        handlePhotoSelection(newItem)
-                    }
+                    .buttonStyle(.plain)
                     
                     Text("Change Photo")
                         .font(.caption)
@@ -98,6 +112,7 @@ struct EditPetView: View {
                     .scaledToFill()
                     .frame(width: 100, height: 100)
                     .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.gray.opacity(0.2), lineWidth: 1))
             } else if let pet = petStore.activePet {
                 petAvatar(for: pet)
             } else {
@@ -118,7 +133,7 @@ struct EditPetView: View {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:
-                        Circle().fill(Color("baseColor").opacity(0.2))
+                        Circle().fill(Color("baseColor").opacity(0.1))
                             .frame(width: 100, height: 100)
                     case .success(let image):
                         image.resizable().scaledToFill()
@@ -145,10 +160,10 @@ struct EditPetView: View {
     private var cameraBadge: some View {
         Circle()
             .fill(Color("baseColor"))
-            .frame(width: 30, height: 30)
+            .frame(width: 32, height: 32)
             .overlay(
                 Image(systemName: "camera.fill")
-                    .font(.system(size: 14))
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white)
             )
             .overlay(
@@ -188,7 +203,7 @@ struct EditPetView: View {
                 TextField("e.g. 12.5", text: $weight)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
-                    .onChange(of: weight) { oldValue, newValue in
+                    .onChange(of: weight) { _, newValue in
                         validateWeight(newValue)
                     }
             }
@@ -223,9 +238,15 @@ struct EditPetView: View {
             if isLoading {
                 ZStack {
                     Color.black.opacity(0.3).ignoresSafeArea()
-                    ProgressView()
-                        .padding(24)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemBackground)))
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.2)
+                        Text("Saving...")
+                            .font(.subheadline)
+                            .bold()
+                    }
+                    .padding(32)
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color(UIColor.systemBackground)))
                 }
             }
         }
@@ -245,13 +266,11 @@ struct EditPetView: View {
     private func validateWeight(_ newValue: String) {
         var filtered = newValue.filter { "0123456789.".contains($0) }
         
-        // Ensure only one decimal point
         let components = filtered.components(separatedBy: ".")
         if components.count > 2 {
             filtered = components[0] + "." + components[1]
         }
         
-        // Restrict to 1 decimal place
         if components.count == 2 && components[1].count > 1 {
             filtered = components[0] + "." + String(components[1].prefix(1))
         }
@@ -290,13 +309,12 @@ struct EditPetView: View {
             pet.birthday = birthday
             pet.isNeutered = isNeutered
             
-            // Age update (basic logic)
             let calendar = Calendar.current
             let ageComponents = calendar.dateComponents([.year], from: birthday, to: Date())
             pet.age = "\(ageComponents.year ?? 0)"
             
             // 3. Save to Supabase
-            await petStore.updatePet(pet)
+            try await petStore.updatePet(pet)
             
             isLoading = false
             dismiss()
@@ -311,5 +329,5 @@ struct EditPetView: View {
 
 #Preview {
     EditPetView()
-        .environment(PetStore())
+        .environment(PetStore.preview)
 }

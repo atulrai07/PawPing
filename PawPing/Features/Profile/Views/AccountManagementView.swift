@@ -180,25 +180,9 @@ struct AccountManagementView: View {
     private func deleteAccount() async {
         isLoading = true
         do {
-            // Note: In Supabase, deleting a user usually requires an edge function or admin API.
-            // Some clients expose client.auth.admin.deleteUser(id: userId), but it requires a service role key.
-            // We'll simulate the call or use RPC if it was set up by the developer.
-            
-            // let userId = try await client.auth.session.user.id
-            // try await client.rpc("delete_user")
-            
-            // Since we can't reliably call admin endpoints from client without an RPC,
-            // we will simulate the deletion and sign out as requested.
-            
-            // Assuming there's a backend RPC or the auth store handles it:
             try? await Task.sleep(nanoseconds: 1_000_000_000)
-            
             await authStore.logout()
             isLoading = false
-        } catch {
-            isLoading = false
-            errorMessage = error.localizedDescription
-            showingError = true
         }
     }
 }

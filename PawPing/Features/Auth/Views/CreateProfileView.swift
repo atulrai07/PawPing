@@ -170,7 +170,7 @@ struct CreateProfileView: View {
         )
         
         Task {
-            await petStore.addPet(newPet)
+            _ = await petStore.addPet(newPet)
             appState.hasPets = true
         }
     }

@@ -99,22 +99,42 @@ struct MealLogView: View {
             ForEach(0..<currentWeekDates.count, id: \.self) { index in
                 let date = currentWeekDates[index]
                 let isFuture = index > todayIndex
-                VStack(spacing: 10) {
+                VStack(spacing: 6) {
                     Text(weekDays[index])
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(isFuture ? Color("secondaryText").opacity(0.3) : (index <= selectedDateIndex ? Color.primary : Color("secondaryText")))
-                    Circle()
-                        .fill(index == selectedDateIndex ? Color("baseColor") : (index < selectedDateIndex ? Color("baseColor").opacity(0.15) : Color.clear))
-                        .frame(width: 46, height: 46)
-                        .overlay(
-                            Text("\(calendar.component(.day, from: date))")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(index == selectedDateIndex ? .white : (index < selectedDateIndex ? Color("baseColor") : (isFuture ? Color("secondaryText").opacity(0.3) : Color("secondaryText"))))
-                        )
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(isFuture ? Color("secondaryText").opacity(0.3) : (index == selectedDateIndex ? Color("baseColor") : Color("secondaryText")))
+                    
+                    ZStack(alignment: .bottom) {
+                        Circle()
+                            .fill(index == selectedDateIndex ? Color("baseColor") : (index < todayIndex ? Color("baseColor").opacity(0.1) : Color.clear))
+                            .frame(width: 44, height: 44)
+                            .overlay(
+                                Text("\(calendar.component(.day, from: date))")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundStyle(index == selectedDateIndex ? .white : (isFuture ? Color("secondaryText").opacity(0.3) : Color.primary))
+                            )
+                        
+                        if index == todayIndex {
+                            Text("TODAY")
+                                .font(.system(size: 7, weight: .black))
+                                .foregroundStyle(index == selectedDateIndex ? .white : Color("baseColor"))
+                                .padding(.bottom, 4)
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity)
-                .contentShape(Circle())
-                .onTapGesture { if !isFuture { withAnimation { selectedDateIndex = index } } }
+                .contentShape(Rectangle())
+                .onTapGesture { 
+                    if !isFuture { 
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                            selectedDateIndex = index 
+                            store.selectedDate = date
+                        }
+                        if let petId = petStore.activePetId {
+                            Task { await store.fetchMeals(for: petId) }
+                        }
+                    } 
+                }
             }
         }
         .padding(.horizontal, 10)

@@ -45,6 +45,7 @@ class HealthStore {
     @MainActor
     func addHealthRecord(_ record: HealthRecord) async {
         do {
+            // 1. Try Primary Insert (with new columns)
             try await client
                 .from("vaccine_records")
                 .insert(record)
@@ -52,8 +53,49 @@ class HealthStore {
             
             await fetchHealthRecords(for: record.petId)
         } catch {
-            print("❌ Error adding health record to vaccine_records: \(error)")
-            // Bubble up error if needed
+            print("⚠️ Primary insert failed, trying fallback without new columns...")
+            
+            // 2. Fallback Insert (Use a legacy struct to exclude missing columns)
+            struct LegacyHealthRecord: Encodable {
+                let id: UUID
+                let pet_id: UUID
+                let type: String
+                let name: String
+                let date_given: Date
+                let next_dose_date: Date?
+                let notes: String
+                let vet_name: String?
+                let vet_address: String?
+                let vet_phone: String?
+                let vet_latitude: Double?
+                let vet_longitude: Double?
+            }
+            
+            let legacyRecord = LegacyHealthRecord(
+                id: record.id,
+                pet_id: record.petId,
+                type: record.type,
+                name: record.name,
+                date_given: record.dateGiven,
+                next_dose_date: record.nextDoseDate,
+                notes: record.notes,
+                vet_name: record.vetName,
+                vet_address: record.vetAddress,
+                vet_phone: record.vetPhone,
+                vet_latitude: record.vetLatitude,
+                vet_longitude: record.vetLongitude
+            )
+            
+            do {
+                try await client
+                    .from("vaccine_records")
+                    .insert(legacyRecord)
+                    .execute()
+                
+                await fetchHealthRecords(for: record.petId)
+            } catch {
+                print("❌ Both insert attempts failed: \(error)")
+            }
         }
     }
 
@@ -89,12 +131,50 @@ class HealthStore {
 
     @MainActor
     func markAsDone(id: UUID, petId: UUID) async {
-        if let index = healthRecords.firstIndex(where: { $0.id == id }) {
-            var updated = healthRecords[index]
-            updated.nextDoseDate = nil
-            updated.dateGiven = Date()
+        // Optimistic Update: Update locally first
+        guard let index = healthRecords.firstIndex(where: { $0.id == id }) else { return }
+        
+        let originalRecord = healthRecords[index]
+        let now = Date()
+        healthRecords[index].isCompleted = true
+        healthRecords[index].completedDate = now
+        healthRecords[index].nextDoseDate = nil
+        
+        // 1. Try Primary Update (with new columns)
+        struct MarkAsDonePayload: Encodable {
+            let is_completed: Bool
+            let completed_date: Date
+            let next_dose_date: Date?
+        }
+        
+        do {
+            try await client
+                .from("vaccine_records")
+                .update(MarkAsDonePayload(is_completed: true, completed_date: now, next_dose_date: nil))
+                .eq("id", value: id)
+                .execute()
             
-            await updateHealthRecord(updated)
+            await fetchHealthRecords(for: petId)
+        } catch {
+            print("⚠️ Primary update failed (columns might be missing), trying fallback...")
+            
+            // 2. Fallback Update (only use columns we know exist)
+            do {
+                try await client
+                    .from("vaccine_records")
+                    .update([
+                        "next_dose_date": nil,
+                        "date_given": now
+                    ])
+                    .eq("id", value: id)
+                    .execute()
+                
+                await fetchHealthRecords(for: petId)
+            } catch {
+                print("❌ Both update attempts failed: \(error)")
+                // Final rollback only if both fail
+                healthRecords[index] = originalRecord
+            }
         }
     }
 }

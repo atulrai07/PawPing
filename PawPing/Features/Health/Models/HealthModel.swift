@@ -29,7 +29,7 @@ enum HealthStatus: String, CaseIterable {
 
 // MARK: - Health Record
 
-struct HealthRecord: Identifiable, Codable {
+struct HealthRecord: Identifiable, Codable, Hashable {
 
     let id: UUID
     var petId: UUID
@@ -38,6 +38,10 @@ struct HealthRecord: Identifiable, Codable {
     var dateGiven: Date
     var nextDoseDate: Date?
     var notes: String
+    
+    // Status tracking
+    var isCompleted: Bool? = false
+    var completedDate: Date?
     
     // Flattened Vet Info (Supabase Ready)
     var vetName: String?
@@ -51,6 +55,8 @@ struct HealthRecord: Identifiable, Codable {
         case petId = "pet_id"
         case dateGiven = "date_given"
         case nextDoseDate = "next_dose_date"
+        case isCompleted = "is_completed"
+        case completedDate = "completed_date"
         case vetName = "vet_name"
         case vetAddress = "vet_address"
         case vetPhone = "vet_phone"
@@ -65,20 +71,19 @@ struct HealthRecord: Identifiable, Codable {
     }
 
     var status: HealthStatus {
-        guard let nextDose = nextDoseDate else { return .done }
-        let now = Date()
+        if isCompleted == true { return .done }
         
+        guard let nextDose = nextDoseDate else { 
+            // If no reminder is set, it's effectively "Done" after it's recorded
+            return .done 
+        }
+        
+        let now = Date()
         if nextDose <= now {
             return .overdue
         }
         
-        // If the next dose is within 1 month, flag as upcoming.
-        if let oneMonthFromNow = Calendar.current.date(byAdding: .month, value: 1, to: now),
-           nextDose <= oneMonthFromNow {
-            return .upcoming
-        } else {
-            return .done
-        }
+        return .upcoming
     }
 
     var timeRemainingText: String {
@@ -163,9 +168,17 @@ struct HealthSummary {
     let overdueCount: Int
 
     init(from records: [HealthRecord]) {
-        doneCount     = records.filter { $0.status == .done }.count
-        upcomingCount = records.filter { $0.status == .upcoming }.count
+        let thirtyDaysFromNow = Calendar.current.date(byAdding: .day, value: 30, to: Date())!
+        
         overdueCount  = records.filter { $0.status == .overdue }.count
+        
+        upcomingCount = records.filter { 
+            $0.status == .upcoming && 
+            ($0.nextDoseDate ?? Date.distantFuture) <= thirtyDaysFromNow 
+        }.count
+        
+        // Done count includes actually completed AND those too far in the future
+        doneCount = records.count - overdueCount - upcomingCount
     }
 
     static let sample = HealthSummary(from: HealthRecord.sampleRecords)
