@@ -12,6 +12,7 @@ struct HealthView: View {
 
     @Environment(HealthStore.self) var store
     @Environment(PetStore.self) var petStore
+    @Environment(AppState.self) var appState
 
     @State private var showAddRecord = false
     @State private var showReportConfig = false
@@ -109,6 +110,7 @@ struct HealthView: View {
                 HealthReportSelectionView()
                     .environment(store)
                     .environment(petStore)
+                    .environment(appState)
             }
         }
     }

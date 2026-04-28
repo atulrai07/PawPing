@@ -12,6 +12,7 @@ struct HealthReportPreviewView: View {
     let pet: Pet
     let config: HealthReportConfig
     @Environment(HealthStore.self) var store
+    @Environment(AppState.self) var appState
     @Environment(\.dismiss) private var dismiss
     @State private var pdfURL: URL?
     @State private var showShareSheet = false
@@ -83,9 +84,10 @@ struct HealthReportPreviewView: View {
     
     private var reportHeader: some View {
         VStack(spacing: 8) {
-            Text("PawPing")
-                .font(.custom("Marker Felt", size: 32))
-                .foregroundStyle(Color("baseColor"))
+            Image("Pawping_logo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 50)
             
             Text("Health Report")
                 .font(.title2)
@@ -100,11 +102,21 @@ struct HealthReportPreviewView: View {
     
     private var petInfoCard: some View {
         HStack(spacing: 16) {
-            Image(pet.imageName)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Group {
+                if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { image in
+                        image.resizable()
+                    } placeholder: {
+                        Color.gray.opacity(0.1)
+                    }
+                } else {
+                    Image(pet.imageName)
+                        .resizable()
+                }
+            }
+            .scaledToFill()
+            .frame(width: 80, height: 80)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(pet.name)
@@ -115,7 +127,7 @@ struct HealthReportPreviewView: View {
                 Text("Age: \(pet.age)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text("Owner: Rahul Kumar") // Mock or fetch from AuthStore
+                Text("Owner: \(appState.currentUserName)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
