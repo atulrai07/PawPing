@@ -12,7 +12,7 @@ struct VaccineCardView: View {
     
     private var nearestVaccine: HealthRecord? {
         healthStore.healthRecords
-            .filter { $0.nextDoseDate != nil }
+            .filter { $0.nextDoseDate != nil && $0.status != .done }
             .sorted { ($0.nextDoseDate ?? Date()) < ($1.nextDoseDate ?? Date()) }
             .first
     }
