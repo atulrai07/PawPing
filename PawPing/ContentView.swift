@@ -21,7 +21,7 @@ struct ContentView: View {
                 HealthView()
             }
 
-            Tab("Care", systemImage: "pet.carrier.fill") {
+            Tab("Find", systemImage: "magnifyingglass") {
                 CareView()
             }
 

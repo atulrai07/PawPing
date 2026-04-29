@@ -59,7 +59,7 @@ struct CareView: View {
             .padding(.top, 10)
             .padding(.bottom, 80)
             .customNavigationScroll(
-                title: "Care",
+                title: "Find",
                 petStore: petStore,
                 refreshAction: {
                     await petStore.fetchPets()
