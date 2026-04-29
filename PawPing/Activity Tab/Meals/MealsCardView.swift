@@ -13,78 +13,97 @@ struct MealsCardView: View {
 
     var body: some View {
         ZStack {
+            // MARK: - Card Background
             RoundedRectangle(cornerRadius: 28)
-                .fill(Color("cardBackground"))
+                .fill(Color(red: 0.12, green: 0.12, blue: 0.12)) // Premium dark background
                 .frame(width: 175, height: 190)
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 0) {
+                // MARK: - Header (Title & Chevron)
                 HStack {
                     Text("Meals")
-                        .font(.system(size: 22, weight: .regular))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.9))
                     
                     Spacer()
                     
-                    Circle()
-                        .fill(Color("baseColor").opacity(0.2))
-                        .frame(width: 22, height: 22)
-                        .overlay(
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(.primary)
-                                .font(.system(size: 12))
-                        )
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .frame(width: 18, height: 18)
+                        .background(.white.opacity(0.1))
+                        .clipShape(Circle())
                 }
-                
-                // Calorie summary
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.orange)
-                    Text("\(Int(store.totalCaloriesToday)) kcal")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Color("secondaryText"))
-                }
-                .padding(.top, -2)
+                .padding(.bottom, 8)
 
-                Spacer()
+                // MARK: - Calorie Display
+                HStack(alignment: .lastTextBaseline, spacing: 5) {
+                    Text("\(Int(store.totalCaloriesToday))")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundStyle(.white)
+                    
+                    Text("kcal today")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.4))
+                }
+                .padding(.bottom, 10)
                 
-                // Meals
-                HStack(spacing: 8) {
-                    ForEach(store.meals, id: \.id) { (meal: Meal) in
-                        Capsule()
-                            .fill(Color("secondaryCardBackground"))
-                            .frame(width: 40, height: 105)
-                            .overlay(
-                                VStack {
+                // MARK: - Divider
+                Rectangle()
+                    .fill(.white.opacity(0.08))
+                    .frame(height: 1)
+                    .padding(.bottom, 10)
+
+                // MARK: - Meal List
+                VStack(spacing: 12) {
+                    ForEach(store.meals, id: \.id) { meal in
+                        HStack(spacing: 8) {
+                            // Status Dot
+                            Circle()
+                                .fill(colorForMeal(meal.mealType))
+                                .frame(width: 6, height: 6)
+                            
+                            // Meal Info
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(meal.mealType.rawValue)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                Text("\(meal.time) \(meal.meridian)")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.white.opacity(0.4))
+                            }
+                            
+                            Spacer()
+                            
+                            // Checkmark Status
+                            ZStack {
+                                if meal.isTaken {
                                     Circle()
-                                        .fill(Color("baseColor"))
-                                        .frame(width: 28, height: 28)
-                                        .overlay(
-                                            Image(systemName: String(meal.icon))
-                                                .foregroundStyle(.white)
-                                                .font(.system(size: 14, weight: .medium))
-                                        )
-                                        .padding(.top, 8)
-                                    
-                                    HStack(alignment: .lastTextBaseline, spacing: 1) {
-                                        Text(meal.time)
-                                            .font(.system(size: 10, weight: .medium))
-                                        Text(meal.meridian)
-                                            .font(.system(size: 6, weight: .medium))
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Image(systemName: meal.isTaken ? "checkmark.circle.fill" : "circle")
-                                        .foregroundStyle(meal.isTaken ? Color("baseColor") : .secondary)
-                                        .font(.system(size: 16, weight: .regular))
-                                        .padding(.bottom, 10)
+                                        .fill(Color.green)
+                                        .frame(width: 18, height: 18)
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundStyle(.white)
+                                } else {
+                                    Circle()
+                                        .stroke(.white.opacity(0.15), lineWidth: 1.5)
+                                        .frame(width: 18, height: 18)
                                 }
-                            )
+                            }
+                        }
                     }
                 }
             }
             .padding(16)
             .frame(width: 175, height: 190, alignment: .leading)
+        }
+    }
+
+    private func colorForMeal(_ type: MealType) -> Color {
+        switch type {
+        case .breakfast: return .orange
+        case .lunch:     return .blue
+        case .dinner:    return .gray
         }
     }
 }
