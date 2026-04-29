@@ -144,7 +144,7 @@ private struct StickyNavHeader: View {
                 .frame(height: 0.5)
                 .opacity(isCollapsed ? 0 : 0)
         }
-        .fullScreenCover(isPresented: $showingAddPet) {
+        .sheet(isPresented: $showingAddPet) {
             AddPetView {
                 showingAddPet = false
             }

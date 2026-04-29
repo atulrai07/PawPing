@@ -112,16 +112,15 @@ struct AddPetView: View {
                         }
                     }
                 }
-                .sheet(isPresented: $showingBreedPicker) {
-                    BreedPickerView(selectedBreed: $breed)
-                }
                 
                 // MARK: - Physical Details Section
                 Section(header: Text("Physical Details")) {
                     HStack {
                         Text("Weight (kg)")
                         Spacer()
-                        Stepper("\(Int(weight)) kg", value: $weight, in: 1...100)
+                        TextField("10", value: $weight, format: .number)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
                     }
                     
                     DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
@@ -135,7 +134,7 @@ struct AddPetView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
-                        Task { await authStore.logout() }
+                        dismiss()
                     }
                 }
                 
@@ -155,6 +154,9 @@ struct AddPetView: View {
                 ) {
                     onSave()
                 }
+            }
+            .sheet(isPresented: $showingBreedPicker) {
+                BreedPickerView(selectedBreed: $breed)
             }
         }
     }

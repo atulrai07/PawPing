@@ -73,7 +73,7 @@ struct MyPetsView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showingAddPet) {
+        .sheet(isPresented: $showingAddPet) {
             AddPetView {
                 showingAddPet = false
             }

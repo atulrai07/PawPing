@@ -79,7 +79,7 @@ struct ProfileView: View {
                 await petStore.fetchUserProfile()
             }
         }
-        .fullScreenCover(isPresented: $showingAddPet) {
+        .sheet(isPresented: $showingAddPet) {
             AddPetView {
                 showingAddPet = false
             }
