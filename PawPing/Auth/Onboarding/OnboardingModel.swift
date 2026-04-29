@@ -1,14 +1,5 @@
-//
-//  OnboardingModel.swift
-//  PawPing
-//
-//  Created by Shailesh on 24/03/26.
-//  Updated by Atul on 28/04/26.
-//
-
 import Foundation
 
-/// Defines the structure for each onboarding slide
 struct OnboardingItem: Identifiable {
     let id = UUID()
     let title: String
@@ -17,7 +8,6 @@ struct OnboardingItem: Identifiable {
     let lineImage: String
 }
 
-/// The source of truth for all onboarding screen content
 let onboardingData: [OnboardingItem] = [
     OnboardingItem(
         title: "Healthy & Active\nLifestyle",
@@ -32,13 +22,13 @@ let onboardingData: [OnboardingItem] = [
         lineImage: "line2Onboarding"
     ),
     OnboardingItem(
-        title: "Never Miss a\nHealth Milestone",
+        title: "Never Miss a\nhealth Milestone",
         description: "Automatic Reminders for Vaccines",
         dogImage: "dog3Onboarding",
-        lineImage: "" // line3 is missing in assets
+        lineImage: "line1Onboarding"
     ),
     OnboardingItem(
-        title: "Expert Care Just a\nTap Away",
+        title: "Expert Care just a\nTap Away",
         description: "Connect Nearby Vet Care and Day Care\nfor Better Support",
         dogImage: "dog4Onboarding",
         lineImage: "line4Onboarding"

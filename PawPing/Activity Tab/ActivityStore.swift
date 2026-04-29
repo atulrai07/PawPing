@@ -73,6 +73,10 @@ class ActivityStore {
                 loadedMeals = Self.defaultMeals(for: petId)
             }
             
+            if loadedMeals.isEmpty {
+                loadedMeals = Self.defaultMeals(for: petId)
+            }
+            
             self.meals = loadedMeals
             self.walkActivity = storedData.walkActivity
             self.timeWalkedGraph = storedData.timeWalkedGraph
@@ -148,9 +152,12 @@ class ActivityStore {
                 syncTask = Task {
                     do {
                         let payload = PetAppStateUpload(pet_id: petId, activity_data: jsonString)
+                        // Use update instead of upsert to perform a partial update (PATCH)
+                        // this prevents overwriting the meal_diet_data column.
                         try await SupabaseConfig.client
                             .from("pet_app_state")
-                            .upsert(payload)
+                            .update(payload)
+                            .eq("pet_id", value: petId.uuidString)
                             .execute()
                     } catch {
                         print("  Failed to sync activity state to Supabase: \(error)")
@@ -179,6 +186,11 @@ class ActivityStore {
                     var loadedMeals = storedData.meals
                     if let firstMealDate = loadedMeals.first?.date, 
                        !Calendar.current.isDate(firstMealDate, inSameDayAs: today) {
+                        loadedMeals = Self.defaultMeals(for: petId)
+                    }
+                    
+                    
+                    if loadedMeals.isEmpty {
                         loadedMeals = Self.defaultMeals(for: petId)
                     }
                     
@@ -227,6 +239,7 @@ class ActivityStore {
         // Update graph for current day
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         let currentDay = formatter.string(from: Date()).uppercased()
         
         if let index = timeWalkedGraph.data.firstIndex(where: { $0.day == currentDay }) {
@@ -238,7 +251,7 @@ class ActivityStore {
         elapsedSeconds = 0
         locationManager.totalDistance = 0
         
-        saveData(for: meals.first?.petId)
+        saveData(for: activePetId)
     }
 
     func togglePause() {

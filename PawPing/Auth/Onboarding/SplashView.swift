@@ -1,11 +1,3 @@
-//
-//  SplashView.swift
-//  PawPing
-//
-//  Created by Shailesh on 24/03/26.
-//  Updated by Atul on 28/04/26.
-//
-
 import SwiftUI
 
 struct SplashView: View {
@@ -13,10 +5,10 @@ struct SplashView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            Color("baseBackground").ignoresSafeArea()
+            OnboardingLayout.backgroundColor
+                .ignoresSafeArea()
             
-            // Top Right Paw
+            // Top Right Corner
             VStack {
                 HStack {
                     Spacer()
@@ -25,13 +17,13 @@ struct SplashView: View {
                         .scaledToFit()
                         .frame(width: 180)
                         .padding(.top, 30)
-                        .padding(.trailing, -30)
+                        .offset(x: 30) // Offset trailing by -30 (moving right)
                 }
                 Spacer()
             }
             .ignoresSafeArea()
             
-            // Bottom Left Paw
+            // Bottom Left Corner
             VStack {
                 Spacer()
                 HStack {
@@ -39,14 +31,14 @@ struct SplashView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 220)
-                        .padding(.bottom, -30)
-                        .padding(.leading, -30)
+                        .padding(.bottom, 30)
+                        .offset(x: -30) // Offset leading by -30 (moving left)
                     Spacer()
                 }
             }
             .ignoresSafeArea()
             
-            // Main Logo
+            // Center Logo
             Image("pawping (1)")
                 .resizable()
                 .scaledToFit()

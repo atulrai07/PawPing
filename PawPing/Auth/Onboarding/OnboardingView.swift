@@ -1,29 +1,15 @@
-//
-//  OnboardingView.swift
-//  PawPing
-//
-//  Created by Shailesh on 24/03/26.
-//  Updated by Atul on 28/04/26.
-//
-
 import SwiftUI
 
 struct OnboardingView: View {
     var onCompletion: () -> Void
-    
-    // Tracks the current page index (0, 1, 2, or 3)
     @State private var currentPage = 0
-    
-    // The data source for onboarding items
     let items = onboardingData
 
     var body: some View {
-        // We use a single PageView as a shell to keep animations smooth
         OnboardingPageView(
             currentPage: $currentPage,
             items: items,
             onGetStarted: {
-                // Navigate to the main part of the app
                 onCompletion()
             }
         )

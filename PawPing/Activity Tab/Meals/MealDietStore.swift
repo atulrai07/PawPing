@@ -455,9 +455,11 @@ class MealDietStore {
         syncTask = Task {
             do {
                 let payload = PetAppStateUpload(pet_id: petId, meal_diet_data: jsonString)
+                // Use update for partial column update to avoid wiping activity_data
                 try await SupabaseConfig.client
                     .from("pet_app_state")
-                    .upsert(payload)
+                    .update(payload)
+                    .eq("pet_id", value: petId.uuidString)
                     .execute()
             } catch {
                 print("  Failed to sync meal state to Supabase: \(error)")
