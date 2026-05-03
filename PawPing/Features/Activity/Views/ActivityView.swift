@@ -13,14 +13,14 @@ struct ActivityView: View {
     @Environment(PetStore.self) var petStore
     @Environment(MealStore.self) var mealStore
     @Environment(HealthStore.self) var healthStore
-    @Environment(SymptomStore.self) var symptomStore
+    @Environment(DietAssistantStore.self) var dietAssistantStore
 
     // MARK: - Navigation State
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
     @State private var showMealsLog = false
     @State private var showDistanceSummary = false
-    @State private var showSymptomChecker = false
+    @State private var showDietAssistant = false
     @State private var showHealthView = false
 
     var body: some View {
@@ -32,8 +32,8 @@ struct ActivityView: View {
                 // MARK: - Vaccine & Meals Section
                 atAGlanceSection
                 
-                // MARK: - Symptom Checker Shortcut
-                symptomCheckerShortcut
+                // MARK: - Diet Assistant Shortcut
+                dietAssistantShortcut
                 
                 // MARK: - Activity Trend Graph
                 activityTrendSection
@@ -51,10 +51,8 @@ struct ActivityView: View {
             .navigationDestination(isPresented: $showDistanceSummary) {
                 DistanceSummaryView(store: store)
             }
-            .navigationDestination(isPresented: $showSymptomChecker) {
-                SymptomCheckerView()
-                    .environment(symptomStore)
-                    .environment(store)
+            .navigationDestination(isPresented: $showDietAssistant) {
+                DietAssistantView()
             }
             .navigationDestination(isPresented: $showHealthView) {
                 HealthView()
@@ -181,11 +179,10 @@ extension ActivityView {
         }
     }
     
-    /// Quick access to the AI symptom checker
-    private var symptomCheckerShortcut: some View {
+    /// Quick access to the AI Diet & Health Assistant
+    private var dietAssistantShortcut: some View {
         Button {
-            symptomStore.reset()
-            showSymptomChecker = true
+            showDietAssistant = true
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 24)
@@ -207,17 +204,17 @@ extension ActivityView {
                         .fill(Color("baseColor").opacity(0.15))
                         .frame(width: 78, height: 78)
                         .overlay(
-                            Image(systemName: "stethoscope")
+                            Image(systemName: "sparkles.rectangle.stack.fill")
                                 .font(.system(size: 32))
                                 .foregroundStyle(Color("baseColor"))
                         )
                         .padding(.leading, 8)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Check Symptoms")
+                        Text("Diet Assistant")
                             .font(.system(size: 20, weight: .semibold))
 
-                        Text("Get guidance")
+                        Text("Ask nutrition & health questions")
                             .font(.system(size: 12))
                             .foregroundStyle(Color("secondaryText"))
                     }

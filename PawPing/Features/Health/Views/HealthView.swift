@@ -11,6 +11,8 @@ struct HealthView: View {
 
     @Environment(HealthStore.self) var store
     @Environment(PetStore.self) var petStore
+    @Environment(MealStore.self) var mealStore
+    @Environment(WeightStore.self) var weightStore
 
     @State private var showAddRecord = false
     @State private var showReportConfig = false
@@ -152,6 +154,8 @@ struct HealthView: View {
                     HealthReportConfigView()
                         .environment(petStore)
                         .environment(store)
+                        .environment(mealStore)
+                        .environment(weightStore)
                 }
             }
             .alert("Mark as Done?", isPresented: $showDoneConfirmation) {

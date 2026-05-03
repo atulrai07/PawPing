@@ -19,11 +19,11 @@ struct FacilityDetailSheet: View {
                     // MARK: High-Res Map Snapshot Header
                     ZStack(alignment: .bottomTrailing) {
                         Map(initialPosition: .region(MKCoordinateRegion(
-                            center: item.placemark.coordinate,
+                            center: item.location.coordinate,
                             latitudinalMeters: 300,
                             longitudinalMeters: 300
                         ))) {
-                            Marker(item.name ?? "Facility", coordinate: item.placemark.coordinate)
+                            Marker(item.name ?? "Facility", coordinate: item.location.coordinate)
                                 .tint(.red)
                         }
                         .mapStyle(.standard(emphasis: .muted))
@@ -110,7 +110,7 @@ struct FacilityDetailSheet: View {
                         Text("Full Address")
                             .font(.system(size: 18, weight: .bold))
                         
-                        Text(item.placemark.title ?? "Address not available")
+                        Text(item.name ?? "Address not available")
                             .font(.system(size: 14))
                             .foregroundStyle(.secondary)
                             .lineLimit(isShowingMore ? nil : 3)
@@ -185,6 +185,6 @@ struct FacilityDetailSheet: View {
 
 extension MKMapItem: @retroactive Identifiable {
     public var id: String {
-        self.placemark.title ?? self.name ?? UUID().uuidString
+        self.name ?? UUID().uuidString
     }
 }

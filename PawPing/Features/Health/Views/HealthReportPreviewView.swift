@@ -4,10 +4,13 @@
 //
 
 import SwiftUI
+import Charts
 
 struct HealthReportPreviewView: View {
     @Environment(PetStore.self) var petStore
     @Environment(HealthStore.self) var healthStore
+    @Environment(WeightStore.self) var weightStore
+    @Environment(MealStore.self) var mealStore
     
     let config: VaccineReportConfig
     
@@ -18,6 +21,8 @@ struct HealthReportPreviewView: View {
                 ReportExportView(config: config)
                     .environment(petStore)
                     .environment(healthStore)
+                    .environment(weightStore)
+                    .environment(mealStore)
                 
                 // MARK: Download Button
                 Button {
@@ -64,6 +69,8 @@ struct HealthReportPreviewView: View {
         let exportView = ReportExportView(config: config)
             .environment(petStore)
             .environment(healthStore)
+            .environment(weightStore)
+            .environment(mealStore)
             .frame(width: 595) // A4 width
         
         // 2. Render to Image first (most stable way to get high quality)
@@ -114,6 +121,8 @@ struct HealthReportPreviewView: View {
 struct ReportExportView: View {
     @Environment(PetStore.self) var petStore
     @Environment(HealthStore.self) var healthStore
+    @Environment(WeightStore.self) var weightStore
+    @Environment(MealStore.self) var mealStore
     let config: VaccineReportConfig
     
     var body: some View {
@@ -187,6 +196,72 @@ struct ReportExportView: View {
                 .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.systemGray4), lineWidth: 1))
             }
             
+            // Weight Trend Section
+            if config.includeWeightChart && !weightStore.records.isEmpty {
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("WEIGHT PROGRESS")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color("baseColor"))
+                    
+                    Chart {
+                        ForEach(weightStore.records) { record in
+                            LineMark(
+                                x: .value("Date", record.date),
+                                y: .value("Weight", record.weightKg)
+                            )
+                            .foregroundStyle(Color("baseColor").opacity(0.3))
+                            .interpolationMethod(.monotone)
+
+                            PointMark(
+                                x: .value("Date", record.date),
+                                y: .value("Weight", record.weightKg)
+                            )
+                            .foregroundStyle(chartPointColor(for: record.bodyCondition))
+                            .symbolSize(40)
+                        }
+                    }
+                    .chartYScale(domain: .automatic(includesZero: false))
+                    .chartXAxis {
+                        AxisMarks(values: .stride(by: .day, count: 7)) { _ in
+                            AxisGridLine()
+                            AxisValueLabel(format: .dateTime.month().day())
+                        }
+                    }
+                    .frame(height: 160)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+            
+            // Diet Plan Section
+            if config.includeDietPlan && mealStore.dietPlan.isActive {
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("DIET & NUTRITION PLAN")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color("baseColor"))
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            dietDetail(label: "DAILY TARGET", value: "\(Int(mealStore.dietPlan.dailyCalorieTarget)) kcal")
+                            Spacer()
+                            dietDetail(label: "GOAL", value: mealStore.dietPlan.goal.rawValue)
+                            Spacer()
+                            dietDetail(label: "ACTIVITY", value: mealStore.dietPlan.activityLevel.rawValue.replacingOccurrences(of: " Activity", with: ""))
+                        }
+                        
+                        Divider()
+                        
+                        Text("Recommended feeding: Split into 2-3 meals per day. Ensure fresh water is always available.")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(20)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+            
             // Footer Info
             if config.includeClinicContactInfo,
                let clinic = healthStore.healthRecords.first(where: { $0.vetName != nil }) {
@@ -254,6 +329,21 @@ struct ReportExportView: View {
     
     private func filteredRecords() -> [HealthRecord] {
         healthStore.healthRecords.filter { $0.status == .done || (config.includeMissedAlerts && $0.status == .overdue) }
+    }
+    
+    private func chartPointColor(for condition: BodyCondition) -> Color {
+        switch condition {
+        case .underweight: return .red
+        case .ideal: return .green
+        case .overweight: return .orange
+        }
+    }
+    
+    private func dietDetail(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label).font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
+            Text(value).font(.system(size: 14, weight: .semibold))
+        }
     }
 }
 

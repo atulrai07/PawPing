@@ -12,7 +12,8 @@ struct PawPingApp: App {
     @State private var activityStore = ActivityStore()
     @State private var mealStore     = MealStore()
     @State private var healthStore   = HealthStore()
-    @State private var symptomStore  = SymptomStore()
+    @State private var dietAssistantStore = DietAssistantStore()
+    @State private var weightStore   = WeightStore()
     @State private var appState      = AppState()
     @State private var authStore: AuthStore?
 
@@ -45,7 +46,8 @@ struct PawPingApp: App {
             .environment(activityStore)
             .environment(mealStore)
             .environment(healthStore)
-            .environment(symptomStore)
+            .environment(dietAssistantStore)
+            .environment(weightStore)
             .environment(authStore ?? AuthStore(appState: appState))
             .task {
                 // Initialize authStore with appState reference

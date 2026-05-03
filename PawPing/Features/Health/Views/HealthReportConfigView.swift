@@ -11,6 +11,8 @@ import SwiftUI
 struct HealthReportConfigView: View {
     @Environment(PetStore.self) var petStore
     @Environment(HealthStore.self) var healthStore
+    @Environment(WeightStore.self) var weightStore
+    @Environment(MealStore.self) var mealStore
     
     @State private var config = VaccineReportConfig.defaultConfig // Still using VaccineReportConfig model for now, can be renamed if needed
     @State private var showingPreview = false
@@ -35,6 +37,16 @@ struct HealthReportConfigView: View {
                     Divider()
                     
                     Toggle("Include Missed Alerts", isOn: $config.includeMissedAlerts)
+                        .padding(.vertical, 12)
+                    
+                    Divider()
+                    
+                    Toggle("Include Weight Trend Chart", isOn: $config.includeWeightChart)
+                        .padding(.vertical, 12)
+                        
+                    Divider()
+                    
+                    Toggle("Include Diet & Nutrition Plan", isOn: $config.includeDietPlan)
                         .padding(.vertical, 12)
                     
                     Divider()
@@ -73,6 +85,8 @@ struct HealthReportConfigView: View {
             HealthReportPreviewView(config: config)
                 .environment(petStore)
                 .environment(healthStore)
+                .environment(weightStore)
+                .environment(mealStore)
         }
     }
     

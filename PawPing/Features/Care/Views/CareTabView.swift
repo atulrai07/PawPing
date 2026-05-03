@@ -126,7 +126,7 @@ struct MapPreviewSection: View {
         Map(position: $position) {
             UserAnnotation()
             ForEach(searchResults, id: \.self) { item in
-                Marker(item.name ?? "Clinic", coordinate: item.placemark.coordinate)
+                Marker(item.name ?? "Clinic", coordinate: item.location.coordinate)
                     .tint(.red)
             }
         }

@@ -209,6 +209,8 @@ struct VaccineReportConfig {
     var includeClinicContactInfo: Bool = true
     var includeMissedAlerts: Bool      = true
     var includeAppWatermark: Bool      = true
+    var includeWeightChart: Bool       = true
+    var includeDietPlan: Bool          = true
 
     static let defaultConfig = VaccineReportConfig()
 }

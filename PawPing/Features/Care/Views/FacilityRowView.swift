@@ -48,7 +48,7 @@ struct FacilityRowView: View {
                                 .font(.system(size: 14))
                                 .foregroundStyle(.secondary)
                             
-                            Text(item.mapItem.placemark.title ?? "Nearby location")
+                            Text(item.mapItem.name ?? "Nearby location")
                                 .font(.system(size: 13))
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)

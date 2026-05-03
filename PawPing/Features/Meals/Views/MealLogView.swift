@@ -8,6 +8,7 @@ import SwiftUI
 struct MealLogView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(PetStore.self) var petStore
+    @Environment(WeightStore.self) var weightStore
     var store: MealStore
     
     // Dynamic dates for the current week (MON - SUN)
@@ -32,6 +33,7 @@ struct MealLogView: View {
     @State private var showMealSheet = false
     @State private var selectedMealType: MealType = .breakfast
     @State private var showDietSetup = false
+    @State private var showWeightTracker = false
     
     var body: some View {
         NavigationStack {
@@ -40,6 +42,7 @@ struct MealLogView: View {
                     VStack(spacing: 24) {
                         dateSelector
                         dietSection.padding(.horizontal)
+                        weightCard.padding(.horizontal)
                         dailySummary.padding(.horizontal)
                         
                         VStack(spacing: 14) {
@@ -62,6 +65,7 @@ struct MealLogView: View {
                     .padding(.top, 8)
                     .task(id: petId) {
                         await store.fetchMeals(for: petId)
+                        weightStore.load(for: petId)
                     }
                 } else {
                     ContentUnavailableView(
@@ -77,6 +81,9 @@ struct MealLogView: View {
                 petStore: petStore
             )
             .background(Color("baseBackground"))
+            .navigationDestination(isPresented: $showWeightTracker) {
+                WeightTrackerView()
+            }
         }
         .onAppear {
             selectedDateIndex = todayIndex
@@ -171,6 +178,51 @@ struct MealLogView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    private var weightCard: some View {
+        Button {
+            showWeightTracker = true
+        } label: {
+            HStack(spacing: 14) {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.blue.opacity(0.15))
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Image(systemName: "scalemass.fill")
+                            .font(.system(size: 22))
+                            .foregroundStyle(.blue)
+                    )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Weight & Condition")
+                        .font(.system(size: 17, weight: .semibold))
+                    
+                    if let latest = weightStore.latest {
+                        Text("\(latest.weightKg, specifier: "%.1f") kg • \(latest.bodyConditionLabel)")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color("secondaryText"))
+                    } else {
+                        Text("Log your first weight check-in")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color("secondaryText"))
+                    }
+                }
+                Spacer()
+                Circle()
+                    .fill(Color("baseColor").opacity(0.2))
+                    .frame(width: 28, height: 28)
+                    .overlay(
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(Color("baseColor"))
+                            .font(.system(size: 12, weight: .bold))
+                    )
+            }
+            .padding(14)
+            .background(Color("cardBackground"))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+        }
+        .buttonStyle(.plain)
     }
 
     private var dailySummary: some View {

@@ -11,6 +11,9 @@ import Supabase
 struct ProfileView: View {
     @Environment(PetStore.self) var petStore
     @Environment(AuthStore.self) var authStore
+    @Environment(HealthStore.self) var healthStore
+    @Environment(WeightStore.self) var weightStore
+    @Environment(MealStore.self) var mealStore
     @State private var showingAddPet = false
     @State private var showingEditPet = false
     @State private var showingLogoutAlert = false
@@ -23,6 +26,10 @@ struct ProfileView: View {
                 // MARK: - Profile Header (Pet)
                 profileHeader
                     .padding(.top, 10)
+
+                if petStore.activePet != nil {
+                    petSummaryCard
+                }
 
                 // MARK: - Pet Information
                 settingsSection(title: "Pet Information") {
@@ -80,6 +87,11 @@ struct ProfileView: View {
         .task {
             if petStore.currentUserProfile == nil {
                 await petStore.fetchUserProfile()
+            }
+            if let petId = petStore.activePetId {
+                await healthStore.fetchHealthRecords(for: petId)
+                await mealStore.fetchMeals(for: petId)
+                weightStore.load(for: petId)
             }
         }
         .fullScreenCover(isPresented: $showingAddPet) {
@@ -196,6 +208,82 @@ private extension ProfileView {
         .padding(.top, 12)
     }
 
+    var petSummaryCard: some View {
+        HStack(spacing: 0) {
+            summaryItem(
+                label: "Weight",
+                value: "\(String(format: "%.1f", petStore.activePet?.weightKg ?? 0))",
+                unit: "kg",
+                icon: "scalemass.fill",
+                color: .blue
+            )
+            
+            Divider().frame(height: 40).padding(.horizontal, 8)
+            
+            summaryItem(
+                label: "Target",
+                value: "\(Int(mealStore.dietPlan.dailyCalorieTarget))",
+                unit: "kcal",
+                icon: "flame.fill",
+                color: .orange
+            )
+            
+            Divider().frame(height: 40).padding(.horizontal, 8)
+            
+            summaryItem(
+                label: "Health",
+                value: healthStatusText,
+                unit: "",
+                icon: "heart.text.square.fill",
+                color: .red
+            )
+        }
+        .padding(.vertical, 20)
+        .background(Color("cardBackground"))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+        .padding(.horizontal, 16)
+    }
+
+    private var healthStatusText: String {
+        let overdue = healthStore.healthRecords.filter { $0.status == .overdue }.count
+        if overdue > 0 {
+            return "\(overdue) Due"
+        }
+        let upcoming = healthStore.healthRecords.filter { $0.status == .upcoming }.count
+        if upcoming > 0 {
+            return "Good"
+        }
+        return "All set"
+    }
+
+    func summaryItem(label: String, value: String, unit: String, icon: String, color: Color) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundStyle(color)
+                .frame(width: 32, height: 32)
+                .background(color.opacity(0.1))
+                .clipShape(Circle())
+            
+            VStack(spacing: 2) {
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                    Text(value)
+                        .font(.system(size: 18, weight: .bold))
+                    if !unit.isEmpty {
+                        Text(unit)
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Text(label)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
     // MARK: Grouped Section
 
     func settingsSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -290,7 +378,7 @@ private extension ProfileView {
 
 struct ProfileViewPreviewWrapper: View {
     @State private var appState = AppState()
-    @State private var petStore = PetStore.preview
+    @State private var petStore = PetStore()
     
     var body: some View {
         NavigationStack {

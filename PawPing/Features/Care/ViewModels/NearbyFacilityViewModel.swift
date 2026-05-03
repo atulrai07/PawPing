@@ -126,16 +126,11 @@ class NearbyFacilityViewModel: NSObject, CLLocationManagerDelegate {
                 } else {
                     let items = response?.mapItems ?? []
                     self.searchResults = items.map { item in
-                        let distanceStr: String?
-                        if let facilityLoc = item.placemark.location {
-                            let meters = location.distance(from: facilityLoc)
-                            distanceStr = String(format: "%.1f km away", meters / 1000)
-                        } else {
-                            distanceStr = nil
-                        }
+                        let meters = location.distance(from: item.location)
+                        let distanceStr = String(format: "%.1f km away", meters / 1000)
                         
                         return FacilityItem(
-                            id: item.placemark.title ?? item.name ?? UUID().uuidString,
+                            id: item.name ?? UUID().uuidString,
                             mapItem: item,
                             distance: distanceStr
                         )

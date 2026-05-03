@@ -13,6 +13,7 @@ struct DietSetupSheet: View {
     @State private var weightInput: String = ""
     @State private var weightUnit: WeightUnit = .kg
     @State private var selectedGoal: DietGoal = .maintain
+    @State private var selectedActivityLevel: ActivityLevel = .moderate
 
     private var weightKg: Double {
         let raw = Double(weightInput) ?? 0
@@ -24,7 +25,7 @@ struct DietSetupSheet: View {
         return 70.0 * pow(weightKg, 0.75)
     }
 
-    private var previewTarget: Double { previewRER * selectedGoal.rerMultiplier }
+    private var previewTarget: Double { previewRER * selectedActivityLevel.derMultiplier * selectedGoal.rerMultiplier }
     private var canStart: Bool { weightKg > 1 && weightKg < 150 }
 
     var body: some View {
@@ -33,6 +34,7 @@ struct DietSetupSheet: View {
                 VStack(spacing: 24) {
                     petInfoCard
                     weightSection
+                    activitySection
                     goalSection
                     if canStart { targetPreview.transition(.scale.combined(with: .opacity)) }
                     if canStart { startButton.transition(.opacity.combined(with: .move(edge: .bottom))) }
@@ -98,6 +100,23 @@ struct DietSetupSheet: View {
         }
     }
 
+    private var activitySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Activity Level").font(.system(size: 14, weight: .semibold)).foregroundStyle(Color("secondaryText"))
+            HStack(spacing: 10) {
+                ForEach(ActivityLevel.allCases) { level in
+                    Button { withAnimation { selectedActivityLevel = level } } label: {
+                        VStack(spacing: 8) {
+                            Image(systemName: level.icon).font(.system(size: 22)).foregroundStyle(selectedActivityLevel == level ? .white : Color("baseColor"))
+                            Text(level.rawValue.replacingOccurrences(of: " Activity", with: "")).font(.system(size: 11, weight: .medium)).foregroundStyle(selectedActivityLevel == level ? .white : .primary)
+                        }.frame(maxWidth: .infinity).padding(.vertical, 14)
+                        .background(RoundedRectangle(cornerRadius: 16).fill(selectedActivityLevel == level ? Color("baseColor") : Color("cardBackground")))
+                    }.buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
     private var goalSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Goal").font(.system(size: 14, weight: .semibold)).foregroundStyle(Color("secondaryText"))
@@ -122,9 +141,9 @@ struct DietSetupSheet: View {
             HStack(spacing: 16) {
                 previewStat(label: "RER", value: "\(Int(previewRER))")
                 Rectangle().fill(Color("secondaryCardBackground")).frame(width: 1, height: 24)
-                previewStat(label: "Multiplier", value: "×\(String(format: "%.1f", selectedGoal.rerMultiplier))")
+                previewStat(label: "Act. Mult.", value: "×\(String(format: "%.1f", selectedActivityLevel.derMultiplier))")
                 Rectangle().fill(Color("secondaryCardBackground")).frame(width: 1, height: 24)
-                previewStat(label: "Weight", value: "\(String(format: "%.1f", weightKg)) kg")
+                previewStat(label: "Goal Mult.", value: "×\(String(format: "%.1f", selectedGoal.rerMultiplier))")
             }
         }.padding(20).frame(maxWidth: .infinity).background(RoundedRectangle(cornerRadius: 20).fill(Color("baseColor").opacity(0.06)))
     }
@@ -138,7 +157,7 @@ struct DietSetupSheet: View {
 
     private var startButton: some View {
         Button {
-            store.startDiet(goal: selectedGoal, weightKg: weightKg)
+            store.startDiet(goal: selectedGoal, activityLevel: selectedActivityLevel, weightKg: weightKg)
             if var pet = petStore.activePet {
                 pet.weightKg = weightKg
                 Task { try? await petStore.updatePet(pet) }

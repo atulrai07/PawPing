@@ -260,9 +260,10 @@ class MealStore {
 
     // MARK: - Diet Plan
     
-    func startDiet(goal: DietGoal, weightKg: Double) {
+    func startDiet(goal: DietGoal, activityLevel: ActivityLevel, weightKg: Double) {
         dietPlan.isActive = true
         dietPlan.goal = goal
+        dietPlan.activityLevel = activityLevel
         dietPlan.weightKg = weightKg
         dietPlan.calculateTarget()
         persistDietPlan()

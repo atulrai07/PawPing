@@ -57,7 +57,7 @@ struct HealthRecordRowView: View {
             Spacer()
             
             // MARK: - Action or Status
-            if record.isCompleted != true, let onMarkDone {
+            if record.isCompleted != true, onMarkDone != nil {
                 actionButton
             } else {
                 statusMetadata

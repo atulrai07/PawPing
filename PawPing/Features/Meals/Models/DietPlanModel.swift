@@ -11,6 +11,34 @@
 
 import Foundation
 
+// MARK: - Activity Level
+
+/// The dog's general activity level, used to calculate Daily Energy Requirement (DER)
+enum ActivityLevel: String, CaseIterable, Identifiable, Codable {
+    case low = "Low Activity"
+    case moderate = "Moderate Activity"
+    case high = "High Activity"
+
+    var id: String { rawValue }
+
+    /// Multiplier applied to RER to get the Daily Energy Requirement (DER)
+    var derMultiplier: Double {
+        switch self {
+        case .low: return 1.2
+        case .moderate: return 1.4
+        case .high: return 1.6
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .low: return "tortoise.fill"
+        case .moderate: return "dog.fill"
+        case .high: return "hare.fill"
+        }
+    }
+}
+
 // MARK: - Diet Goal
 
 /// The three diet objectives a user can choose from.
@@ -84,6 +112,7 @@ enum WeightUnit: String, CaseIterable, Identifiable {
 struct DietPlan: Codable {
     var isActive: Bool = false
     var goal: DietGoal = .maintain
+    var activityLevel: ActivityLevel = .moderate
     var weightKg: Double = 25.0
     var dailyCalorieTarget: Double = 0
 
@@ -92,8 +121,8 @@ struct DietPlan: Codable {
         70.0 * pow(weightKg, 0.75)
     }
 
-    /// Calculates and stores the daily calorie target based on RER × goal multiplier
+    /// Calculates and stores the daily calorie target based on RER × Activity Multiplier × Goal Multiplier
     mutating func calculateTarget() {
-        dailyCalorieTarget = rer * goal.rerMultiplier
+        dailyCalorieTarget = rer * activityLevel.derMultiplier * goal.rerMultiplier
     }
 }
