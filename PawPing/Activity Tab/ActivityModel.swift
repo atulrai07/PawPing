@@ -8,21 +8,6 @@
 import Foundation
 import CoreLocation
 
-struct Owner: Identifiable {
-    let id: UUID
-    var name: String
-    var email: String
-    var phone: String?
-    var profileImage: String?
-}
-
-/// Legacy alias — kept so existing code that refers to DogProfile still compiles.
-/// New code should use Pet directly.
-typealias DogProfile = Pet
-
-/// Legacy alias — kept for backward compatibility.
-typealias DogGender = PetGender
-
 // MARK: - Activity
 
 struct CoordinateModel: Codable {
@@ -73,7 +58,7 @@ struct DistanceData: Identifiable, Codable {
     let distanceInKm: Double
     
     var dayLabel: String {
-        let formatter = DateFormatter() // date to String
+        let formatter = DateFormatter()
         formatter.dateFormat = "EEE" //it will be like MON, TUE
         return formatter.string(from: date)
     }
@@ -171,39 +156,4 @@ enum MealType: String, Codable, CaseIterable {
     }
 }
 
-// MARK: - Vaccines
 
-struct Vaccine: Identifiable {
-    let id: UUID
-    var petId: UUID
-    var name: String
-    var givenDate: Date?
-    var daysLeft: Int
-    var frequency: Int
-    var frequencyType: VaccineFrequencyType
-    var vaccineNotes: String
-}
-
-enum VaccineFrequencyType: String {
-    case days = "Days"
-    case weekly = "Weekly"
-    case monthly = "Monthly"
-    case yearly = "Yearly"
-}
-
-// MARK: - Allergies
-
-struct Allergy: Identifiable {
-    let id: UUID
-    var petId: UUID
-    var allergyName: String
-    var allergyType: AllergyType
-    var allergyNotes: String
-    var allergen: String?
-}
-
-enum AllergyType: String {
-    case food = "Food"
-    case medication = "Medication"
-    case environmental = "Environmental"
-}

@@ -4,8 +4,6 @@
 //
 //  Created by Atul on 24/04/26.
 //
-//  Main symptom selection screen — users pick symptoms from categorized chips,
-//  then tap "Analyze" to get triage results.
 //
 
 import SwiftUI

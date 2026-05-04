@@ -4,8 +4,6 @@
 //
 //  Created by Atul on 25/04/26.
 //
-//  Guided meal logging sheet: Food Type → Quantity/Ingredients → Instant Calorie Feedback → Save.
-//  Replaces the old inline dropdown with a cleaner, structured flow.
 //
 
 import SwiftUI

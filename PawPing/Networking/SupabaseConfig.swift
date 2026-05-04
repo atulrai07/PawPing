@@ -20,7 +20,8 @@ enum SupabaseConfig {
         )
     )
     
-    // Used exclusively to bypass Storage RLS since the user is unable to run SQL right now.
+    // ⚠️ SECURITY: Move this to a server-side Edge Function before shipping to production.
+    // This key bypasses RLS and should never be in client code in a released app.
     static let serviceRoleKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2ZWhrYXNjbHB3bGloc2tqcmhiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzI3MzIzMCwiZXhwIjoyMDkyODQ5MjMwfQ.RVcPbwiG-M-KFny9Oh2anncc0Syy6JMkJmj7mZ9WGaU"
     static let storageClient = SupabaseClient(
         supabaseURL: url,

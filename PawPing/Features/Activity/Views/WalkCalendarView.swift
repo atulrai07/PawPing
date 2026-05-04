@@ -149,7 +149,7 @@ struct WalkCalendarView: View {
     
     private var monthYearString: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM YYYY"
+        formatter.dateFormat = "MMMM yyyy"
         return formatter.string(from: currentMonth)
     }
     

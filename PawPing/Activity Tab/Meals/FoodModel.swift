@@ -4,17 +4,12 @@
 //
 //  Created by Atul on 25/04/26.
 //
-//  Structured food types and calorie data models for the Meals & Diet system.
-//  FoodType replaces the old MealName enum with a cleaner, scalable structure.
-//  FoodCalorieEntry maps to the bundled food_calories.json dataset.
 //
 
 import Foundation
 
 // MARK: - Food Type
 
-/// The structured food categories a user can pick when logging a meal.
-/// Raw values match the keys in food_calories.json for direct lookup.
 enum FoodType: String, CaseIterable, Identifiable, Codable {
     case dryDogFood   = "dry_dog_food"
     case wetDogFood   = "wet_dog_food"
@@ -25,7 +20,6 @@ enum FoodType: String, CaseIterable, Identifiable, Codable {
 
     var id: String { rawValue }
 
-    /// User-facing display name
     var displayName: String {
         switch self {
         case .dryDogFood: return "Dry Dog Food"
@@ -37,7 +31,6 @@ enum FoodType: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// SF Symbol icon for the food type grid
     var icon: String {
         switch self {
         case .dryDogFood: return "bag.fill"
@@ -49,12 +42,10 @@ enum FoodType: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// Whether this food type requires a manual calorie estimate
     var isEstimateOnly: Bool {
         self == .custom
     }
 
-    /// Food types that have entries in the JSON dataset
     static var datasetTypes: [FoodType] {
         allCases.filter { !$0.isEstimateOnly }
     }
@@ -62,9 +53,6 @@ enum FoodType: String, CaseIterable, Identifiable, Codable {
 
 // MARK: - Food Calorie Entry (decoded from JSON)
 
-/// Represents one row from food_calories.json.
-/// Unit describes what one "serving" means (cup, 100g, unit),
-/// calories is the kcal for that single unit.
 struct FoodCalorieEntry: Codable {
     let unit: String
     let calories: Double

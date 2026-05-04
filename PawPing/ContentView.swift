@@ -33,9 +33,6 @@ struct ContentView: View {
         }
         .tint(Color("baseColor"))
         .task {
-            // BUG FIX 2: Ensure data is fresh when entering ContentView.
-            // We do NOT modify appState.hasPets here to prevent accidental "bounces"
-            // if the network is slow. The App root handles the routing logic.
             await petStore.fetchPets()
         }
     }

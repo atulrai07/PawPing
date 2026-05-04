@@ -29,11 +29,11 @@ struct OnboardingPageView: View {
                                     }
                                 }
                                 .font(.system(size: 17, weight: .regular))
-                                .foregroundColor(.black.opacity(0.45))
+                                .foregroundStyle(.black.opacity(0.45))
                             } else {
                                 Text("Skip")
                                     .font(.system(size: 17, weight: .regular))
-                                    .foregroundColor(.clear)
+                                    .foregroundStyle(.clear)
                             }
                         }
                         .padding(.horizontal, 28)
@@ -81,7 +81,7 @@ struct OnboardingPageView: View {
                         
                         Text(currentItem.description)
                             .font(.system(size: 16, weight: .regular))
-                            .foregroundColor(.black.opacity(0.55))
+                            .foregroundStyle(.black.opacity(0.55))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 32)
                             .transition(.opacity)
@@ -141,7 +141,7 @@ struct PrimaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
                 .background(

@@ -44,11 +44,10 @@ struct SplashView: View {
                 .scaledToFit()
                 .frame(width: 320)
         }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                withAnimation(.easeInOut(duration: 1)) {
-                    showSplash = false
-                }
+        .task {
+            try? await Task.sleep(for: .seconds(1))
+            withAnimation(.easeInOut(duration: 1)) {
+                showSplash = false
             }
         }
     }

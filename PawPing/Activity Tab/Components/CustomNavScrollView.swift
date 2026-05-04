@@ -138,12 +138,6 @@ private struct StickyNavHeader: View {
                 .ignoresSafeArea(edges: .top)
         }
         
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(.red)
-                .frame(height: 0.5)
-                .opacity(isCollapsed ? 0 : 0)
-        }
         .sheet(isPresented: $showingAddPet) {
             AddPetView {
                 showingAddPet = false
@@ -193,7 +187,7 @@ private struct CustomNavigationScrollModifier: ViewModifier {
                 await refreshAction()
             }
         }
-        .coordinateSpace(name: "_customNavScroll")
+        .coordinateSpace(.named("_customNavScroll"))
         .background(Color("baseBackground"))
         .toolbar(.hidden, for: .navigationBar)
         .overlay(alignment: .top) {

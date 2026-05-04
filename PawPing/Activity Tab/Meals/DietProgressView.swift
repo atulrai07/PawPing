@@ -4,9 +4,6 @@
 //
 //  Created by Atul on 25/04/26.
 //
-//  Card showing the active diet plan's progress.
-//  Displays: goal label, progress bar (consumed/target), calorie numbers.
-//  Uses the same card styling as existing PawPing cards.
 //
 
 import SwiftUI

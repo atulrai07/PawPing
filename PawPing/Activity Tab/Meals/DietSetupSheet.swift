@@ -4,10 +4,6 @@
 //
 //  Created by Atul on 25/04/26.
 //
-//  Sheet for setting up a diet plan.
-//  Inputs: weight (kg/lbs toggle), goal (lose/maintain/gain).
-//  Read-only: breed and age from dog profile.
-//  Live-calculates RER-based calorie target before user commits.
 //
 
 import SwiftUI

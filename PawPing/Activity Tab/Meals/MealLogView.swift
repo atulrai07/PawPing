@@ -4,9 +4,6 @@
 //
 //  Created by SidMoon — Upgraded to MealsDashboardView on 25/04/26.
 //
-//  The Meals Dashboard — the main hub for the Meals & Diet system.
-//  Shows: date selector, diet plan card, daily summary, meal cards,
-//  insights, and notes. Meal cards open MealLoggingSheet on tap.
 //
 
 import SwiftUI

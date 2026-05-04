@@ -21,7 +21,6 @@ struct Pet: Identifiable, Codable, Hashable {
     var birthday: String? = nil    // Stored as "yyyy-MM-dd" to match Supabase date column
     var isNeutered: Bool? = nil
 
-    /// Fallback image used when no pet exists
     static let defaultImageName = "profilePhoto"
     
     // Mapping keys to match Supabase snake_case columns
@@ -43,14 +42,12 @@ struct Pet: Identifiable, Codable, Hashable {
     
     // MARK: - Helpers
     
-    /// Convert a Date to the "yyyy-MM-dd" string format used by the database
     static func birthdayString(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: date)
     }
     
-    /// Parse the stored birthday string back into a Date
     var birthdayDate: Date? {
         guard let birthday else { return nil }
         let formatter = DateFormatter()

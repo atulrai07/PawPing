@@ -8,7 +8,6 @@ import Supabase
 
 @main
 struct PawPingApp: App {
-    // Stores
     @State private var petStore      = PetStore()
     @State private var activityStore = ActivityStore()
     @State private var careStore     = CareStore()
@@ -28,7 +27,7 @@ struct PawPingApp: App {
                 if showSplash {
                     SplashView(showSplash: $showSplash)
                         .transition(.opacity)
-                        .zIndex(10) // Ensure splash is on top
+                        .zIndex(10)
                 }
                 
                 if let authStore {
@@ -40,13 +39,11 @@ struct PawPingApp: App {
                                 }
                             }
                         } else if isInitialLoading {
-                            // Show loading while we verify pets in Supabase
                             ProgressView("Syncing your data...")
                         } else if !appState.isAuthenticated {
                             AuthFlowView()
                         } else if !appState.hasPets {
                             AddPetView {
-                                // Once a pet is created, update state to unlock app
                                 appState.hasPets = true
                             }
                         } else {
@@ -66,12 +63,10 @@ struct PawPingApp: App {
             .environment(weightStore)
             .environment(dietAssistantStore)
             .task {
-                // Initialize authStore with appState reference
                 if authStore == nil {
                     authStore = AuthStore(appState: appState)
                 }
                 
-                // Initial check if already logged in from previous session
                 if appState.isAuthenticated {
                     isInitialLoading = true
                     await petStore.fetchPets()
@@ -82,7 +77,6 @@ struct PawPingApp: App {
                 }
             }
             .task(id: appState.isAuthenticated) {
-                // Whenever authentication status changes (e.g. user logs in)
                 if appState.isAuthenticated {
                     isInitialLoading = true
                     await petStore.fetchPets()
@@ -92,7 +86,6 @@ struct PawPingApp: App {
             }
             }
             .onChange(of: petStore.activePetId) { _, newPetId in
-                // Sync the active pet ID into the specialized stores
                 activityStore.switchPet(to: newPetId)
                 
                 if let newPetId {

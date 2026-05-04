@@ -4,9 +4,6 @@
 //
 //  Created by Atul on 24/04/26.
 //
-//  The brain of the Symptom Checker feature.
-//  Loads the JSON knowledge base, manages symptom selection state,
-//  and runs the weighted-scoring + triage engine.
 //
 
 import Foundation
@@ -68,23 +65,11 @@ class SymptomStore {
 
     // MARK: - Scoring Engine
 
-    /// Analyzes selected symptoms against the knowledge base.
-    ///
-    /// Algorithm:
-    /// 1. Check for emergency symptoms → sets emergency flag
-    /// 2. For each condition, calculate:
-    ///    score = Σ(matched symptom weights) / Σ(all condition symptom weights)
-    /// 3. Filter conditions with score > 0.25
-    /// 4. Sort descending, take top 5
-    /// 5. Determine overall severity (max of matched, or critical if emergency)
-    /// 6. Generate recommended action text
     func analyze() {
         let selectedKeys = Set(selectedSymptoms.map { $0.id })
 
-        // Step 1: Emergency check
         let hasEmergencySymptom = selectedSymptoms.contains { $0.isEmergency }
 
-        // Step 2 & 3: Score each condition
         var matches: [ConditionMatch] = []
 
         for condition in conditions {
@@ -103,7 +88,6 @@ class SymptomStore {
 
             let score = matchedWeight / totalWeight
 
-            // Only include if at least 20% match
             if score >= 0.20 {
                 matches.append(ConditionMatch(
                     id: condition.id,
@@ -114,7 +98,6 @@ class SymptomStore {
             }
         }
 
-        // Step 4: Sort and limit
         matches.sort { $0.score > $1.score }
         let topMatches = Array(matches.prefix(5))
 

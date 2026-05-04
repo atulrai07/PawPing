@@ -14,8 +14,6 @@ class ActivityStore {
 
     var activePetId: UUID?
     var meals: [Meal] = []
-    var vaccines: [Vaccine] = []
-    var allergies: [Allergy] = []
     var walkActivity: WalkActivity
     var timeWalkedGraph: TimeWalkedGraphModel
     var distanceSummary: DistanceSummaryModel
@@ -39,8 +37,6 @@ class ActivityStore {
     private var walkTimer: Timer?
 
     init() {
-        // Initialize with empty defaults to satisfy the compiler.
-        // The actual data will be loaded via `switchPet(to:)` once a pet is selected.
         self.walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: 60)
         self.timeWalkedGraph = TimeWalkedGraphModel(data: [], goalMinutes: 60)
         self.distanceSummary = DistanceSummaryModel(weekData: [], monthData: [], weekRange: "", monthName: "")

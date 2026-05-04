@@ -127,15 +127,12 @@ class MealDietStore {
 
     // MARK: - Calorie Calculation
 
-    /// Returns calories for a given food type and quantity.
-    /// Formula: base_calories × quantity_multiplier
     func caloriesFor(food: FoodType, quantity: Double) -> Double {
         guard !food.isEstimateOnly else { return 0 }
         guard let entry = foodDatabase[food.rawValue] else { return 0 }
         return entry.calories * quantity
     }
 
-    /// Returns the unit string for a food type (e.g., "cup", "100g", "unit")
     func unitFor(food: FoodType) -> String {
         foodDatabase[food.rawValue]?.unit ?? "serving"
     }
@@ -292,7 +289,6 @@ class MealDietStore {
 
     // MARK: - Daily Calorie Aggregation
 
-    /// Total calories consumed on a given date
     func totalCalories(on date: Date) -> Double {
         let dayStart = Calendar.current.startOfDay(for: date)
         return mealLogs
@@ -306,7 +302,6 @@ class MealDietStore {
         return max(0, dietPlan.dailyCalorieTarget - totalCalories(on: date))
     }
 
-    /// Number of meals logged on a given date
     func mealsLoggedCount(on date: Date) -> Int {
         let dayStart = Calendar.current.startOfDay(for: date)
         return mealLogs
