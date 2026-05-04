@@ -7,11 +7,14 @@
 
 import SwiftUI
 import PDFKit
+import Charts
 
 struct HealthReportPreviewView: View {
     let pet: Pet
     let config: HealthReportConfig
     @Environment(HealthStore.self) var store
+    @Environment(WeightStore.self) var weightStore
+    @Environment(ActivityStore.self) var activityStore
     @Environment(AppState.self) var appState
     @Environment(\.dismiss) private var dismiss
     @State private var pdfURL: URL?
@@ -39,6 +42,14 @@ struct HealthReportPreviewView: View {
                     
                     if config.includeDeworming {
                         recordsSection(title: "Deworming Records", records: filteredRecords.filter { $0.recordType == .deworming })
+                    }
+                    
+                    if config.includeWeightChart {
+                        weightTrendSection
+                    }
+                    
+                    if config.includeDietPlan {
+                        dietPlanSection
                     }
                     
                     vetClinicSection
@@ -209,11 +220,80 @@ struct HealthReportPreviewView: View {
         }
     }
     
+    private var weightTrendSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Weight History")
+                .font(.headline)
+            
+            VStack(alignment: .leading, spacing: 12) {
+                let last8 = Array(weightStore.records.prefix(8)).reversed()
+                if last8.isEmpty {
+                    Text("No weight records found")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding()
+                } else {
+                    let dateRange = "\(last8.first?.date.formatted(date: .abbreviated, time: .omitted) ?? "") - \(last8.last?.date.formatted(date: .abbreviated, time: .omitted) ?? "")"
+                    
+                    Text(dateRange)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                    
+                    Chart {
+                        ForEach(last8) { record in
+                            LineMark(
+                                x: .value("Date", record.date),
+                                y: .value("Weight", record.weightKg)
+                            )
+                            .foregroundStyle(.gray.opacity(0.4))
+                            
+                            PointMark(
+                                x: .value("Date", record.date),
+                                y: .value("Weight", record.weightKg)
+                            )
+                            .foregroundStyle(record.bodyCondition.color)
+                        }
+                    }
+                    .frame(height: 150)
+                    .padding()
+                }
+            }
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    private var dietPlanSection: some View {
+        let plan = activityStore.mealDietStore.dietPlan
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Diet Plan")
+                .font(.headline)
+            
+            VStack(alignment: .leading, spacing: 8) {
+                InfoRow(label: "Goal", value: plan.goal.rawValue)
+                InfoRow(label: "Daily Target", value: "\(Int(plan.dailyCalorieTarget)) kcal")
+                InfoRow(label: "Weight", value: String(format: "%.1f kg", plan.weightKg))
+                InfoRow(label: "Activity", value: plan.activityLevel)
+                InfoRow(label: "Life Stage", value: plan.lifeStage)
+            }
+            .padding()
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
     // MARK: - Actions
     
     @MainActor
     private func generatePDF() {
-        let renderer = ImageRenderer(content: self.environment(store).environment(PetStore()))
+        let renderer = ImageRenderer(content: self
+            .environment(store)
+            .environment(PetStore())
+            .environment(weightStore)
+            .environment(activityStore)
+        )
         
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("HealthReport.pdf")
         

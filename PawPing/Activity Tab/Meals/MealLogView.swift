@@ -14,6 +14,8 @@ import SwiftUI
 struct MealLogView: View {
     @Environment(\.dismiss) private var dismiss
     var store: ActivityStore
+    @Environment(WeightStore.self) var weightStore
+    @Environment(PetStore.self) var petStore
     
     // Dynamic dates for the current week (MON - SUN)
     private var weekDates: [Date] {
@@ -43,6 +45,7 @@ struct MealLogView: View {
     @State private var showMealSheet = false
     @State private var selectedMealType: MealType = .breakfast
     @State private var showDietSetup = false
+    @State private var showWeightSheet = false
     
     // Convenience
     private var mealDietStore: MealDietStore {
@@ -74,6 +77,10 @@ struct MealLogView: View {
                 
                 // Diet Card
                 dietSection
+                    .padding(.horizontal)
+
+                // Weight & Condition Card
+                weightSection
                     .padding(.horizontal)
 
                 // Daily Summary
@@ -129,6 +136,17 @@ struct MealLogView: View {
         .sheet(isPresented: $showDietSetup) {
             DietSetupSheet(store: store)
                 .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showWeightSheet) {
+            if let pet = petStore.activePet {
+                LogWeightSheet(pet: pet)
+                    .presentationDetents([.medium])
+            }
+        }
+        .task(id: petStore.activePetId) {
+            if let petId = petStore.activePetId {
+                weightStore.load(for: petId)
+            }
         }
     }
     
@@ -475,10 +493,98 @@ struct MealLogView: View {
             .padding(.horizontal)
         }
     }
+
+    // MARK: - Weight Section
+
+    private var weightSection: some View {
+        Group {
+            if let latest = weightStore.latestRecord {
+                NavigationLink {
+                    WeightTrackerView(petId: petStore.activePetId!)
+                } label: {
+                    HStack(spacing: 14) {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(latest.bodyCondition.color.opacity(0.15))
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                Image(systemName: "scalemass.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(latest.bodyCondition.color)
+                            )
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Weight & Condition")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.primary)
+                            Text("\(String(format: "%.1f kg", latest.weightKg)) · \(latest.bodyCondition.label)")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color("secondaryText"))
+                        }
+
+                        Spacer()
+
+                        Circle()
+                            .fill(Color("baseColor").opacity(0.2))
+                            .frame(width: 28, height: 28)
+                            .overlay(
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color("baseColor"))
+                                    .font(.system(size: 12, weight: .bold))
+                            )
+                    }
+                    .padding(14)
+                    .background(Color("cardBackground"))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                }
+                .buttonStyle(.plain)
+            } else {
+                Button {
+                    showWeightSheet = true
+                } label: {
+                    HStack(spacing: 14) {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color("baseColor").opacity(0.15))
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                Image(systemName: "scalemass")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(Color("baseColor"))
+                            )
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Weight & Condition")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.primary)
+                            Text("Log your first check-in →")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color("secondaryText"))
+                        }
+
+                        Spacer()
+
+                        Circle()
+                            .fill(Color("baseColor").opacity(0.2))
+                            .frame(width: 28, height: 28)
+                            .overlay(
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color("baseColor"))
+                                    .font(.system(size: 12, weight: .bold))
+                            )
+                    }
+                    .padding(14)
+                    .background(Color("cardBackground"))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
 }
 
 #Preview {
     NavigationStack {
         MealLogView(store: ActivityStore())
+            .environment(PetStore())
+            .environment(WeightStore())
     }
 }

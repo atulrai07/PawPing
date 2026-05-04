@@ -178,4 +178,8 @@ struct HealthView: View {
         .environment(HealthStore())
         .environment(PetStore())
         .environment(AuthStore())
+        .environment(AppState())
+        .environment(ActivityStore())
+        .environment(WeightStore())
+        .environment(DietAssistantStore())
 }

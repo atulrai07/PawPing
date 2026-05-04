@@ -42,6 +42,16 @@ struct HealthReportConfigView: View {
                     
                     Toggle("Include Medications", isOn: $config.includeMedications)
                         .padding(.vertical, 12)
+                    
+                    Divider()
+                    
+                    Toggle("Include Weight History", isOn: $config.includeWeightChart)
+                        .padding(.vertical, 12)
+                    
+                    Divider()
+                    
+                    Toggle("Include Diet Plan", isOn: $config.includeDietPlan)
+                        .padding(.vertical, 12)
                 }
                 .padding(.horizontal, 16)
                 .background(RoundedRectangle(cornerRadius: 16).fill(Color("cardBackground")))

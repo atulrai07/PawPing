@@ -12,7 +12,12 @@ enum SupabaseConfig {
     
     static let client = SupabaseClient(
         supabaseURL: url,
-        supabaseKey: key
+        supabaseKey: key,
+        options: .init(
+            auth: .init(
+                emitLocalSessionAsInitialSession: true
+            )
+        )
     )
     
     // Used exclusively to bypass Storage RLS since the user is unable to run SQL right now.

@@ -86,6 +86,8 @@ struct DietPlan: Codable {
     var goal: DietGoal = .maintain
     var weightKg: Double = 25.0
     var dailyCalorieTarget: Double = 0
+    var activityLevel: String = "Moderate"
+    var lifeStage: String = "Adult"
 
     /// Resting Energy Requirement: 70 × (weight in kg)^0.75
     var rer: Double {

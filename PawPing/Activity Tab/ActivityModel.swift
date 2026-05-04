@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 struct Owner: Identifiable {
     let id: UUID
@@ -23,6 +24,23 @@ typealias DogProfile = Pet
 typealias DogGender = PetGender
 
 // MARK: - Activity
+
+struct CoordinateModel: Codable {
+    let latitude: Double
+    let longitude: Double
+    
+    var clLocationCoordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+}
+
+struct Activity: Codable, Identifiable {
+    var id = UUID()
+    var date: Date
+    var routePoints: [CoordinateModel]
+    var distanceInKm: Double
+    var durationMinutes: Int
+}
 
 struct WalkActivity: Codable {
     var currentMinutes: Int

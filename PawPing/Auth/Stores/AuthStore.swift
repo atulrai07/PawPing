@@ -27,7 +27,11 @@ class AuthStore {
     func checkSession() async {
         do {
             let session = try await client.auth.session
-            await updateState(with: session.user)
+            if !session.isExpired {
+                await updateState(with: session.user)
+            } else {
+                logoutLocally()
+            }
         } catch {
             // No valid session found
             logoutLocally()

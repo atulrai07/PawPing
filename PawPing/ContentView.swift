@@ -45,4 +45,10 @@ struct ContentView: View {
     ContentView()
         .environment(PetStore())
         .environment(AppState())
+        .environment(ActivityStore())
+        .environment(HealthStore())
+        .environment(CareStore())
+        .environment(AuthStore())
+        .environment(WeightStore())
+        .environment(DietAssistantStore())
 }

@@ -7,6 +7,7 @@
 
 import Foundation
 import Supabase
+import CoreLocation
 
 @Observable
 class ActivityStore {
@@ -18,6 +19,14 @@ class ActivityStore {
     var walkActivity: WalkActivity
     var timeWalkedGraph: TimeWalkedGraphModel
     var distanceSummary: DistanceSummaryModel
+    var activities: [Activity] = []
+    
+    var walkedDates: Set<DateComponents> {
+        Set(activities.compactMap { activity in
+            guard !activity.routePoints.isEmpty else { return nil }
+            return Calendar.current.dateComponents([.year, .month, .day], from: activity.date)
+        })
+    }
 
     // MARK: - Meal & Diet Sub-Store
     var mealDietStore = MealDietStore()
@@ -43,6 +52,7 @@ class ActivityStore {
         var walkActivity: WalkActivity
         var timeWalkedGraph: TimeWalkedGraphModel
         var distanceSummary: DistanceSummaryModel
+        var activities: [Activity]?
     }
     
     private struct PetAppStateUpload: Codable {
@@ -81,6 +91,7 @@ class ActivityStore {
             self.walkActivity = storedData.walkActivity
             self.timeWalkedGraph = storedData.timeWalkedGraph
             self.distanceSummary = storedData.distanceSummary
+            self.activities = storedData.activities ?? []
         } else {
             // New pet, initialize default state
             self.meals = Self.defaultMeals(for: petId)
@@ -140,7 +151,8 @@ class ActivityStore {
             meals: meals,
             walkActivity: walkActivity,
             timeWalkedGraph: timeWalkedGraph,
-            distanceSummary: distanceSummary
+            distanceSummary: distanceSummary,
+            activities: activities
         )
         
         if let encoded = try? JSONEncoder().encode(dataToSave) {
@@ -198,6 +210,7 @@ class ActivityStore {
                     self.walkActivity = storedData.walkActivity
                     self.timeWalkedGraph = storedData.timeWalkedGraph
                     self.distanceSummary = storedData.distanceSummary
+                    self.activities = storedData.activities ?? []
                     
                     // Update local cache
                     let key = "activity_store_data_\(petId.uuidString)"
@@ -235,6 +248,19 @@ class ActivityStore {
 
         let walkedMinutes = Int(elapsedSeconds / 60)
         walkActivity.currentMinutes += walkedMinutes
+        
+        let routeCoordinates = locationManager.routeLocations.map {
+            CoordinateModel(latitude: $0.latitude, longitude: $0.longitude)
+        }
+        let distanceKm = locationManager.totalDistance / 1000.0
+        
+        let newActivity = Activity(
+            date: Date(),
+            routePoints: routeCoordinates,
+            distanceInKm: distanceKm,
+            durationMinutes: walkedMinutes
+        )
+        activities.append(newActivity)
         
         // Update graph for current day
         let formatter = DateFormatter()

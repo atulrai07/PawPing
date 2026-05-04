@@ -10,14 +10,14 @@ import SwiftUI
 struct ActivityView: View {
     @Environment(ActivityStore.self) var store
     @Environment(PetStore.self) var petStore
-    @Environment(SymptomStore.self) var symptomStore
     @Environment(HealthStore.self) var healthStore
+    @Environment(DietAssistantStore.self) var dietAssistantStore
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
     @State private var showMealsLog = false
     @State private var showDistanceSummary = false
-    @State private var showSymptomChecker = false
+    @State private var showDietChat = false
 
     var body: some View {
         NavigationStack {
@@ -102,54 +102,45 @@ struct ActivityView: View {
                 }
                 .padding(.horizontal)
 
-                // MARK: - Symptom Checker Card
+                // MARK: - Diet Assistant Card
                 Button {
-                    symptomStore.reset()
-                    showSymptomChecker = true
+                    showDietChat = true
                 } label: {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(Color("cardBackground"))
-                            .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-                            .frame(height: 95)
+                    HStack(spacing: 14) {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color("baseColor").opacity(0.12))
+                            .frame(width: 52, height: 52)
+                            .overlay(
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(Color("baseColor"))
+                            )
 
-                        HStack(spacing: 16) {
-                            // Icon Container
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(Color("baseColor").opacity(0.15))
-                                .frame(width: 78, height: 78)
-                                .overlay(
-                                    Image(systemName: "stethoscope")
-                                        .font(.system(size: 32))
-                                        .foregroundStyle(Color("baseColor"))
-                                )
-                                .padding(.leading, 8)
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Check Symptoms")
-                                    .font(.system(size: 20, weight: .semibold))
-
-                                Text("Get guidance")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Color("secondaryText"))
-                            }
-
-                            Spacer()
-
-                            Circle()
-                                .fill(Color("baseColor").opacity(0.2))
-                                .frame(width: 28, height: 28)
-                                .overlay(
-                                    Image(systemName: "chevron.right")
-                                        .foregroundStyle(Color("baseColor"))
-                                        .font(.system(size: 12, weight: .bold))
-                                )
-                                .padding(.trailing, 12)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Diet & Health Assistant")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.primary)
+                            Text(chatCardSubtitle)
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color("secondaryText"))
                         }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Color("secondaryText").opacity(0.4))
                     }
+                    .padding(16)
+                    .background(Color("cardBackground"))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal)
+                .sheet(isPresented: $showDietChat) {
+                    DietAssistantView()
+                        .environment(dietAssistantStore)
+                }
+
 
                 // MARK: - Graph Card
                 Button {
@@ -180,11 +171,6 @@ struct ActivityView: View {
             .navigationDestination(isPresented: $showDistanceSummary) {
                 DistanceSummaryView(store: store)
             }
-            .navigationDestination(isPresented: $showSymptomChecker) {
-                SymptomCheckerView()
-                    .environment(symptomStore)
-                    .environment(store)
-            }
         }
         .fullScreenCover(isPresented: $showWalkFlow) {
             WalkFlowContainer(
@@ -196,7 +182,19 @@ struct ActivityView: View {
             )
         }
     }
+
+    // Computed subtitle
+    private var chatCardSubtitle: String {
+        switch dietAssistantStore.availability {
+        case .available:                 return "Ask anything about your dog's diet"
+        case .unsupportedDevice:         return "Requires iPhone 15 Pro or iPhone 16"
+        case .appleIntelligenceDisabled: return "Enable Apple Intelligence in Settings"
+        case .modelDownloading:          return "AI model is downloading..."
+        case .unknown:                   return "Currently unavailable"
+        }
+    }
 }
+
 
 // MARK: - Walk Flow Container (Countdown → Tracking)
 
@@ -282,17 +280,19 @@ private struct WalkingLabel: View {
 struct ActivityViewPreviewWrapper: View {
     @State private var store = ActivityStore()
     @State private var petStore = PetStore()
-    @State private var symptomStore = SymptomStore()
+    @State private var healthStore = HealthStore()
     @State private var authStore = AuthStore()
     @State private var appState = AppState()
+    @State private var dietAssistantStore = DietAssistantStore()
     
     var body: some View {
         ActivityView()
             .environment(store)
             .environment(petStore)
-            .environment(symptomStore)
+            .environment(healthStore)
             .environment(authStore)
             .environment(appState)
+            .environment(dietAssistantStore)
     }
 }
 

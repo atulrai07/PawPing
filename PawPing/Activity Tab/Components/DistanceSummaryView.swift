@@ -11,6 +11,7 @@ struct DistanceSummaryView: View {
     var store: ActivityStore
     
     @State private var selectedRange = 0
+    @State private var showCalendar = false
     
     private let ranges = ["Week", "Month"]
     
@@ -61,6 +62,20 @@ struct DistanceSummaryView: View {
         .navigationTitle("Distance")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showCalendar = true
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color("baseColor"))
+                }
+            }
+        }
+        .sheet(isPresented: $showCalendar) {
+            WalkCalendarView(store: store)
+        }
     }
     
     private var chartContent: some View {

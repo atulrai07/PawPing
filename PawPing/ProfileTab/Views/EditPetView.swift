@@ -23,6 +23,8 @@ struct EditPetView: View {
     @State private var isUploading = false
     
     var body: some View {
+        let currentPet = petStore.activePet
+        
         NavigationStack {
             Form {
                 Section {
@@ -36,7 +38,7 @@ struct EditPetView: View {
                                         .scaledToFill()
                                         .frame(width: 100, height: 100)
                                         .clipShape(Circle())
-                                } else if let pet = petStore.activePet {
+                                } else if let pet = currentPet {
                                     if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
                                         AsyncImage(url: url) { image in
                                             image.resizable().scaledToFill()
@@ -126,7 +128,7 @@ struct EditPetView: View {
         
         Task {
             if let data = selectedImageData {
-                if let url = try? await petStore.uploadImage(data: data) {
+                if let url = await petStore.uploadImage(data: data) {
                     pet.profileImageUrl = url
                 }
             }
