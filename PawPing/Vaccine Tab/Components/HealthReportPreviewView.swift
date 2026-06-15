@@ -29,32 +29,26 @@ struct HealthReportPreviewView: View {
         }
     }
     
+    private var reportContent: some View {
+        VStack(spacing: 24) {
+            reportHeader
+            petInfoCard
+            
+            if config.includeVaccinations {
+                recordsSection(title: "Vaccine Records", records: filteredRecords.filter { $0.recordType == .vaccine })
+            }
+            
+            if config.includeDeworming {
+                recordsSection(title: "Deworming Records", records: filteredRecords.filter { $0.recordType == .deworming })
+            }
+        }
+        .padding()
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(spacing: 24) {
-                    reportHeader
-                    petInfoCard
-                    
-                    if config.includeVaccinations {
-                        recordsSection(title: "Vaccine Records", records: filteredRecords.filter { $0.recordType == .vaccine })
-                    }
-                    
-                    if config.includeDeworming {
-                        recordsSection(title: "Deworming Records", records: filteredRecords.filter { $0.recordType == .deworming })
-                    }
-                    
-                    if config.includeWeightChart {
-                        weightTrendSection
-                    }
-                    
-                    if config.includeDietPlan {
-                        dietPlanSection
-                    }
-                    
-                    vetClinicSection
-                }
-                .padding()
+                reportContent
             }
             .background(Color(.systemGray6).opacity(0.5))
             
@@ -201,104 +195,26 @@ struct HealthReportPreviewView: View {
         }
     }
     
-    private var vetClinicSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Vet Clinic Details")
-                .font(.headline)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                InfoRow(label: "Clinic Name", value: "PupiLife Pet Clinic")
-                InfoRow(label: "Vet Name", value: "Dr. Ananya Sharma(BVSc)")
-                InfoRow(label: "Reg. No.", value: "DL/VCI/2021/4587")
-                InfoRow(label: "Address", value: "Saket, New Delhi, 11034")
-                InfoRow(label: "Email", value: "contact@pupilife.com")
-                InfoRow(label: "Phone", value: "+91 62839 87239")
-            }
-            .padding()
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-    }
-    
-    private var weightTrendSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Weight History")
-                .font(.headline)
-            
-            VStack(alignment: .leading, spacing: 12) {
-                let last8 = Array(weightStore.records.prefix(8)).reversed()
-                if last8.isEmpty {
-                    Text("No weight records found")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding()
-                } else {
-                    let dateRange = "\(last8.first?.date.formatted(date: .abbreviated, time: .omitted) ?? "") - \(last8.last?.date.formatted(date: .abbreviated, time: .omitted) ?? "")"
-                    
-                    Text(dateRange)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    
-                    Chart {
-                        ForEach(last8) { record in
-                            LineMark(
-                                x: .value("Date", record.date),
-                                y: .value("Weight", record.weightKg)
-                            )
-                            .foregroundStyle(.gray.opacity(0.4))
-                            
-                            PointMark(
-                                x: .value("Date", record.date),
-                                y: .value("Weight", record.weightKg)
-                            )
-                            .foregroundStyle(record.bodyCondition.color)
-                        }
-                    }
-                    .frame(height: 150)
-                    .padding()
-                }
-            }
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-    }
-    
-    private var dietPlanSection: some View {
-        let plan = activityStore.mealDietStore.dietPlan
-        return VStack(alignment: .leading, spacing: 12) {
-            Text("Diet Plan")
-                .font(.headline)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                InfoRow(label: "Goal", value: plan.goal.rawValue)
-                InfoRow(label: "Daily Target", value: "\(Int(plan.dailyCalorieTarget)) kcal")
-                InfoRow(label: "Weight", value: String(format: "%.1f kg", plan.weightKg))
-                InfoRow(label: "Activity", value: plan.activityLevel)
-                InfoRow(label: "Life Stage", value: plan.lifeStage)
-            }
-            .padding()
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-    }
-    
     // MARK: - Actions
     
     @MainActor
     private func generatePDF() {
-        let renderer = ImageRenderer(content: self
-            .environment(store)
-            .environment(PetStore())
-            .environment(weightStore)
-            .environment(activityStore)
+        let pdfWidth: CGFloat = 595
+        
+        let renderer = ImageRenderer(content:
+            reportContent
+                .frame(width: pdfWidth)
+                .background(.white)
+                .environment(store)
+                .environment(weightStore)
+                .environment(activityStore)
+                .environment(appState)
         )
         
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("HealthReport.pdf")
         
         renderer.render { size, context in
-            var box = CGRect(origin: .zero, size: size)
+            var box = CGRect(origin: .zero, size: CGSize(width: pdfWidth, height: size.height))
             guard let pdfContext = CGContext(url as CFURL, mediaBox: &box, nil) else { return }
             
             pdfContext.beginPDFPage(nil)

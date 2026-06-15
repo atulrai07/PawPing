@@ -13,5 +13,4 @@ struct HealthReportConfig: Equatable {
     var includeMedications: Bool = false
     var includeLabResults: Bool = false
     var includeWeightChart: Bool = true
-    var includeDietPlan: Bool = true
 }

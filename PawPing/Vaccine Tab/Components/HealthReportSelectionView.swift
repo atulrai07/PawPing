@@ -18,19 +18,6 @@ struct HealthReportSelectionView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("Export Options")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Text("Select what you want to include in your pet's health report.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.top, 20)
-                .padding(.horizontal)
-                
                 // Toggle List
                 List {
                     Section {
@@ -39,8 +26,6 @@ struct HealthReportSelectionView: View {
                         Toggle("Deworming", isOn: $config.includeDeworming)
                             .tint(Color("baseColor"))
                         Toggle("Medications", isOn: $config.includeMedications)
-                            .tint(Color("baseColor"))
-                        Toggle("Lab Results", isOn: $config.includeLabResults)
                             .tint(Color("baseColor"))
                     } header: {
                         Text("Record Types")
