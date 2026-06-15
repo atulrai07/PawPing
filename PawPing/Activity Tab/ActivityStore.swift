@@ -59,6 +59,16 @@ class ActivityStore {
     private struct PetAppStateDownload: Codable {
         let activity_data: String?
     }
+    
+    private struct DBActivityRecord: Codable {
+        let id: UUID
+        let pet_id: UUID
+        let owner_id: String
+        let duration_minutes: Int
+        let distance_km: Double
+        let date: Date
+        let route_points: [CoordinateModel]
+    }
 
     func switchPet(to petId: UUID?) {
         self.activePetId = petId
@@ -87,7 +97,14 @@ class ActivityStore {
             self.walkActivity = storedData.walkActivity
             self.timeWalkedGraph = storedData.timeWalkedGraph
             self.distanceSummary = storedData.distanceSummary
-            self.activities = storedData.activities ?? []
+            
+            let walksKey = "walk_activities_\(petId.uuidString)"
+            if let walksData = UserDefaults.standard.data(forKey: walksKey),
+               let cachedWalks = try? JSONDecoder().decode([Activity].self, from: walksData) {
+                self.activities = cachedWalks
+            } else {
+                self.activities = storedData.activities ?? []
+            }
         } else {
             // New pet, initialize default state
             self.meals = Self.defaultMeals(for: petId)
@@ -128,12 +145,16 @@ class ActivityStore {
             )
             
             saveData(for: petId)
+            saveActivitiesLocally(for: petId)
         }
+        
+        rebuildStats()
         
         // After loading local cache, fetch from cloud
         Task {
             await mealDietStore.fetchFromSupabase()
             await fetchFromSupabase(for: petId)
+            await fetchWalksFromSupabase(for: petId)
         }
     }
 
@@ -148,7 +169,7 @@ class ActivityStore {
             walkActivity: walkActivity,
             timeWalkedGraph: timeWalkedGraph,
             distanceSummary: distanceSummary,
-            activities: activities
+            activities: nil
         )
         
         if let encoded = try? JSONEncoder().encode(dataToSave) {
@@ -206,7 +227,7 @@ class ActivityStore {
                     self.walkActivity = storedData.walkActivity
                     self.timeWalkedGraph = storedData.timeWalkedGraph
                     self.distanceSummary = storedData.distanceSummary
-                    self.activities = storedData.activities ?? []
+                    // self.activities = storedData.activities ?? []
                     
                     // Update local cache
                     let key = "activity_store_data_\(petId.uuidString)"
@@ -215,6 +236,140 @@ class ActivityStore {
             }
         } catch {
             print(" No cloud activity state found or failed to fetch: \(error)")
+        }
+    }
+    
+    func rebuildStats() {
+        let calendar = Calendar.current
+        let today = Date()
+        
+        // 1. Recalculate Today's Walk Minutes
+        let todayStart = calendar.startOfDay(for: today)
+        let todaysMinutes = activities
+            .filter { calendar.isDate($0.date, inSameDayAs: todayStart) }
+            .reduce(0) { $0 + $1.durationMinutes }
+        self.walkActivity.currentMinutes = todaysMinutes
+        
+        // 2. Recalculate current week's Time Walked Graph (MON - SUN)
+        var weekComps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+        weekComps.weekday = 2 // Monday
+        guard let monday = calendar.date(from: weekComps) else { return }
+        
+        let dayLabels = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+        let weekDates = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: monday) }
+        
+        var timeGraphData: [TimeWalkedData] = []
+        var distanceWeekData: [DistanceData] = []
+        
+        for (idx, wDate) in weekDates.enumerated() {
+            let dayLabel = dayLabels[idx]
+            let dayStart = calendar.startOfDay(for: wDate)
+            
+            // Sum minutes & distance for this day
+            let dayActivities = activities.filter { calendar.isDate($0.date, inSameDayAs: dayStart) }
+            let mins = dayActivities.reduce(0) { $0 + $1.durationMinutes }
+            let dist = dayActivities.reduce(0) { $0 + $1.distanceInKm }
+            
+            timeGraphData.append(TimeWalkedData(day: dayLabel, minutes: mins))
+            distanceWeekData.append(DistanceData(date: dayStart, distanceInKm: dist))
+        }
+        
+        self.timeWalkedGraph = TimeWalkedGraphModel(data: timeGraphData, goalMinutes: walkActivity.goalMinutes)
+        
+        // 3. Recalculate Current Month's Distance Data
+        var distanceMonthData: [DistanceData] = []
+        if let monthRange = calendar.range(of: .day, in: .month, for: today),
+           let firstOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) {
+            
+            for day in monthRange {
+                if let dayDate = calendar.date(byAdding: .day, value: day - 1, to: firstOfMonth) {
+                    let dayStart = calendar.startOfDay(for: dayDate)
+                    let dist = activities
+                        .filter { calendar.isDate($0.date, inSameDayAs: dayStart) }
+                        .reduce(0) { $0 + $1.distanceInKm }
+                    
+                    distanceMonthData.append(DistanceData(date: dayStart, distanceInKm: dist))
+                }
+            }
+        }
+        
+        // Format week range and month name
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        let startStr = formatter.string(from: monday)
+        let endStr = formatter.string(from: weekDates.last ?? today)
+        let weekRangeStr = "\(startStr) - \(endStr)"
+        
+        formatter.dateFormat = "MMMM yyyy"
+        let monthNameStr = formatter.string(from: today)
+        
+        self.distanceSummary = DistanceSummaryModel(
+            weekData: distanceWeekData,
+            monthData: distanceMonthData,
+            weekRange: weekRangeStr,
+            monthName: monthNameStr
+        )
+    }
+    
+    private func saveActivitiesLocally(for petId: UUID) {
+        let walksKey = "walk_activities_\(petId.uuidString)"
+        if let encoded = try? JSONEncoder().encode(activities) {
+            UserDefaults.standard.set(encoded, forKey: walksKey)
+        }
+    }
+    
+    private func uploadWalkActivityToSupabase(_ activity: Activity, for petId: UUID) async {
+        do {
+            let session = try await SupabaseConfig.client.auth.session
+            let ownerId = session.user.id.uuidString.lowercased()
+            
+            let record = DBActivityRecord(
+                id: activity.id,
+                pet_id: petId,
+                owner_id: ownerId,
+                duration_minutes: activity.durationMinutes,
+                distance_km: activity.distanceInKm,
+                date: activity.date,
+                route_points: activity.routePoints
+            )
+            
+            try await SupabaseConfig.client
+                .from("walk_activities")
+                .insert(record)
+                .execute()
+            print("Successfully uploaded walk activity \(activity.id) to Supabase")
+        } catch {
+            print("Failed to upload walk activity to Supabase: \(error)")
+        }
+    }
+    
+    private func fetchWalksFromSupabase(for petId: UUID) async {
+        do {
+            let fetched: [DBActivityRecord] = try await SupabaseConfig.client
+                .from("walk_activities")
+                .select()
+                .eq("pet_id", value: petId.uuidString)
+                .order("date", ascending: false)
+                .execute()
+                .value
+            
+            await MainActor.run {
+                self.activities = fetched.map { rec in
+                    Activity(
+                        id: rec.id,
+                        date: rec.date,
+                        routePoints: rec.route_points,
+                        distanceInKm: rec.distance_km,
+                        durationMinutes: rec.duration_minutes
+                    )
+                }
+                // Update local cache
+                saveActivitiesLocally(for: petId)
+                rebuildStats()
+                print("Successfully fetched \(self.activities.count) walk activities from Supabase")
+            }
+        } catch {
+            print("Failed to fetch walk activities from Supabase: \(error)")
         }
     }
 
@@ -243,7 +398,6 @@ class ActivityStore {
         locationManager.stopTracking()
 
         let walkedMinutes = Int(elapsedSeconds / 60)
-        walkActivity.currentMinutes += walkedMinutes
         
         let routeCoordinates = locationManager.routeLocations.map {
             CoordinateModel(latitude: $0.latitude, longitude: $0.longitude)
@@ -258,22 +412,20 @@ class ActivityStore {
         )
         activities.append(newActivity)
         
-        // Update graph for current day
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        let currentDay = formatter.string(from: Date()).uppercased()
-        
-        if let index = timeWalkedGraph.data.firstIndex(where: { $0.day == currentDay }) {
-            timeWalkedGraph.data[index].minutes += walkedMinutes
-        }
-
         isWalking = false
         isPaused = false
         elapsedSeconds = 0
         locationManager.totalDistance = 0
         
+        rebuildStats()
         saveData(for: activePetId)
+        
+        if let activePetId {
+            saveActivitiesLocally(for: activePetId)
+            Task {
+                await uploadWalkActivityToSupabase(newActivity, for: activePetId)
+            }
+        }
     }
 
     func togglePause() {

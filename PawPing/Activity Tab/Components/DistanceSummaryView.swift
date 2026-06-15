@@ -79,9 +79,11 @@ struct DistanceSummaryView: View {
     }
     
     private var chartContent: some View {
-        Chart {
-            let data = selectedRange == 0 ? store.distanceSummary.weekData : store.distanceSummary.monthData
-            
+        let data = selectedRange == 0 ? store.distanceSummary.weekData : store.distanceSummary.monthData
+        let maxVal = data.map { $0.distanceInKm }.max() ?? 0.0
+        let yMax = max(3.3, maxVal * 1.1)
+        
+        return Chart {
             ForEach(data) { item in
                 BarMark(
                     x: .value("Date", selectedRange == 0 ? item.dayLabel : item.dayOfMonthLabel),
@@ -90,23 +92,6 @@ struct DistanceSummaryView: View {
                 .foregroundStyle(Color("baseColor"))
                 .cornerRadius(4)
             }
-            
-            // Grid lines as shown in screenshot
-            RuleMark(y: .value("Threshold", 0.75))
-                .lineStyle(StrokeStyle(lineWidth: 0.5, dash: [4]))
-                .foregroundStyle(.gray.opacity(0.3))
-            
-            RuleMark(y: .value("Threshold", 1.5))
-                .lineStyle(StrokeStyle(lineWidth: 0.5, dash: [4]))
-                .foregroundStyle(.gray.opacity(0.4))
-            
-            RuleMark(y: .value("Threshold", 2.25))
-                .lineStyle(StrokeStyle(lineWidth: 0.5, dash: [4]))
-                .foregroundStyle(.gray.opacity(0.4))
-                
-            RuleMark(y: .value("Threshold", 3.0))
-                .lineStyle(StrokeStyle(lineWidth: 0.5, dash: [4]))
-                .foregroundStyle(.gray.opacity(0.3))
         }
         .chartXAxis {
             if selectedRange == 0 {
@@ -126,17 +111,18 @@ struct DistanceSummaryView: View {
             }
         }
         .chartYAxis {
-            AxisMarks(values: [0, 0.75, 1.5, 2.25, 3.0]) { value in
+            AxisMarks(values: .automatic) { value in
                 AxisValueLabel {
                     if let distance = value.as(Double.self) {
-                        Text(distance == 0 ? "0" : String(format: "%.2fkm", distance))
+                        Text(distance == 0 ? "0" : String(format: "%.1fkm", distance))
                             .font(.system(size: 12, weight: .medium))
                     }
                 }
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [4]))
+                    .foregroundStyle(.gray.opacity(0.3))
             }
         }
-        .chartYScale(domain: 0...3.3)
+        .chartYScale(domain: 0...yMax)
     }
 }
 
