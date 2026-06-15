@@ -70,10 +70,12 @@ struct AddHealthRecordView: View {
                     }
                     .pickerStyle(.segmented)
                     .onChange(of: recordType) { _, _ in
-                        // Default to having a next dose for deworming as it's usually periodic
                         if recordType == .deworming {
                             hasNextDose = true
-                            frequency = .quarterly // Deworming is often every 3 months
+                            frequency = .quarterly
+                        } else if recordType == .fleaTick {
+                            hasNextDose = true
+                            frequency = .monthly
                         } else {
                             hasNextDose = false
                         }
@@ -85,24 +87,23 @@ struct AddHealthRecordView: View {
                     HStack {
                         Text("Name")
                         Spacer()
-                        if recordType == .vaccine {
-                            Menu {
+                        Menu {
+                            if recordType == .vaccine {
                                 ForEach(CommonHealthRecords.vaccines, id: \.self) { vName in
                                     Button(vName) { name = vName }
                                 }
-                            } label: {
-                                Text(name.isEmpty ? "Select or Type" : name)
-                                    .foregroundStyle(name.isEmpty ? .secondary : .primary)
-                            }
-                        } else {
-                            Menu {
+                            } else if recordType == .deworming {
                                 ForEach(CommonHealthRecords.deworming, id: \.self) { dName in
                                     Button(dName) { name = dName }
                                 }
-                            } label: {
-                                Text(name.isEmpty ? "Select or Type" : name)
-                                    .foregroundStyle(name.isEmpty ? .secondary : .primary)
+                            } else if recordType == .fleaTick {
+                                ForEach(CommonHealthRecords.fleaTick, id: \.self) { fName in
+                                    Button(fName) { name = fName }
+                                }
                             }
+                        } label: {
+                            Text(name.isEmpty ? "Select or Type" : name)
+                                .foregroundStyle(name.isEmpty ? .secondary : .primary)
                         }
                     }
                     

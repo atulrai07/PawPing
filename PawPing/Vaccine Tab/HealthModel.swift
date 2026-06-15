@@ -15,9 +15,14 @@ import Foundation
 enum HealthRecordType: String, Codable, CaseIterable, Equatable {
     case vaccine   = "vaccine"
     case deworming = "deworming"
+    case fleaTick  = "fleaTick"
     
     var displayName: String {
-        self.rawValue.capitalized
+        switch self {
+        case .vaccine: return "Vaccine"
+        case .deworming: return "Deworming"
+        case .fleaTick: return "Tick & Flea"
+        }
     }
 }
 
@@ -187,6 +192,13 @@ enum CommonHealthRecords {
         "Heartworm",
         "Tapeworm"
     ]
+    
+    static let fleaTick = [
+        "NexGard",
+        "Bravecto",
+        "Simparica",
+        "Frontline"
+    ]
 }
 
 // MARK: - Health Report Config
@@ -199,4 +211,27 @@ struct VaccineReportConfig {
     static let defaultConfig = VaccineReportConfig()
 }
 
+// MARK: - TimelineEventProtocol Conformance
+
+extension HealthRecord: TimelineEventProtocol {
+    var eventDate: Date {
+        dateGiven
+    }
+    
+    var title: String {
+        name
+    }
+    
+    var subtitle: String {
+        recordType.displayName
+    }
+    
+    var eventType: TimelineEventType {
+        switch recordType {
+        case .vaccine: return .vaccination
+        case .deworming: return .preventiveCare(type: "Deworming")
+        case .fleaTick: return .preventiveCare(type: "Tick & Flea")
+        }
+    }
+}
 

@@ -18,6 +18,7 @@ struct ActivityView: View {
     @State private var showMealsLog = false
     @State private var showDistanceSummary = false
     @State private var showDietChat = false
+    @State private var showEmergencyGuide = false
 
     var body: some View {
         NavigationStack {
@@ -141,6 +142,8 @@ struct ActivityView: View {
                         .environment(dietAssistantStore)
                 }
 
+                // MARK: - Emergency Guide Card
+                emergencyGuideShortcut
 
                 // MARK: - Graph Card
                 Button {
@@ -171,6 +174,9 @@ struct ActivityView: View {
             .navigationDestination(isPresented: $showDistanceSummary) {
                 DistanceSummaryView(store: store)
             }
+            .navigationDestination(isPresented: $showEmergencyGuide) {
+                EmergencyGuideView()
+            }
         }
         .fullScreenCover(isPresented: $showWalkFlow) {
             WalkFlowContainer(
@@ -192,6 +198,43 @@ struct ActivityView: View {
         case .modelDownloading:          return "AI model is downloading..."
         case .unknown:                   return "Currently unavailable"
         }
+    }
+
+    /// Quick access to the Emergency SOP & First Aid guides
+    private var emergencyGuideShortcut: some View {
+        Button {
+            showEmergencyGuide = true
+        } label: {
+            HStack(spacing: 14) {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.red.opacity(0.12))
+                    .frame(width: 52, height: 52)
+                    .overlay(
+                        Image(systemName: "heart.text.square.fill")
+                            .font(.system(size: 22))
+                            .foregroundStyle(.red)
+                    )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Emergency Guide")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.primary)
+                    Text("CPR, choking, poisoning SOPs")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color("secondaryText"))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color("secondaryText").opacity(0.4))
+            }
+            .padding(16)
+            .background(Color("cardBackground"))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal)
     }
 }
 
