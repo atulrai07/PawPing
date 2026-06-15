@@ -39,13 +39,65 @@ class DietAssistantStore {
     private var session: LanguageModelSession?
 
     private let systemInstructions = """
-        You are PawPing's dog diet and nutrition assistant.
-        Only answer questions about dog food, nutrition, diet plans, feeding schedules, safe and unsafe foods, and general dog health habits.
-        Keep answers highly readable and structured. Use Markdown formatting like **bolding** for key terms, and use bullet points where appropriate to make information easy to scannable and digestible.
-        Be friendly, warm, and practical.
-        If a question is unrelated to dogs or dog nutrition, politely say you can only help with dog diet and health topics.
-        Never give medical diagnoses. Always refer serious health concerns to a vet.
+        You are PawPing's dog diet and health assistant.
+        
+        CRITICAL RULES:
+        1. Only answer questions related to dog food, dog nutrition, diet plans, feeding schedules, safe and unsafe foods for dogs, and general dog health habits.
+        2. If the user asks a question about any unrelated topic (such as general coding, programming, python, solving math problems, history, human recipes, science, or anything else not directly about dog health and nutrition), you MUST politely refuse to answer. Respond exactly with: "I'm sorry, I cannot answer that question. I can only assist with topics related to dog diet, nutrition, and health."
+        3. Never write programming code, scripts, or solve non-dog-related tasks.
+        4. Keep answers friendly, warm, structured, and easy to read. Use Markdown formatting like **bolding** and bullet points where appropriate.
+        5. Never give medical diagnoses. Always refer serious health concerns to a veterinarian.
         """
+
+    private func isQueryRelevant(_ query: String) -> Bool {
+        let lowercased = query.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !lowercased.isEmpty else { return false }
+        
+        // Block obvious programming, math, code, calculators, and unrelated tech tasks
+        let codingKeywords = [
+            "python", "javascript", "html", "css", "c++", "c#", "java", "coding", 
+            "calculator", "write a code", "write code", "programming", "software", 
+            "program", "develop an app", "create a website", "run a script", "github", 
+            "algorithm", "fibonacci", "loop in swift", "class in swift"
+        ]
+        for keyword in codingKeywords {
+            if lowercased.contains(keyword) {
+                return false
+            }
+        }
+        
+        // Define relevant dog/pet diet, nutrition, feeding, health keywords
+        let relevantKeywords = [
+            "dog", "pup", "canine", "pet", "vet", "veterinarian", "animal",
+            "diet", "food", "eat", "feed", "nutrition", "meal", "recipe", "toxic", "safe", 
+            "unsafe", "healthy", "health", "habit", "allergy", "allergies", "vomit", 
+            "diarrhea", "sick", "sickness", "drink", "water", "weight", "calorie", 
+            "calories", "treat", "treats"
+        ]
+        if relevantKeywords.contains(where: { lowercased.contains($0) }) {
+            return true
+        }
+        
+        // Define common foods to allow questions like "Is chocolate bad?" or "Can they have grapes?"
+        let commonFoods = [
+            "chicken", "rice", "banana", "apple", "grape", "chocolate", "onion", "garlic", 
+            "avocado", "carrot", "broccoli", "meat", "beef", "pork", "fish", "salmon", 
+            "egg", "milk", "cheese", "yogurt", "peanut butter", "strawberry", "blueberry", 
+            "watermelon", "potato", "sweet potato", "turkey", "oatmeal", "bread", "butter", 
+            "honey", "nut", "nuts", "almond", "walnut", "macadamia"
+        ]
+        if commonFoods.contains(where: { lowercased.contains($0) }) {
+            return true
+        }
+        
+        // Allow common greetings
+        let greetings = ["hi", "hello", "hey", "greetings", "how are you", "good morning", "good afternoon", "good evening"]
+        if greetings.contains(where: { lowercased.contains($0) }) {
+            return true
+        }
+        
+        return false
+    }
 
     // MARK: - Init
     init() {
@@ -96,6 +148,15 @@ class DietAssistantStore {
         guard availability == .available, let session else { return }
 
         messages.append(ChatMessage(text: trimmed, isUser: true))
+
+        guard isQueryRelevant(trimmed) else {
+            messages.append(ChatMessage(
+                text: "I'm sorry, I cannot answer that question. I can only assist with topics related to dog diet, nutrition, and health.",
+                isUser: false
+            ))
+            return
+        }
+
         isTyping = true
 
         Task {

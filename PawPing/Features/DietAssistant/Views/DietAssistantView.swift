@@ -29,6 +29,27 @@ struct DietAssistantView: View {
 
     private var chatView: some View {
         VStack(spacing: 0) {
+            // Veterinary Disclaimer Banner
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.shield.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(Color("baseColor"))
+                    .padding(.top, 2)
+                
+                Text("AI-generated tips are for suggestions only. Always consult a veterinarian before taking any action regarding your pet's health.")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Color("secondaryText"))
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(12)
+            .background(Color("cardBackground"))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 3)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 6)
+
             // Message list
             ScrollViewReader { proxy in
                 ScrollView {
