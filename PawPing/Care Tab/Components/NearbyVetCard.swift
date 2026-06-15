@@ -27,23 +27,25 @@ struct NearbyVetCard: View {
                     .foregroundStyle(Color("secondaryText"))
                 
                 if let phone = vet.phoneNumber {
-                    Button {
-                        let telephone = "tel://" + phone.replacingOccurrences(of: " ", with: "")
-                        if let url = URL(string: telephone) {
-                            UIApplication.shared.open(url)
+                    let cleanedPhone = phone.filter { "+0123456789".contains($0) }
+                    if !cleanedPhone.isEmpty {
+                        Button {
+                            if let url = URL(string: "tel://\(cleanedPhone)") {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "phone.fill")
+                                    .font(.system(size: 12))
+                                Text("Call Now")
+                                    .font(.system(size: 13, weight: .bold))
+                            }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 12)
+                            .background(Color("baseColor").opacity(0.1))
+                            .clipShape(Capsule())
+                            .padding(.top, 4)
                         }
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "phone.fill")
-                                .font(.system(size: 12))
-                            Text("Call Now")
-                                .font(.system(size: 13, weight: .bold))
-                        }
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 12)
-                        .background(Color("baseColor").opacity(0.1))
-                        .clipShape(Capsule())
-                        .padding(.top, 4)
                     }
                 }
             }

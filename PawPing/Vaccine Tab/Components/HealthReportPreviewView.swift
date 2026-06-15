@@ -183,7 +183,7 @@ struct HealthReportPreviewView: View {
                                 .foregroundStyle(.secondary)
                                 .frame(width: 100, alignment: .center)
                             
-                            Image(systemName: record.isCompleted ? "checkmark.circle.fill" : "xmark.circle.fill")
+                            Image(systemName: record.isCompleted ? "checkmark.circle.fill" : "xmark")
                                 .foregroundStyle(record.isCompleted ? .green : .red)
                                 .frame(width: 60, alignment: .trailing)
                         }

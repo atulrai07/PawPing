@@ -81,9 +81,7 @@ struct DietSetupSheet: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(Color("secondaryText").opacity(0.5))
-                            .font(.system(size: 24))
+                        Image(systemName: "xmark")
                     }
                 }
             }

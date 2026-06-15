@@ -23,19 +23,24 @@ struct SavedVetsView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
-                        HStack {
-                            Button {
-                                let url = URL(string: "tel://\(vet.phone.replacingOccurrences(of: " ", with: ""))")!
-                                UIApplication.shared.open(url)
-                            } label: {
-                                Label("Call", systemImage: "phone.fill")
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color("baseColor").opacity(0.1))
-                                    .clipShape(Capsule())
+                        let cleanedPhone = vet.phone.filter { "+0123456789".contains($0) }
+                        
+                        if !cleanedPhone.isEmpty {
+                            HStack {
+                                Button {
+                                    if let url = URL(string: "tel://\(cleanedPhone)") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                } label: {
+                                    Label("Call", systemImage: "phone.fill")
+                                        .font(.caption)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color("baseColor").opacity(0.1))
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.vertical, 4)

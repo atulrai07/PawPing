@@ -12,14 +12,63 @@ import MapKit
 struct VetClinicDetails: View {
     let item: PlaceModel
 
+    @Environment(PetStore.self) var petStore
     @Environment(\.dismiss) private var dismiss
+    
+    private var isSaved: Bool {
+        petStore.savedVets.contains { $0.name == item.name }
+    }
+    
+    private var isCallEnabled: Bool {
+        if let phone = item.phone {
+            let cleaned = phone.filter { "+0123456789".contains($0) }
+            return !cleaned.isEmpty
+        }
+        return false
+    }
     
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 // MARK: - Header
                 VStack(spacing: 8) {
-                    ZStack(alignment: .topTrailing) {
+                    ZStack(alignment: .top) {
+                        // Header Action Buttons
+                        HStack {
+                            // Bookmark / Save Button
+                            Button {
+                                Task {
+                                    await petStore.toggleSaveVet(
+                                        name: item.name,
+                                        address: item.address ?? "",
+                                        phone: item.phone ?? "",
+                                        latitude: item.latitude,
+                                        longitude: item.longitude
+                                    )
+                                }
+                            } label: {
+                                Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(isSaved ? Color("baseColor") : .primary)
+                                    .frame(width: 36, height: 36)
+                                    .background(Color(.systemGray6))
+                                    .clipShape(Circle())
+                            }
+                            
+                            Spacer()
+                            
+                            // Close Button
+                            Button {
+                                dismiss()
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(.primary)
+                                    .frame(width: 36, height: 36)
+                                    .background(Color(.systemGray6))
+                                    .clipShape(Circle())
+                            }
+                        }
                         
                         // Center Titles
                         VStack(spacing: 4) {
@@ -33,19 +82,7 @@ struct VetClinicDetails: View {
                                 .foregroundStyle(.gray)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 40)
-                        
-                        // Close Button
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(.primary)
-                                .frame(width: 36, height: 36)
-                                .background(Color(.systemGray6))
-                                .clipShape(Circle())
-                        }
+                        .padding(.horizontal, 60)
                     }
                 }
                 .padding(.top, 24)
@@ -71,14 +108,17 @@ struct VetClinicDetails: View {
                     
                     // Call Button
                     Button {
-                        if let phone = item.phone, let url = URL(string: "tel://\(phone.replacingOccurrences(of: " ", with: ""))") {
-                            UIApplication.shared.open(url)
+                        if let phone = item.phone {
+                            let cleanedPhone = phone.filter { "+0123456789".contains($0) }
+                            if let url = URL(string: "tel://\(cleanedPhone)") {
+                                UIApplication.shared.open(url)
+                            }
                         }
                     } label: {
                         VStack(spacing: 6) {
                             Image(systemName: "phone.fill")
                                 .font(.system(size: 20))
-                            Text(item.phone != nil ? "Call" : "Unavailable")
+                            Text(isCallEnabled ? "Call" : "Unavailable")
                                 .font(.system(size: 14))
                         }
                         .foregroundStyle(Color("baseColor"))
@@ -87,8 +127,8 @@ struct VetClinicDetails: View {
                         .background(Color("baseColor").opacity(0.15))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
-                    .disabled(item.phone == nil)
-                    .opacity(item.phone != nil ? 1.0 : 0.6)
+                    .disabled(!isCallEnabled)
+                    .opacity(isCallEnabled ? 1.0 : 0.6)
                     
                     // Website Button
                     Button {

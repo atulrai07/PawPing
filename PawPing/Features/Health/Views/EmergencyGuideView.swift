@@ -14,9 +14,8 @@ struct EmergencyGuideView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // MARK: Emergency Hotline Banner
-                hotlineBanner
-                    .padding(.horizontal)
+                // MARK: Saved Vets Section (Emergency Vets)
+                savedVetsSection
                     .padding(.top, 16)
                 
                 sopList
@@ -28,58 +27,113 @@ struct EmergencyGuideView: View {
         .onAppear {
             viewModel.configure(petStore: petStore, healthStore: healthStore)
         }
+        .task {
+            await petStore.fetchSavedVets()
+        }
     }
     
-    // MARK: - Banner Subview
+    // MARK: - Saved Vets Section
     
-    private var hotlineBanner: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 12) {
-                Image(systemName: "phone.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.white)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(viewModel.primaryVetPhone != nil ? "PRIMARY VET CLINIC" : "EMERGENCY HOTLINE")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.white.opacity(0.8))
-                        .tracking(1)
+    private var savedVetsSection: some View {
+        let sortedVets = petStore.savedVets.sorted(by: { $0.createdAt > $1.createdAt }).prefix(2)
+        
+        return Group {
+            if !petStore.savedVets.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Emergency Vets")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+                        .padding(.leading, 4)
                     
-                    Text(viewModel.primaryVetPhone != nil ? (viewModel.primaryVetName ?? "Your Vet") : "No Primary Vet Saved")
-                        .font(.system(size: 17, weight: .bold))
-                        .foregroundStyle(.white)
+                    VStack(spacing: 0) {
+                        ForEach(Array(sortedVets.enumerated()), id: \.element.id) { index, vet in
+                            let cleanedPhone = vet.phone.filter { "+0123456789".contains($0) }
+                            
+                            HStack(spacing: 16) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color("baseColor").opacity(0.12))
+                                        .frame(width: 44, height: 44)
+                                    Image(systemName: "cross.case.fill")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundStyle(Color("baseColor"))
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(vet.name)
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundStyle(.primary)
+                                    
+                                    Text(vet.address)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                }
+                                
+                                Spacer()
+                                
+                                Button {
+                                    if let url = URL(string: "tel://\(cleanedPhone)") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                } label: {
+                                    Image(systemName: "phone.fill")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundStyle(.white)
+                                        .padding(10)
+                                        .background(Circle().fill(cleanedPhone.isEmpty ? Color.gray : Color.green))
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(cleanedPhone.isEmpty)
+                                .opacity(cleanedPhone.isEmpty ? 0.5 : 1.0)
+                            }
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 20)
+                            
+                            if index < sortedVets.count - 1 {
+                                Divider()
+                                    .padding(.leading, 80)
+                            }
+                        }
+                    }
+                    .background(Color("cardBackground"))
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding(.horizontal)
                 }
-                Spacer()
-            }
-            
-            Button {
-                viewModel.initiateEmergencyCall()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "phone.fill")
-                        .font(.system(size: 14))
-                    Text(viewModel.primaryVetPhone != nil ? "Call Vet Now" : "Call Emergency Line")
-                        .font(.system(size: 15, weight: .bold))
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Emergency Vets")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+                        .padding(.leading, 4)
+                    
+                    VStack(alignment: .center, spacing: 12) {
+                        Image(systemName: "cross.case")
+                            .font(.system(size: 32))
+                            .foregroundStyle(Color("baseColor").opacity(0.6))
+                            .padding(.top, 8)
+                        
+                        Text("No Emergency Vets")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(.primary)
+                        
+                        Text("Go to the Find tab to save your preferred veterinary clinics for quick emergency access.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 8)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(Color("cardBackground"))
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding(.horizontal)
                 }
-                .foregroundStyle(.red)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 12).fill(.white))
-                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
             }
         }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(
-                    LinearGradient(
-                        colors: [.red, Color.red.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        )
-        .shadow(color: Color.red.opacity(0.25), radius: 8, x: 0, y: 4)
     }
     
     // MARK: - SOP List Subview
@@ -98,11 +152,11 @@ struct EmergencyGuideView: View {
                         HStack(spacing: 16) {
                             ZStack {
                                 Circle()
-                                    .fill(guide.color.opacity(0.12))
+                                    .fill(Color("baseColor").opacity(0.12))
                                     .frame(width: 44, height: 44)
                                 Image(systemName: guide.icon)
                                     .font(.system(size: 18, weight: .semibold))
-                                    .foregroundStyle(guide.color)
+                                    .foregroundStyle(Color("baseColor"))
                             }
                             
                             VStack(alignment: .leading, spacing: 4) {
@@ -125,6 +179,7 @@ struct EmergencyGuideView: View {
                         .padding(.vertical, 14)
                         .padding(.horizontal, 20)
                     }
+                    .buttonStyle(.plain)
                     
                     if guide.id != viewModel.guides.last?.id {
                         Divider()

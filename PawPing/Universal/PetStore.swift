@@ -219,4 +219,43 @@ class PetStore {
             print("  Error deleting saved vet: \(error)")
         }
     }
+    
+    @MainActor
+    func saveVet(name: String, address: String, phone: String, latitude: Double?, longitude: Double?) async -> Bool {
+        do {
+            let session = try await client.auth.session
+            let userId = session.user.id
+            
+            let vet = SavedVet(
+                id: UUID(),
+                userId: userId,
+                name: name,
+                address: address,
+                phone: phone,
+                latitude: latitude,
+                longitude: longitude,
+                createdAt: Date()
+            )
+            
+            try await client
+                .from("saved_vets")
+                .insert(vet)
+                .execute()
+            
+            await fetchSavedVets()
+            return true
+        } catch {
+            print("  Error saving vet: \(error)")
+            return false
+        }
+    }
+    
+    @MainActor
+    func toggleSaveVet(name: String, address: String, phone: String, latitude: Double?, longitude: Double?) async {
+        if let existing = savedVets.first(where: { $0.name == name }) {
+            await deleteSavedVet(id: existing.id)
+        } else {
+            _ = await saveVet(name: name, address: address, phone: phone, latitude: latitude, longitude: longitude)
+        }
+    }
 }

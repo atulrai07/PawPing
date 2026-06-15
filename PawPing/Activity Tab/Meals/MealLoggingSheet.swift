@@ -15,6 +15,7 @@ struct MealLoggingSheet: View {
     var store: ActivityStore
     var mealType: MealType
     var logDate: Date = Date()
+    var isReadOnly: Bool = false
 
     // MARK: - Local State
 
@@ -78,7 +79,7 @@ struct MealLoggingSheet: View {
                     }
 
                     // Save Button
-                    if canSave {
+                    if canSave && !isReadOnly {
                         saveButton
                             .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
@@ -91,16 +92,14 @@ struct MealLoggingSheet: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: ingredients.count)
             }
             .background(Color("baseBackground"))
-            .navigationTitle("Log \(mealType.rawValue)")
+            .navigationTitle(isReadOnly ? "\(mealType.rawValue) Details" : "Log \(mealType.rawValue)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(Color("secondaryText").opacity(0.5))
-                            .font(.system(size: 24))
+                        Image(systemName: "xmark")
                     }
                 }
             }
@@ -159,6 +158,7 @@ struct MealLoggingSheet: View {
                         foodTypeCard(food: food)
                     }
                     .buttonStyle(.plain)
+                    .disabled(isReadOnly)
                 }
             }
         }
@@ -230,37 +230,42 @@ struct MealLoggingSheet: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(.orange)
                         
-                        Button {
-                            withAnimation {
-                                ingredients.removeAll(where: { $0.id == ingredient.id })
+                        
+                        if !isReadOnly {
+                            Button {
+                                withAnimation {
+                                    ingredients.removeAll(where: { $0.id == ingredient.id })
+                                }
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundStyle(.red.opacity(0.8))
+                                    .font(.system(size: 20))
                             }
-                        } label: {
-                            Image(systemName: "minus.circle.fill")
-                                .foregroundStyle(.red.opacity(0.8))
-                                .font(.system(size: 20))
+                            .padding(.leading, 8)
                         }
-                        .padding(.leading, 8)
                     }
                     .padding(14)
                     .background(Color("cardBackground"))
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
 
-                Button {
-                    showIngredientSearch = true
-                } label: {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                        Text("Add Ingredient")
+                if !isReadOnly {
+                    Button {
+                        showIngredientSearch = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add Ingredient")
+                        }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color("baseColor"))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .strokeBorder(Color("baseColor").opacity(0.5), style: StrokeStyle(lineWidth: 2, dash: [6]))
+                        )
                     }
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color("baseColor"))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .strokeBorder(Color("baseColor").opacity(0.5), style: StrokeStyle(lineWidth: 2, dash: [6]))
-                    )
                 }
             }
         }
@@ -319,6 +324,7 @@ struct MealLoggingSheet: View {
                 .labelsHidden()
                 .datePickerStyle(.compact)
                 .fixedSize()
+                .disabled(isReadOnly)
         }
         .padding(14)
         .background(Color("cardBackground"))

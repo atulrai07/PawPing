@@ -32,8 +32,7 @@ struct VetSearchView: View {
                         Button {
                             viewModel.searchText = ""
                         } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.secondary)
+                            Image(systemName: "xmark")
                         }
                     }
                 }

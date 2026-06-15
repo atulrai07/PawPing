@@ -31,7 +31,7 @@ struct ActivityView: View {
                         .frame(height: 160)
 
                     HStack(spacing: 20) {
-                        CircularProgressView(progress: store.walkActivity.progress)
+                        CircularProgressView(progress: store.liveProgress)
                             .frame(width: 100, height: 100)
                             .padding(.leading, 20)
 
@@ -43,7 +43,7 @@ struct ActivityView: View {
                                 .foregroundStyle(Color("secondaryText"))
                             
                             HStack (spacing:0){
-                                Text("\(store.walkActivity.currentMinutes)/")
+                                Text("\(store.liveWalkedMinutes)/")
                                 Text("\(store.walkActivity.goalMinutes)min")
                                     .foregroundStyle(Color("baseColor"))
                             }

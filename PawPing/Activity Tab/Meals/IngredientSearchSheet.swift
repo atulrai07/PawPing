@@ -37,8 +37,7 @@ struct IngredientSearchSheet: View {
                         Button {
                             searchText = ""
                         } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(Color("secondaryText"))
+                            Image(systemName: "xmark")
                         }
                     }
                 }

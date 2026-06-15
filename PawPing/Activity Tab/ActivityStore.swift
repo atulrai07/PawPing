@@ -26,6 +26,21 @@ class ActivityStore {
         })
     }
 
+    /// Total walked minutes today, including the active walk session in real-time
+    var liveWalkedMinutes: Int {
+        let todaysMinutes = walkActivity.currentMinutes
+        if isWalking {
+            return todaysMinutes + Int(elapsedSeconds / 60)
+        }
+        return todaysMinutes
+    }
+    
+    /// Progress today, including the active walk session in real-time
+    var liveProgress: Double {
+        guard walkActivity.goalMinutes > 0 else { return 0 }
+        return Double(liveWalkedMinutes) / Double(walkActivity.goalMinutes)
+    }
+
     // MARK: - Meal & Diet Sub-Store
     var mealDietStore = MealDietStore()
 
