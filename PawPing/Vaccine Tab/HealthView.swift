@@ -17,6 +17,7 @@ struct HealthView: View {
 
     @State private var showAddRecord = false
     @State private var showReportConfig = false
+    @State private var recordToComplete: HealthRecord? = nil
 
     // MARK: Derived collections
 
@@ -55,42 +56,46 @@ struct HealthView: View {
                             if !overdueRecords.isEmpty || !upcomingRecords.isEmpty {
                                 healthSection(title: "Needs Attention") {
                                     recordList(overdueRecords + upcomingRecords) { record in
-                                        HealthRecordRowView(record: record) {
-                                            handleMarkAsDone(record)
+                                        NavigationLink(destination: HealthRecordDetailView(record: record)) {
+                                            HealthRecordRowView(record: record) {
+                                                recordToComplete = record
+                                            }
                                         }
+                                        .buttonStyle(.plain)
                                     }
                                 }
                             }
 
                             // Unified Health Timeline
-                            healthSection(title: "Health Timeline") {
-                                VStack(spacing: 16) {
-                                    HealthTimelineView(events: timelineEvents, limit: 5)
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Health Timeline")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundStyle(Color("baseColor"))
                                     
-                                    if timelineEvents.count > 5 {
+                                    Spacer()
+                                    
+                                    if timelineEvents.count > 8 {
                                         NavigationLink {
-                                            ScrollView {
-                                                HealthTimelineView(events: timelineEvents, limit: nil)
-                                                    .padding()
-                                            }
-                                            .background(Color("baseBackground"))
-                                            .navigationTitle("Full Timeline")
-                                            .navigationBarTitleDisplayMode(.inline)
+                                            FullTimelineView(events: timelineEvents)
                                         } label: {
-                                            Text("See All History")
-                                                .font(.subheadline)
-                                                .fontWeight(.semibold)
-                                                .frame(maxWidth: .infinity)
-                                                .padding()
-                                                .background(
-                                                    RoundedRectangle(cornerRadius: 16)
-                                                        .fill(Color("cardBackground"))
-                                                        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-                                                )
+                                            HStack(spacing: 4) {
+                                                Text("See All")
+                                                    .font(.subheadline)
+                                                    .fontWeight(.semibold)
+                                                    .foregroundStyle(Color.pawPrimary)
+                                                Image(systemName: "chevron.right")
+                                                    .font(.system(size: 11, weight: .bold))
+                                                    .foregroundStyle(Color.pawPrimary)
+                                            }
                                         }
                                         .buttonStyle(.plain)
                                     }
                                 }
+                                .padding(.horizontal)
+
+                                HealthTimelineView(events: timelineEvents, limit: 8)
+                                    .padding(.horizontal)
                             }
 
                             // Export Button
@@ -105,6 +110,7 @@ struct HealthView: View {
                     .background(Color("baseBackground"))
                     .task(id: petId) {
                         await store.fetchVaccines(for: petId)
+                        await medicationStore.fetchMedications(for: petId)
                     }
                 } else {
                     ContentUnavailableView(
@@ -136,6 +142,9 @@ struct HealthView: View {
                     .environment(store)
                     .environment(petStore)
                     .environment(appState)
+            }
+            .sheet(item: $recordToComplete) { record in
+                CompleteVaccineSheet(originalRecord: record)
             }
         }
     }

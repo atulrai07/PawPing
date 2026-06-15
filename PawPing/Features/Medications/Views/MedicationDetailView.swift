@@ -9,51 +9,57 @@ struct MedicationDetailView: View {
     @Environment(MedicationStore.self) var store
     @Environment(\.dismiss) var dismiss
     @State private var showDeleteConfirmation = false
+    @State private var showEditMedication = false
     
     let medication: Medication
     
+    var liveMedication: Medication {
+        store.medications.first(where: { $0.id == medication.id }) ?? medication
+    }
+    
     var body: some View {
+        let med = liveMedication
         List {
             Section("Status") {
                 HStack {
                     Text("Current Status")
                     Spacer()
-                    Text(medication.status.rawValue.capitalized)
-                        .foregroundStyle(statusColor)
+                    Text(med.status.rawValue.capitalized)
+                        .foregroundStyle(statusColor(for: med.status))
                         .fontWeight(.semibold)
                 }
             }
             
             Section("Details") {
-                detailRow(title: "Dosage", value: "\(medication.dosage) \(medication.unit.rawValue)")
-                detailRow(title: "Frequency", value: medication.frequency.rawValue)
-                detailRow(title: "Start Date", value: medication.startDate.formatted(date: .abbreviated, time: .omitted))
+                detailRow(title: "Dosage", value: "\(med.dosage) \(med.unit.rawValue)")
+                detailRow(title: "Frequency", value: med.frequency.rawValue)
+                detailRow(title: "Start Date", value: med.startDate.formatted(date: .abbreviated, time: .omitted))
                 
-                if let endDate = medication.endDate {
+                if let endDate = med.endDate {
                     detailRow(title: "End Date", value: endDate.formatted(date: .abbreviated, time: .omitted))
                 }
             }
             
-            if !medication.instructions.isEmpty || medication.prescribingVet != nil {
+            if !med.instructions.isEmpty || med.prescribingVet != nil {
                 Section("Additional Info") {
-                    if !medication.instructions.isEmpty {
+                    if !med.instructions.isEmpty {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Instructions")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text(medication.instructions)
+                            Text(med.instructions)
                         }
                     }
                     
-                    if let vet = medication.prescribingVet {
+                    if let vet = med.prescribingVet {
                         detailRow(title: "Prescribing Vet", value: vet)
                     }
                 }
             }
             
-            if !medication.completedDoses.isEmpty {
+            if !med.completedDoses.isEmpty {
                 Section("Completion History") {
-                    ForEach(medication.completedDoses.sorted(by: >), id: \.self) { date in
+                    ForEach(med.completedDoses.sorted(by: >), id: \.self) { date in
                         Text(date.formatted(date: .abbreviated, time: .shortened))
                     }
                 }
@@ -68,20 +74,30 @@ struct MedicationDetailView: View {
                 }
             }
         }
-        .navigationTitle(medication.name)
-        .confirmationDialog("Delete \(medication.name)?", isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
+        .navigationTitle(med.name)
+        .confirmationDialog("Delete \(med.name)?", isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
             Button("Delete", role: .destructive) {
-                store.deleteMedication(id: medication.id)
+                store.deleteMedication(id: med.id)
                 dismiss()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This action cannot be undone and will remove all history for this medication.")
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Edit") {
+                    showEditMedication = true
+                }
+            }
+        }
+        .sheet(isPresented: $showEditMedication) {
+            AddMedicationView(medicationToEdit: med)
+        }
     }
     
-    private var statusColor: Color {
-        switch medication.status {
+    private func statusColor(for status: MedicationStatus) -> Color {
+        switch status {
         case .active: return .green
         case .upcoming: return .blue
         case .completed: return .gray

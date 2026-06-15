@@ -95,6 +95,7 @@ struct PawPingApp: App {
                 if let newPetId {
                     Task {
                         await healthStore.fetchVaccines(for: newPetId)
+                        await medicationStore.fetchMedications(for: newPetId)
                     }
                 }
             }

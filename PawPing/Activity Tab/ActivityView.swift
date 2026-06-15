@@ -12,6 +12,7 @@ struct ActivityView: View {
     @Environment(PetStore.self) var petStore
     @Environment(HealthStore.self) var healthStore
     @Environment(DietAssistantStore.self) var dietAssistantStore
+    @Environment(MedicationStore.self) var medicationStore
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
@@ -165,6 +166,7 @@ struct ActivityView: View {
                         // Re-sync all stores for the active pet
                         store.switchPet(to: activeId)
                         await healthStore.fetchVaccines(for: activeId)
+                        await medicationStore.fetchMedications(for: activeId)
                     }
                 }
             )

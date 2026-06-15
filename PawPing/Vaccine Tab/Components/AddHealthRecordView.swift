@@ -36,28 +36,62 @@ struct AddHealthRecordView: View {
     @Environment(\.dismiss) private var dismiss
     
     let petId: UUID
+    let recordToEdit: HealthRecord?
 
     // MARK: - State
     
-    @State private var recordType: HealthRecordType = .vaccine
-    @State private var name: String = ""
-    @State private var dateGiven: Date = Date()
-    @State private var nextDoseDate: Date? = nil
-    @State private var hasNextDose: Bool = false
-    @State private var frequency: DoseFrequency = .annually
-    @State private var notes: String = ""
+    @State private var recordType: HealthRecordType
+    @State private var name: String
+    @State private var dateGiven: Date
+    @State private var nextDoseDate: Date?
+    @State private var hasNextDose: Bool
+    @State private var frequency: DoseFrequency
+    @State private var notes: String
     
     // Vet Clinic State
-    @State private var vetName: String = ""
-    @State private var vetAddress: String = ""
-    @State private var vetPhone: String = ""
-    @State private var vetLatitude: Double? = nil
-    @State private var vetLongitude: Double? = nil
+    @State private var vetName: String
+    @State private var vetAddress: String
+    @State private var vetPhone: String
+    @State private var vetLatitude: Double?
+    @State private var vetLongitude: Double?
     
     @State private var showingVetSearch = false
     @State private var errorMessage: String? = nil
     @State private var showError = false
     @State private var isSaving = false
+    
+    init(petId: UUID, recordToEdit: HealthRecord? = nil) {
+        self.petId = petId
+        self.recordToEdit = recordToEdit
+        
+        if let rec = recordToEdit {
+            _recordType = State(initialValue: rec.recordType)
+            _name = State(initialValue: rec.name)
+            _dateGiven = State(initialValue: rec.dateGiven)
+            _nextDoseDate = State(initialValue: rec.nextDoseDate)
+            _hasNextDose = State(initialValue: rec.nextDoseDate != nil)
+            _frequency = State(initialValue: .custom)
+            _notes = State(initialValue: rec.notes)
+            _vetName = State(initialValue: rec.vetName ?? "")
+            _vetAddress = State(initialValue: rec.vetAddress ?? "")
+            _vetPhone = State(initialValue: rec.vetPhone ?? "")
+            _vetLatitude = State(initialValue: rec.vetLatitude)
+            _vetLongitude = State(initialValue: rec.vetLongitude)
+        } else {
+            _recordType = State(initialValue: .vaccine)
+            _name = State(initialValue: "")
+            _dateGiven = State(initialValue: Date())
+            _nextDoseDate = State(initialValue: nil)
+            _hasNextDose = State(initialValue: false)
+            _frequency = State(initialValue: .annually)
+            _notes = State(initialValue: "")
+            _vetName = State(initialValue: "")
+            _vetAddress = State(initialValue: "")
+            _vetPhone = State(initialValue: "")
+            _vetLatitude = State(initialValue: nil)
+            _vetLongitude = State(initialValue: nil)
+        }
+    }
     
     var body: some View {
         NavigationStack {
@@ -164,7 +198,7 @@ struct AddHealthRecordView: View {
                         .lineLimit(3...6)
                 }
             }
-            .navigationTitle("Add Health Record")
+            .navigationTitle(recordToEdit == nil ? "Add Health Record" : "Edit Health Record")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -225,14 +259,14 @@ struct AddHealthRecordView: View {
         isSaving = true
         
         let record = HealthRecord(
-            id: UUID(),
+            id: recordToEdit?.id ?? UUID(),
             petId: petId,
             type: recordType.rawValue,
             name: name,
             dateGiven: dateGiven,
             nextDoseDate: hasNextDose ? (nextDoseDate ?? Calendar.current.date(byAdding: .year, value: 1, to: dateGiven)) : nil,
             notes: notes,
-            isCompleted: false,
+            isCompleted: recordToEdit?.isCompleted ?? false,
             vetName: vetName.isEmpty ? nil : vetName,
             vetAddress: vetAddress.isEmpty ? nil : vetAddress,
             vetPhone: vetPhone.isEmpty ? nil : vetPhone,
@@ -241,8 +275,15 @@ struct AddHealthRecordView: View {
         )
         
         Task {
-            print("📝 Attempting to save health record: \(record.name)")
-            await healthStore.addHealthRecord(record)
+            if recordToEdit != nil {
+                print("📝 Attempting to update health record: \(record.name)")
+                await healthStore.updateHealthRecord(record)
+            } else {
+                print("📝 Attempting to save health record: \(record.name)")
+                await healthStore.addHealthRecord(record)
+            }
+            // Ensure UI is fully refreshed
+            await healthStore.fetchVaccines(for: petId)
             isSaving = false
             dismiss()
         }

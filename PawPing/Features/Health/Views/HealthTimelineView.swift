@@ -6,58 +6,54 @@
 import SwiftUI
 
 struct HealthTimelineView: View {
+    @Environment(HealthStore.self) var healthStore
+    @Environment(MedicationStore.self) var medicationStore
+    
     var events: [TimelineEvent]
     var limit: Int? = nil
     
-    // Group events by Month and Year
-    var groupedEvents: [(String, [TimelineEvent])] {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        
+    var sortedEvents: [TimelineEvent] {
         var sorted = events.sorted { $0.eventDate > $1.eventDate }
         if let limit = limit {
             sorted = Array(sorted.prefix(limit))
         }
-        
-        let dict = Dictionary(grouping: sorted) { formatter.string(from: $0.eventDate) }
-        
-        // Sort keys to maintain chronological order (newest first)
-        let sortedKeys = dict.keys.sorted { key1, key2 in
-            guard let date1 = formatter.date(from: key1),
-                  let date2 = formatter.date(from: key2) else { return false }
-            return date1 > date2
-        }
-        
-        return sortedKeys.map { ($0, dict[$0]!) }
+        return sorted
     }
     
     var body: some View {
         if events.isEmpty {
             ContentUnavailableView("No Health Events", systemImage: "clock.arrow.circlepath", description: Text("Your pet's health journey will appear here."))
         } else {
-            LazyVStack(spacing: 16) {
-                ForEach(groupedEvents, id: \.0) { month, monthEvents in
-                    Section {
-                        VStack(spacing: 0) {
-                            ForEach(Array(monthEvents.enumerated()), id: \.element.id) { index, event in
-                                TimelineRow(event: event, isLast: index == monthEvents.count - 1)
+            VStack(spacing: 0) {
+                ForEach(Array(sortedEvents.enumerated()), id: \.element.id) { index, event in
+                    Group {
+                        if event.type == .medication {
+                            if let med = medicationStore.medications.first(where: { $0.id == event.id }) {
+                                NavigationLink(destination: MedicationDetailView(medication: med)) {
+                                    TimelineRow(event: event, isLast: index == sortedEvents.count - 1)
+                                }
+                            } else {
+                                TimelineRow(event: event, isLast: index == sortedEvents.count - 1)
+                            }
+                        } else {
+                            if let record = healthStore.healthRecords.first(where: { $0.id == event.id }) {
+                                NavigationLink(destination: HealthRecordDetailView(record: record)) {
+                                    TimelineRow(event: event, isLast: index == sortedEvents.count - 1)
+                                }
+                            } else {
+                                TimelineRow(event: event, isLast: index == sortedEvents.count - 1)
                             }
                         }
-                        .padding(.top, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color("cardBackground"))
-                                .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-                        )
-                    } header: {
-                        Text(month)
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 8)
                     }
+                    .buttonStyle(.plain)
                 }
             }
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color("cardBackground"))
+                    .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+            )
         }
     }
 }
@@ -107,11 +103,17 @@ struct TimelineRow: View {
             
             Spacer()
             
-            if event.isCompleted {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                    .padding(.top, 12)
+            HStack(spacing: 10) {
+                if event.isCompleted {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                }
+                
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.secondary.opacity(0.5))
+                    .font(.system(size: 14, weight: .bold))
             }
+            .padding(.top, 12)
         }
         .padding(.horizontal, 16)
     }

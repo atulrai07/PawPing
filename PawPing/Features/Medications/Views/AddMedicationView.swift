@@ -11,22 +11,63 @@ struct AddMedicationView: View {
     @Environment(MedicationStore.self) var store
     @Environment(PetStore.self) var petStore
     
-    @State private var name = ""
-    @State private var dosage = ""
-    @State private var unit = MedicationUnit.tablet
-    @State private var frequency = MedicationFrequency.onceDaily
-    @State private var startDate = Date()
-    @State private var hasEndDate = false
-    @State private var endDate = Date().addingTimeInterval(86400 * 7)
-    @State private var instructions = ""
+    let medicationToEdit: Medication?
+    
+    @State private var name: String
+    @State private var dosage: String
+    @State private var unit: MedicationUnit
+    @State private var frequency: MedicationFrequency
+    @State private var startDate: Date
+    @State private var hasEndDate: Bool
+    @State private var endDate: Date
+    @State private var instructions: String
     
     // Vet Clinic State
-    @State private var vetName: String = ""
-    @State private var vetAddress: String = ""
-    @State private var vetPhone: String = ""
-    @State private var vetLatitude: Double? = nil
-    @State private var vetLongitude: Double? = nil
+    @State private var vetName: String
+    @State private var vetAddress: String
+    @State private var vetPhone: String
+    @State private var vetLatitude: Double?
+    @State private var vetLongitude: Double?
     @State private var showingVetSearch = false
+    
+    init(medicationToEdit: Medication? = nil) {
+        self.medicationToEdit = medicationToEdit
+        
+        if let med = medicationToEdit {
+            _name = State(initialValue: med.name)
+            _dosage = State(initialValue: med.dosage)
+            _unit = State(initialValue: med.unit)
+            _frequency = State(initialValue: med.frequency)
+            _startDate = State(initialValue: med.startDate)
+            if let endDate = med.endDate {
+                _hasEndDate = State(initialValue: true)
+                _endDate = State(initialValue: endDate)
+            } else {
+                _hasEndDate = State(initialValue: false)
+                _endDate = State(initialValue: Date().addingTimeInterval(86400 * 7))
+            }
+            _instructions = State(initialValue: med.instructions)
+            _vetName = State(initialValue: med.prescribingVet ?? "")
+            _vetAddress = State(initialValue: med.vetAddress ?? "")
+            _vetPhone = State(initialValue: med.vetPhone ?? "")
+            _vetLatitude = State(initialValue: med.vetLatitude)
+            _vetLongitude = State(initialValue: med.vetLongitude)
+        } else {
+            _name = State(initialValue: "")
+            _dosage = State(initialValue: "")
+            _unit = State(initialValue: .tablet)
+            _frequency = State(initialValue: .onceDaily)
+            _startDate = State(initialValue: Date())
+            _hasEndDate = State(initialValue: false)
+            _endDate = State(initialValue: Date().addingTimeInterval(86400 * 7))
+            _instructions = State(initialValue: "")
+            _vetName = State(initialValue: "")
+            _vetAddress = State(initialValue: "")
+            _vetPhone = State(initialValue: "")
+            _vetLatitude = State(initialValue: nil)
+            _vetLongitude = State(initialValue: nil)
+        }
+    }
     
     var body: some View {
         NavigationStack {
@@ -92,7 +133,7 @@ struct AddMedicationView: View {
                     }
                 }
             }
-            .navigationTitle("Add Medication")
+            .navigationTitle(medicationToEdit == nil ? "Add Medication" : "Edit Medication")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -124,6 +165,7 @@ struct AddMedicationView: View {
     private func save() {
         guard let petId = petStore.activePetId else { return }
         let med = Medication(
+            id: medicationToEdit?.id ?? UUID(),
             petId: petId,
             name: name,
             dosage: dosage,
@@ -136,9 +178,16 @@ struct AddMedicationView: View {
             vetAddress: vetAddress.isEmpty ? nil : vetAddress,
             vetPhone: vetPhone.isEmpty ? nil : vetPhone,
             vetLatitude: vetLatitude,
-            vetLongitude: vetLongitude
+            vetLongitude: vetLongitude,
+            completedDoses: medicationToEdit?.completedDoses ?? []
         )
-        store.addMedication(med)
+        
+        if medicationToEdit != nil {
+            store.updateMedication(med)
+        } else {
+            store.addMedication(med)
+        }
+        
         dismiss()
     }
 }

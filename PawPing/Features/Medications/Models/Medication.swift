@@ -44,6 +44,24 @@ struct Medication: Identifiable, Codable {
     /// Tracks dates when doses were logged as completed
     var completedDoses: [Date]
     
+    enum CodingKeys: String, CodingKey {
+        case id
+        case petId = "pet_id"
+        case name
+        case dosage
+        case unit
+        case frequency
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case instructions
+        case prescribingVet = "prescribing_vet"
+        case vetAddress = "vet_address"
+        case vetPhone = "vet_phone"
+        case vetLatitude = "vet_latitude"
+        case vetLongitude = "vet_longitude"
+        case completedDoses = "completed_doses"
+    }
+    
     init(id: UUID = UUID(), petId: UUID, name: String, dosage: String, unit: MedicationUnit, frequency: MedicationFrequency, startDate: Date, endDate: Date? = nil, instructions: String = "", prescribingVet: String? = nil, vetAddress: String? = nil, vetPhone: String? = nil, vetLatitude: Double? = nil, vetLongitude: Double? = nil, completedDoses: [Date] = []) {
         self.id = id
         self.petId = petId

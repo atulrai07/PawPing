@@ -30,12 +30,6 @@ struct HealthRecordRowView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
                 
-                if let vet = record.vetName {
-                    Text(vet)
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                }
-                
                 if let nextDose = record.formattedNextDoseDate {
                     Text("Next: \(nextDose)")
                         .font(.system(size: 12))
@@ -45,30 +39,37 @@ struct HealthRecordRowView: View {
             
             Spacer()
             
-            if record.status != .done, let onMarkDone {
-                Button {
-                    onMarkDone()
-                } label: {
-                    Text("Done")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.pawPrimary)
-                        .clipShape(Capsule())
-                }
-            } else {
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(record.formattedDateGiven)
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                    
-                    if record.status == .done {
-                        Text("Completed")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(.green)
+            HStack(spacing: 12) {
+                if record.status != .done, let onMarkDone {
+                    Button {
+                        onMarkDone()
+                    } label: {
+                        Text("Done")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.pawPrimary)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(record.formattedDateGiven)
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                        
+                        if record.status == .done {
+                            Text("Completed")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.green)
+                        }
                     }
                 }
+                
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.secondary.opacity(0.5))
+                    .font(.system(size: 14, weight: .bold))
             }
         }
         .padding(.vertical, 10)
