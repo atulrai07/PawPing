@@ -17,62 +17,58 @@ struct ProfileView: View {
     
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 32) {
+        VStack(spacing: 32) {
 
-                // MARK: - Profile Header (Pet)
-                profileHeader
-                    .padding(.top, 10)
+            // MARK: - Profile Header (Pet)
+            profileHeader
+                .padding(.top, 10)
 
-                // MARK: - Pet Information
-                settingsSection(title: "Pet Information") {
-                    NavigationLink(destination: MyPetsView()) {
-                        settingsRow(label: "My Pets", icon: "pawprint.fill", badge: "\(petStore.pets.count)")
-                    }
+            // MARK: - Pet Information
+            settingsSection(title: "Pet Information") {
+                NavigationLink(destination: MyPetsView()) {
+                    settingsRow(label: "My Pets", icon: "pawprint.fill", badge: "\(petStore.pets.count)")
                 }
-
-                // MARK: - Owner Information
-                settingsSection(title: "Owner Information") {
-                    infoRow(label: "Name", value: petStore.currentUserProfile?.name ?? "Loading...", icon: "person.fill")
-                    Divider().padding(.leading, 56)
-                    infoRow(label: "Email", value: petStore.currentUserProfile?.email ?? "Loading...", icon: "envelope.fill")
-                }
-
-                // MARK: - Vet & Emergency
-                settingsSection(title: "Vet & Emergency") {
-                    NavigationLink(destination: SavedVetsView()) {
-                        settingsRow(label: "Saved Vets", icon: "cross.case.fill")
-                    }
-                }
-
-                // MARK: - Legal & App Settings
-                settingsSection(title: "Legal & App Settings") {
-                    NavigationLink(destination: TermsView()) {
-                        settingsRow(label: "Terms & Conditions", icon: "doc.text.fill")
-                    }
-                    Divider().padding(.leading, 56)
-                    NavigationLink(destination: PrivacyPolicyView()) {
-                        settingsRow(label: "Privacy Policy", icon: "lock.shield.fill")
-                    }
-                    Divider().padding(.leading, 56)
-                    NavigationLink(destination: AccountManagementView()) {
-                        settingsRow(label: "Account Management", icon: "person.badge.key.fill")
-                    }
-                    Divider().padding(.leading, 56)
-                    NavigationLink(destination: AboutView()) {
-                        settingsRow(label: "About Us", icon: "info.circle.fill")
-                    }
-                }
-
-                // MARK: - Log Out
-                logOutButton
-                    .padding(.top, 8)
             }
-            .padding(.bottom, 40)
+
+            // MARK: - Owner Information
+            settingsSection(title: "Owner Information") {
+                infoRow(label: "Name", value: petStore.currentUserProfile?.name ?? "Loading...", icon: "person.fill")
+                Divider().padding(.leading, 56)
+                infoRow(label: "Email", value: petStore.currentUserProfile?.email ?? "Loading...", icon: "envelope.fill")
+            }
+
+            // MARK: - Vet & Emergency
+            settingsSection(title: "Vet & Emergency") {
+                NavigationLink(destination: SavedVetsView()) {
+                    settingsRow(label: "Saved Vets", icon: "cross.case.fill")
+                }
+            }
+
+            // MARK: - Legal & App Settings
+            settingsSection(title: "Legal & App Settings") {
+                NavigationLink(destination: TermsView()) {
+                    settingsRow(label: "Terms & Conditions", icon: "doc.text.fill")
+                }
+                Divider().padding(.leading, 56)
+                NavigationLink(destination: PrivacyPolicyView()) {
+                    settingsRow(label: "Privacy Policy", icon: "lock.shield.fill")
+                }
+                Divider().padding(.leading, 56)
+                NavigationLink(destination: AccountManagementView()) {
+                    settingsRow(label: "Account Management", icon: "person.badge.key.fill")
+                }
+                Divider().padding(.leading, 56)
+                NavigationLink(destination: AboutView()) {
+                    settingsRow(label: "About Us", icon: "info.circle.fill")
+                }
+            }
+
+            // MARK: - Log Out
+            logOutButton
+                .padding(.top, 8)
         }
-        .background(Color("baseBackground"))
-        .navigationTitle("Profile")
-        .navigationBarTitleDisplayMode(.inline)
+        .padding(.bottom, 40)
+        .customNavigationScroll(title: "Profile")
         .task {
             // Force fetch if profile is missing OR if it belongs to a previous user session
             if petStore.currentUserProfile == nil || petStore.currentUserProfile?.id != authStore.appState?.currentUserId {
@@ -84,7 +80,9 @@ struct ProfileView: View {
                 showingAddPet = false
             }
         }
-        .sheet(isPresented: $showingEditPet) {
+        .sheet(isPresented: $showingEditPet, onDismiss: {
+            Task { await petStore.fetchPets() }
+        }) {
             EditPetView()
         }
         .alert("Are you sure you want to log out?", isPresented: $showingLogoutAlert) {
