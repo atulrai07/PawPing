@@ -41,7 +41,7 @@ enum EmergencyStaticData {
                 "If alone: Perform 30 compressions followed by 2 quick breaths into the dog's nose (hold their muzzle closed). Repeat cycle."
             ],
             warning: "Do NOT perform CPR on a healthy, conscious dog as it can cause serious injury.",
-            videoID: "0AFrTNK0Xck" // PDSA Pet First Aid CPR
+            videoID: "KqClwoUrgZA" // PDSA Pet First Aid CPR
         ),
         EmergencyGuide(
             title: "Choking",
@@ -60,7 +60,7 @@ enum EmergencyStaticData {
                 "For small dogs, hold them head-down with their back against your chest and apply pressure under the ribs."
             ],
             warning: "Be extremely careful. A choking dog is in panic and is highly likely to bite out of fear.",
-            videoID: "9BqFkK3E_A4" // Pet First Aid Choking
+            videoID: "u1mVw3BaBMo" // Pet First Aid Choking
         ),
         EmergencyGuide(
             title: "Poison Ingestion",
@@ -79,7 +79,7 @@ enum EmergencyStaticData {
                 "Never give home remedies (like oil or milk) as they can speed up poison absorption."
             ],
             warning: "Inducing vomiting for corrosive substances (bleach, batteries) will cause severe burn damage to the esophagus.",
-            videoID: nil
+            videoID: "S18UxMuBUb8"
         ),
         EmergencyGuide(
             title: "Heat Stroke",
@@ -98,7 +98,7 @@ enum EmergencyStaticData {
                 "Take them to the vet immediately. Heat stroke causes silent, delayed organ failure."
             ],
             warning: "Do NOT use ice or freezing water. It constricts blood vessels, trapping heat inside their vital organs.",
-            videoID: "Jj7M1oG-_b8" // Heatstroke in dogs
+            videoID: "Et80ZrwOYMM" // Heatstroke in dogs
         ),
         EmergencyGuide(
             title: "Bleeding & Wounds",
@@ -117,7 +117,7 @@ enum EmergencyStaticData {
                 "Secure the dressing with bandage wrap, ensuring it's not too tight to cut off circulation."
             ],
             warning: "Do NOT apply a tourniquet unless you are instructed by a vet, as it can result in limb amputation.",
-            videoID: "QpY8nLItBvw" // Dog bleeding first aid
+            videoID: "CjsJBrzFHhs" // Dog bleeding first aid
         )
     ]
 }

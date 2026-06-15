@@ -70,6 +70,7 @@ struct PawPingApp: App {
                 if appState.isAuthenticated {
                     isInitialLoading = true
                     await petStore.fetchPets()
+                    activityStore.switchPet(to: petStore.activePetId)
                     appState.hasPets = !petStore.pets.isEmpty
                     isInitialLoading = false
                 } else {
@@ -80,6 +81,7 @@ struct PawPingApp: App {
                 if appState.isAuthenticated {
                     isInitialLoading = true
                     await petStore.fetchPets()
+                    activityStore.switchPet(to: petStore.activePetId)
                     appState.hasPets = !petStore.pets.isEmpty
                     isInitialLoading = false
                 }

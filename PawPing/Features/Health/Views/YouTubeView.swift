@@ -10,7 +10,7 @@ struct VideoTutorialCard: View {
     let title: String
     let accentColor: Color
     
-    @State private var isPressed = false
+    
     
     private var youtubeWebURL: URL? {
         URL(string: "https://www.youtube.com/watch?v=\(videoID)")
@@ -105,14 +105,7 @@ struct VideoTutorialCard: View {
             )
             .shadow(color: .black.opacity(0.08), radius: 6, y: 3)
         }
-        .buttonStyle(.plain)
-        .scaleEffect(isPressed ? 0.97 : 1.0)
-        .animation(.spring(response: 0.3), value: isPressed)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in isPressed = true }
-                .onEnded { _ in isPressed = false }
-        )
+        .buttonStyle(ScaleButtonStyle())
     }
     
     // MARK: - Placeholder
@@ -157,4 +150,12 @@ struct VideoTutorialCard: View {
         accentColor: .red
     )
     .padding()
+}
+
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.spring(response: 0.3), value: configuration.isPressed)
+    }
 }
