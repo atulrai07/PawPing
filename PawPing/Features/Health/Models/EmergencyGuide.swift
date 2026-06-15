@@ -19,27 +19,6 @@ struct EmergencyGuide: Identifiable, Hashable {
     let videoID: String?
 }
 
-// MARK: - Care Myth Model
-
-enum MythSeverity: String, Codable {
-    case dangerous  = "Dangerous"
-    case misleading = "Misleading"
-    
-    var color: Color {
-        switch self {
-        case .dangerous: return .red
-        case .misleading: return .orange
-        }
-    }
-}
-
-struct CareMyth: Identifiable, Hashable {
-    let id = UUID()
-    let myth: String
-    let fact: String
-    let explanation: String
-    let severity: MythSeverity
-}
 
 // MARK: - Static Data
 
@@ -139,45 +118,5 @@ enum EmergencyStaticData {
             ],
             warning: "Do NOT apply a tourniquet unless you are instructed by a vet, as it can result in limb amputation.",
             videoID: "QpY8nLItBvw" // Dog bleeding first aid
-        )
-    ]
-    
-    static let myths: [CareMyth] = [
-        CareMyth(
-            myth: "Licking wounds helps them heal",
-            fact: "Licking causes hot spots, delays healing, and introduces harmful bacteria.",
-            explanation: "While animal saliva has mild antibacterial enzymes, a dog's mouth is filled with bacteria. Repeated licking breaks down new skin cells, causes irritation (hot spots), and frequently leads to severe deep-tissue infections.",
-            severity: .dangerous
-        ),
-        CareMyth(
-            myth: "Feeding cooked bones is a great treat",
-            fact: "Cooked bones splinter easily, causing throat punctures and stomach tears.",
-            explanation: "Cooking dehydrates bones, making them brittle. When chewed, they splinter into sharp fragments that can obstruct the throat, slice the esophagus, or puncture stomach and intestinal walls, often requiring emergency surgery.",
-            severity: .dangerous
-        ),
-        CareMyth(
-            myth: "Garlic and onions prevent fleas naturally",
-            fact: "Garlic and onions destroy a dog's red blood cells, causing severe anemia.",
-            explanation: "Alliums (garlic, onions, chives) contain compounds that damage red blood cells, leading to a condition called hemolytic anemia. They do not prevent fleas and are highly toxic to dogs.",
-            severity: .dangerous
-        ),
-        CareMyth(
-            myth: "Dogs eat grass only when they are sick",
-            fact: "Grass eating is a normal behavior for digestion, hydration, or boredom.",
-            explanation: "While dogs sometimes eat grass to induce vomiting, studies show that less than 10% of dogs are sick before eating grass. Most eat it to supplement fiber, taste moisture, or simply out of boredom.",
-            severity: .misleading
-        ),
-        CareMyth(
-            myth: "A warm, dry nose means your dog has a fever",
-            fact: "A dog's nose wetness changes naturally throughout the day and is not a clinical indicator.",
-            explanation: "A healthy dog can have a warm, dry nose after sleeping, in dry rooms, or after exercise. The only accurate way to determine if a dog has a fever is by checking their temperature rectally.",
-            severity: .misleading
-        ),
-        CareMyth(
-            myth: "Grain-free diets are always healthier",
-            fact: "Grain-free diets are linked to heart conditions (dilated cardiomyopathy).",
-            explanation: "The FDA has investigated links between grain-free diets (heavy in peas, lentils, or potatoes) and Canine Dilated Cardiomyopathy (DCM), a serious heart condition. Grains are a healthy source of nutrients for most dogs unless they have a diagnosed allergy.",
-            severity: .misleading
-        )
     ]
 }

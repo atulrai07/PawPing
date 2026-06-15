@@ -280,7 +280,7 @@ extension ActivityView {
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(.primary)
 
-                        Text("CPR, choking, poisoning SOPs & myths")
+                        Text("CPR, choking, poisoning SOPs")
                             .font(.system(size: 12))
                             .foregroundStyle(Color("secondaryText"))
                     }

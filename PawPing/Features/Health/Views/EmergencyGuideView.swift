@@ -19,23 +19,7 @@ struct EmergencyGuideView: View {
                     .padding(.horizontal)
                     .padding(.top, 16)
                 
-                // MARK: Tab Switcher
-                Picker("Emergency Tab", selection: Binding(
-                    get: { viewModel.selectedTab },
-                    set: { viewModel.selectedTab = $0 }
-                )) {
-                    Text("Emergency SOPs").tag(0)
-                    Text("Myth Busters").tag(1)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                
-                // MARK: Content Lists
-                if viewModel.selectedTab == 0 {
-                    sopList
-                } else {
-                    mythList
-                }
+                sopList
             }
         }
         .background(Color("baseBackground"))
@@ -153,63 +137,7 @@ struct EmergencyGuideView: View {
             .padding(.horizontal)
         }
     }
-    
-    // MARK: - Myth List Subview
-    
-    private var mythList: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Debunking Dog Misconceptions")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-                .padding(.leading, 4)
-            
-            VStack(spacing: 0) {
-                ForEach(viewModel.myths) { myth in
-                    NavigationLink(destination: MythDetailView(myth: myth)) {
-                        HStack(spacing: 16) {
-                            ZStack {
-                                Circle()
-                                    .fill(myth.severity.color.opacity(0.1))
-                                    .frame(width: 44, height: 44)
-                                Image(systemName: myth.severity == .dangerous ? "exclamationmark.shield.fill" : "lightbulb.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundStyle(myth.severity.color)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(myth.myth)
-                                    .font(.system(size: 16, weight: .bold))
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(1)
-                                
-                                Text(myth.fact)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(Color(.systemGray4))
-                        }
-                        .padding(.vertical, 14)
-                        .padding(.horizontal, 20)
-                    }
-                    
-                    if myth.id != viewModel.myths.last?.id {
-                        Divider()
-                            .padding(.leading, 80)
-                    }
-                }
-            }
-            .background(Color("cardBackground"))
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .padding(.horizontal)
-        }
-    }
+
 }
 
 #Preview {

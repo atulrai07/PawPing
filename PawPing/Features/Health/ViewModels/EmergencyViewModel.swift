@@ -10,16 +10,9 @@ import SwiftUI
 @Observable
 class EmergencyViewModel {
     
-    // MARK: - State Properties
-    
-    /// Selected Tab: 0 for Emergency SOPs, 1 for Myths
-    var selectedTab: Int = 0
     
     /// The list of available emergency first-aid guides
     private(set) var guides: [EmergencyGuide] = EmergencyStaticData.guides
-    
-    /// The list of debunked care myths
-    private(set) var myths: [CareMyth] = EmergencyStaticData.myths
     
     // MARK: - Dependencies
     
