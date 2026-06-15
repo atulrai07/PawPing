@@ -134,7 +134,7 @@ struct WeightTrackerView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("\(latest.weightKg, specifier: "%.1f") kg")
                             .font(.system(size: 28, weight: .bold))
-                        Text(timeAgo(from: latest.date))
+                        Text(formatDate(latest.date))
                             .font(.system(size: 13))
                             .foregroundStyle(Color("secondaryText"))
                     }
@@ -171,9 +171,10 @@ struct WeightTrackerView: View {
         }
     }
 
-    private func timeAgo(from date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter.localizedString(for: date, relativeTo: Date())
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
     }
 }

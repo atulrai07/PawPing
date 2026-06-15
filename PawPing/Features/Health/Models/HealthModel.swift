@@ -63,6 +63,20 @@ struct HealthRecord: Identifiable, Codable, Hashable {
         case vetLatitude = "vet_latitude"
         case vetLongitude = "vet_longitude"
     }
+    
+    // MARK: - Shared Formatters
+    
+    private static let givenDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d yyyy"
+        return f
+    }()
+    
+    private static let nextDoseDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "dd MMMM yyyy"
+        return f
+    }()
 
     // MARK: - Computed Properties
 
@@ -122,16 +136,12 @@ struct HealthRecord: Identifiable, Codable, Hashable {
     }
 
     var formattedDateGiven: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d yyyy"
-        return formatter.string(from: dateGiven)
+        Self.givenDateFormatter.string(from: dateGiven)
     }
 
     var formattedNextDoseDate: String? {
         guard let nextDose = nextDoseDate else { return nil }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd MMMM yyyy"
-        return formatter.string(from: nextDose)
+        return Self.nextDoseDateFormatter.string(from: nextDose)
     }
     
     // MARK: - Sample Data

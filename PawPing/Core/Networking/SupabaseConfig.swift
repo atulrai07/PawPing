@@ -51,12 +51,20 @@ enum SupabaseConfig {
         return encoder
     }
     
+    static let customSession: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 10.0 // Fail fast if unreachable (default is 60s)
+        config.timeoutIntervalForResource = 15.0
+        return URLSession(configuration: config)
+    }()
+    
     static let client = SupabaseClient(
         supabaseURL: url,
         supabaseKey: key,
         options: SupabaseClientOptions(
             db: .init(encoder: encoder, decoder: decoder),
-            auth: .init(emitLocalSessionAsInitialSession: true)
+            auth: .init(emitLocalSessionAsInitialSession: true),
+            global: .init(session: customSession)
         )
     )
 }

@@ -22,6 +22,7 @@ struct ActivityView: View {
     @State private var showDistanceSummary = false
     @State private var showDietAssistant = false
     @State private var showHealthView = false
+    @State private var showEmergencyGuide = false
 
     var body: some View {
         NavigationStack {
@@ -34,6 +35,9 @@ struct ActivityView: View {
                 
                 // MARK: - Diet Assistant Shortcut
                 dietAssistantShortcut
+                
+                // MARK: - Emergency Guide Shortcut
+                emergencyGuideShortcut
                 
                 // MARK: - Activity Trend Graph
                 activityTrendSection
@@ -56,6 +60,9 @@ struct ActivityView: View {
             }
             .navigationDestination(isPresented: $showHealthView) {
                 HealthView()
+            }
+            .navigationDestination(isPresented: $showEmergencyGuide) {
+                EmergencyGuideView()
             }
             // MARK: - Data Refresh
             .task(id: petStore.activePetId) {
@@ -227,6 +234,65 @@ extension ActivityView {
                         .overlay(
                             Image(systemName: "chevron.right")
                                 .foregroundStyle(Color("baseColor"))
+                                .font(.system(size: 12, weight: .bold))
+                        )
+                        .padding(.trailing, 12)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal)
+    }
+    
+    /// Quick access to the Emergency SOP & First Aid guides
+    private var emergencyGuideShortcut: some View {
+        Button {
+            showEmergencyGuide = true
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.red.opacity(0.12),
+                                Color.red.opacity(0.04)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 95)
+
+                HStack(spacing: 16) {
+                    // Icon Container
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.red.opacity(0.15))
+                        .frame(width: 78, height: 78)
+                        .overlay(
+                            Image(systemName: "heart.text.square.fill")
+                                .font(.system(size: 32))
+                                .foregroundStyle(.red)
+                        )
+                        .padding(.leading, 8)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Emergency Guide")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.primary)
+
+                        Text("CPR, choking, poisoning SOPs & myths")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color("secondaryText"))
+                    }
+
+                    Spacer()
+
+                    Circle()
+                        .fill(Color.red.opacity(0.2))
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.red)
                                 .font(.system(size: 12, weight: .bold))
                         )
                         .padding(.trailing, 12)

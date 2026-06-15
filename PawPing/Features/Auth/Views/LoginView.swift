@@ -101,6 +101,21 @@ struct LoginView: View {
                 }
                 .disabled(isLoading || email.isEmpty || password.isEmpty)
                 
+                #if DEBUG
+                Button {
+                    appState.isAuthenticated = true
+                    appState.currentUserId = "67eef1fa-becc-464a-b89d-74d2f24b8f31"
+                } label: {
+                    Text("Developer Bypass (Sidmoon)")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.orange.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                #endif
+                
                 // Divider
                 HStack {
                     Rectangle().frame(height: 1).foregroundStyle(Color(.systemGray4))

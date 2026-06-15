@@ -28,6 +28,14 @@ class ActivityStore {
     /// Raw list of all fetched walk sessions
     var walkSessions: [WalkSession] = []
 
+    /// Set of dates (year, month, day) that have a recorded walk with path data
+    var walkedDates: Set<DateComponents> {
+        Set(walkSessions.compactMap { session in
+            guard !session.routePoints.isEmpty && session.distanceMetres > 0 else { return nil }
+            return Calendar.current.dateComponents([.year, .month, .day], from: session.date)
+        })
+    }
+
     // MARK: - Tracking State
     /// Indicates if a walk is currently active
     var isWalking: Bool = false

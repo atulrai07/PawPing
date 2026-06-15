@@ -15,6 +15,7 @@ struct DistanceSummaryView: View {
     
     // MARK: - State
     @State private var selectedRange = 0
+    @State private var showCalendar = false
     private let ranges = ["Week", "Month"]
     
     var body: some View {
@@ -61,28 +62,30 @@ struct DistanceSummaryView: View {
                 .padding(.horizontal)
                 
                 // MARK: - Recent Activity List
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Recent Walks")
-                        .font(.system(size: 18, weight: .bold))
-                        .padding(.horizontal)
-                    
-                    if store.walkSessions.isEmpty {
-                        emptyStateView
-                    } else {
-                        LazyVStack(spacing: 12) {
-                            ForEach(store.walkSessions.reversed()) { session in
-                                WalkHistoryRow(session: session)
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-                .padding(.bottom, 30)
+                // (Removed list as per new requirements — access via calendar button in toolbar)
+                Spacer(minLength: 40)
             }
         }
         .background(Color("baseBackground"))
         .navigationTitle("Distance Summary")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showCalendar = true
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color("secondaryText"))
+                        .padding(8)
+                        .background(Circle().fill(Color("secondaryCardBackground").opacity(0.5)))
+                }
+            }
+        }
+        .sheet(isPresented: $showCalendar) {
+            WalkCalendarView()
+                .environment(store)
+        }
     }
 
     // MARK: - Subviews

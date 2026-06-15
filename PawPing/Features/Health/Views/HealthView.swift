@@ -78,6 +78,10 @@ struct HealthView: View {
                             HealthSummaryCard(summary: HealthSummary(from: filteredRecords))
                                 .padding(.horizontal)
 
+                            // MARK: - Emergency Banner
+                            emergencyBanner
+                                .padding(.horizontal)
+
                             // MARK: - Overdue Section
                             if !overdueRecords.isEmpty {
                                 healthSection(title: " Needs Attention", color: .red) {
@@ -235,6 +239,44 @@ struct HealthView: View {
                     .stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
                     .foregroundStyle(.secondary.opacity(0.3))
             )
+    }
+
+    private var emergencyBanner: some View {
+        NavigationLink(destination: EmergencyGuideView()) {
+            HStack(spacing: 14) {
+                Image(systemName: "heart.text.square.fill")
+                    .font(.system(size: 24))
+                    .foregroundStyle(.white)
+                    .padding(10)
+                    .background(Circle().fill(.white.opacity(0.2)))
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Emergency First Aid SOP")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(.white)
+                    Text("Step-by-step CPR, choking, poisoning guides")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.white.opacity(0.9))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        LinearGradient(
+                            colors: [.red, Color.red.opacity(0.85)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+            )
+            .shadow(color: Color.red.opacity(0.2), radius: 6, x: 0, y: 3)
+        }
+        .buttonStyle(.plain)
     }
 }
 

@@ -14,6 +14,7 @@ import Supabase
 class HealthStore {
     private let client = SupabaseConfig.client
     var healthRecords: [HealthRecord] = []
+    var nearestRecord: HealthRecord?
 
     var summary: HealthSummary {
         HealthSummary(from: healthRecords)
@@ -37,6 +38,7 @@ class HealthStore {
                 .value
             
             self.healthRecords = fetched
+            self.updateNearestRecord()
         } catch {
             print("❌ Error fetching health records from vaccine_records: \(error)")
         }
@@ -176,5 +178,12 @@ class HealthStore {
                 healthRecords[index] = originalRecord
             }
         }
+    }
+    
+    private func updateNearestRecord() {
+        self.nearestRecord = healthRecords
+            .filter { $0.nextDoseDate != nil && $0.nextDoseDate! > Date() }
+            .sorted { ($0.nextDoseDate ?? Date.distantFuture) < ($1.nextDoseDate ?? Date.distantFuture) }
+            .first
     }
 }

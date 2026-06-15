@@ -11,11 +11,16 @@ struct WalkTimeGraphView: View {
     // MARK: - Properties
     var model: TimeWalkedGraphModel
     
-    /// Helper to identify the current weekday for highlighting the X-axis label
-    private var currentDay: String {
+    /// Shared formatter to avoid expensive re-initializations
+    private static let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE"
-        return formatter.string(from: Date()).uppercased()
+        return formatter
+    }()
+    
+    /// Helper to identify the current weekday for highlighting the X-axis label
+    private var currentDay: String {
+        Self.dayFormatter.string(from: Date()).uppercased()
     }
 
     var body: some View {

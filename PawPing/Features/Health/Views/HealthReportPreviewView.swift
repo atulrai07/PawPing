@@ -47,6 +47,11 @@ struct HealthReportPreviewView: View {
         .background(Color("baseBackground"))
         .navigationTitle("Report Preview")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if let petId = petStore.activePetId {
+                weightStore.load(for: petId)
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -170,34 +175,65 @@ struct ReportExportView: View {
                 HStack {
                     detailItem(label: "AGE", value: "\(petStore.activePet?.age ?? "?") Years")
                     Spacer()
-                    detailItem(label: "OWNER", value: petStore.currentUserProfile?.name ?? "Owner")
+                    let weightText: String = {
+                        if let latest = weightStore.latest {
+                            return String(format: "%.1f kg (%@)", latest.weightKg, latest.bodyConditionLabel)
+                        } else if let petWeight = petStore.activePet?.weightKg, petWeight > 0 {
+                            return String(format: "%.1f kg", petWeight)
+                        }
+                        return "—"
+                    }()
+                    detailItem(label: "WEIGHT", value: weightText)
                     Spacer()
-                    detailItem(label: "STATUS", value: "Verified")
+                    detailItem(label: "OWNER", value: petStore.currentUserProfile?.name ?? "Owner")
                 }
             }
             .padding(25)
             .background(Color(.systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 24))
             
-            // Records Table
-            VStack(alignment: .leading, spacing: 15) {
-                Text("VACCINATION HISTORY")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color("baseColor"))
-                
-                VStack(spacing: 0) {
-                    tableHeader
-                    ForEach(filteredRecords()) { record in
-                        tableRow(record)
+            // Vaccines Table
+            let vaccines = filteredVaccines()
+            if !vaccines.isEmpty {
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("VACCINATION HISTORY")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color("baseColor"))
+                    
+                    VStack(spacing: 0) {
+                        tableHeader
+                        ForEach(vaccines) { record in
+                            tableRow(record)
+                        }
                     }
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.systemGray4), lineWidth: 1))
                 }
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.systemGray4), lineWidth: 1))
+            }
+            
+            // Deworming Table
+            let deworming = filteredDeworming()
+            if !deworming.isEmpty {
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("DEWORMING HISTORY")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color("baseColor"))
+                    
+                    VStack(spacing: 0) {
+                        tableHeader
+                        ForEach(deworming) { record in
+                            tableRow(record)
+                        }
+                    }
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.systemGray4), lineWidth: 1))
+                }
             }
             
             // Weight Trend Section
-            if config.includeWeightChart && !weightStore.records.isEmpty {
+            if config.includeWeightChart && weightStore.records.count >= 2 {
                 VStack(alignment: .leading, spacing: 15) {
                     Text("WEIGHT PROGRESS")
                         .font(.system(size: 16, weight: .bold))
@@ -309,10 +345,28 @@ struct ReportExportView: View {
             Divider()
             HStack {
                 Text(record.name).frame(maxWidth: .infinity, alignment: .leading)
+                
                 Text(record.formattedDateGiven).frame(maxWidth: .infinity, alignment: .center)
-                Text(record.status == .done ? "DONE" : "MISSED")
+                
+                let statusText: String = {
+                    switch record.status {
+                    case .done: return "DONE"
+                    case .overdue: return "MISSED"
+                    case .upcoming: return "UPCOMING"
+                    }
+                }()
+                
+                let statusColor: Color = {
+                    switch record.status {
+                    case .done: return .green
+                    case .overdue: return .red
+                    case .upcoming: return .blue
+                    }
+                }()
+                
+                Text(statusText)
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(record.status == .done ? .green : .red)
+                    .foregroundStyle(statusColor)
                     .frame(width: 80, alignment: .trailing)
             }
             .font(.system(size: 14))
@@ -328,7 +382,19 @@ struct ReportExportView: View {
     }
     
     private func filteredRecords() -> [HealthRecord] {
-        healthStore.healthRecords.filter { $0.status == .done || (config.includeMissedAlerts && $0.status == .overdue) }
+        healthStore.healthRecords.filter {
+            $0.status == .done ||
+            $0.status == .upcoming ||
+            (config.includeMissedAlerts && $0.status == .overdue)
+        }
+    }
+    
+    private func filteredVaccines() -> [HealthRecord] {
+        filteredRecords().filter { $0.recordType == .vaccine }
+    }
+    
+    private func filteredDeworming() -> [HealthRecord] {
+        filteredRecords().filter { $0.recordType == .deworming }
     }
     
     private func chartPointColor(for condition: BodyCondition) -> Color {

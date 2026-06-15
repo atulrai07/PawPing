@@ -104,7 +104,7 @@ struct ForgotPasswordView: View {
                 try await SupabaseConfig.client.auth.resetPasswordForEmail(email)
                 path.append(AuthRoute.otp(email: email, isReset: true))
             } catch {
-                errorMessage = "Failed to send reset link."
+                errorMessage = error.localizedDescription
             }
             isLoading = false
         }

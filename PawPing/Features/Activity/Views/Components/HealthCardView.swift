@@ -9,12 +9,9 @@ import SwiftUI
 struct HealthCardView: View {
     @Environment(HealthStore.self) var healthStore
     
-    /// Computes the closest upcoming health record (vaccine, deworming, etc.)
+    /// Uses the pre-computed nearest upcoming health record from the store
     private var nearestRecord: HealthRecord? {
-        healthStore.healthRecords
-            .filter { $0.nextDoseDate != nil && $0.nextDoseDate! > Date() }
-            .sorted { ($0.nextDoseDate ?? Date.distantFuture) < ($1.nextDoseDate ?? Date.distantFuture) }
-            .first
+        healthStore.nearestRecord
     }
     
     var body: some View {

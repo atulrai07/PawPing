@@ -162,12 +162,13 @@ private struct CustomNavigationScrollModifier: ViewModifier {
                         let minY = geo.frame(in: .named("_customNavScroll")).minY
                         Color.clear
                             .onChange(of: minY) { _, newVal in
-                                scrollOffset  = max(0, -newVal)
-                                isCollapsed   = scrollOffset > collapseThreshold
+                                let collapsed = -newVal > collapseThreshold
+                                if isCollapsed != collapsed {
+                                    isCollapsed = collapsed
+                                }
                             }
                             .onAppear {
-                                scrollOffset  = max(0, -minY)
-                                isCollapsed   = scrollOffset > collapseThreshold
+                                isCollapsed = -minY > collapseThreshold
                             }
                     }
                 )

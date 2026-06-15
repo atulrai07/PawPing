@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Supabase
 
 struct OTPVerificationView: View {
     @Binding var path: NavigationPath
@@ -13,6 +14,7 @@ struct OTPVerificationView: View {
     @Environment(AuthStore.self) var authStore
     @Environment(AppState.self) var appState
     
+    @FocusState private var isFocused: Bool
     @State private var code = ""
     @State private var isLoading = false
     @State private var errorMessage = ""
@@ -46,10 +48,33 @@ struct OTPVerificationView: View {
                 }
                 
                 // OTP Fields
-                HStack(spacing: 12) {
-                    ForEach(0..<4, id: \.self) { index in
-                        otpBox(for: index)
+                ZStack {
+                    TextField("", text: $code)
+                        .keyboardType(.numberPad)
+                        .textContentType(.oneTimeCode)
+                        .focused($isFocused)
+                        .opacity(0.01)
+                        .frame(width: 1, height: 1)
+                        .onChange(of: code) { _, newValue in
+                            let filtered = newValue.filter { $0.isNumber }
+                            if filtered.count > 6 {
+                                code = String(filtered.prefix(6))
+                            } else {
+                                code = filtered
+                            }
+                        }
+                    
+                    HStack(spacing: 12) {
+                        ForEach(0..<6, id: \.self) { index in
+                            otpBox(for: index)
+                        }
                     }
+                }
+                .onTapGesture {
+                    isFocused = true
+                }
+                .onAppear {
+                    isFocused = true
                 }
                 .padding(.vertical, 20)
                 
@@ -81,7 +106,7 @@ struct OTPVerificationView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
-                    .disabled(isLoading)
+                    .disabled(isLoading || code.count < 6)
                 }
                 
                 Spacer()
@@ -106,35 +131,60 @@ struct OTPVerificationView: View {
         .background(Color(uiColor: .systemBackground))
     }
     
-    // Quick mock for OTP boxes (in a real app, this would use focused TextFields)
     private func otpBox(for index: Int) -> some View {
-        let isFirst = index == 0
+        let charStr: String
+        if index < code.count {
+            let start = code.index(code.startIndex, offsetBy: index)
+            charStr = String(code[start])
+        } else {
+            charStr = ""
+        }
+        
+        let isActive = isFocused && index == code.count
+        
         return ZStack {
             RoundedRectangle(cornerRadius: 12)
-                .fill(isFirst ? Color("baseColor") : Color("baseColor").opacity(0.15))
-                .frame(width: 50, height: 50)
+                .stroke(isActive ? Color("baseColor") : Color.clear, lineWidth: 2)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isActive ? Color("baseColor").opacity(0.05) : Color("baseColor").opacity(0.1))
+                )
+                .frame(width: 45, height: 50)
             
-            if isFirst {
-                Text("1")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(.white)
-            }
+            Text(charStr)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(Color.primary)
         }
     }
     
     private func verify() {
+        guard code.count == 6 else {
+            errorMessage = "Please enter a 6-digit code."
+            return
+        }
+        
         isLoading = true
         errorMessage = ""
         
         Task {
             do {
                 if isReset {
+                    _ = try await SupabaseConfig.client.auth.verifyOTP(
+                        email: email,
+                        token: code,
+                        type: .recovery
+                    )
                     path.append(AuthRoute.resetPassword(email: email))
                 } else {
-                    try await authStore.signup(name: "User", email: email, password: "password")
+                    _ = try await SupabaseConfig.client.auth.verifyOTP(
+                        email: email,
+                        token: code,
+                        type: .signup
+                    )
+                    path.removeLast(path.count)
                 }
             } catch {
-                errorMessage = "Invalid or expired code."
+                errorMessage = error.localizedDescription
             }
             isLoading = false
         }
