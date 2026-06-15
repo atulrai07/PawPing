@@ -48,4 +48,5 @@ struct ContentView: View {
         .environment(AuthStore())
         .environment(WeightStore())
         .environment(DietAssistantStore())
+        .environment(MedicationStore())
 }

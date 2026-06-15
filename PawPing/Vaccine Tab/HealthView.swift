@@ -11,6 +11,7 @@ import SwiftUI
 struct HealthView: View {
 
     @Environment(HealthStore.self) var store
+    @Environment(MedicationStore.self) var medicationStore
     @Environment(PetStore.self) var petStore
     @Environment(AppState.self) var appState
 
@@ -23,8 +24,14 @@ struct HealthView: View {
     var overdueRecords:  [HealthRecord] { store.healthRecords.filter { $0.status == .overdue  } }
     var doneRecords:     [HealthRecord] { store.healthRecords.filter { $0.status == .done     } }
     
-    var vaccines: [HealthRecord] { store.healthRecords.filter { $0.recordType == .vaccine } }
-    var deworming: [HealthRecord] { store.healthRecords.filter { $0.recordType == .deworming } }
+    var timelineEvents: [TimelineEvent] {
+        guard let petId = petStore.activePetId else { return [] }
+        
+        let healthEvents = store.records(for: petId).map { TimelineEvent(from: $0) }
+        let medEvents = medicationStore.medications(for: petId).map { TimelineEvent(from: $0) }
+        
+        return (healthEvents + medEvents).sorted { $0.eventDate > $1.eventDate }
+    }
 
     var body: some View {
         NavigationStack {
@@ -35,6 +42,14 @@ struct HealthView: View {
                             // Summary Card
                             HealthSummaryCard(summary: store.summary)
                                 .padding(.horizontal)
+
+                            // Navigation Links to Modules
+                            VStack(spacing: 12) {
+                                NavigationLink(destination: MedicationListView()) {
+                                    moduleRow(title: "Medications", subtitle: "\(medicationStore.activeMedicationsCount) Active", icon: "pills.fill", color: .purple)
+                                }
+                            }
+                            .padding(.horizontal)
 
                             // Overdue / Actionable section
                             if !overdueRecords.isEmpty || !upcomingRecords.isEmpty {
@@ -47,23 +62,33 @@ struct HealthView: View {
                                 }
                             }
 
-                            // Sectioned list by type
-                            healthSection(title: "Vaccinations") {
-                                if vaccines.isEmpty {
-                                    emptyState(message: "No vaccinations recorded yet")
-                                } else {
-                                    recordList(vaccines) { record in
-                                        HealthRecordRowView(record: record)
-                                    }
-                                }
-                            }
-
-                            healthSection(title: "Deworming") {
-                                if deworming.isEmpty {
-                                    emptyState(message: "No deworming recorded yet")
-                                } else {
-                                    recordList(deworming) { record in
-                                        HealthRecordRowView(record: record)
+                            // Unified Health Timeline
+                            healthSection(title: "Health Timeline") {
+                                VStack(spacing: 16) {
+                                    HealthTimelineView(events: timelineEvents, limit: 5)
+                                    
+                                    if timelineEvents.count > 5 {
+                                        NavigationLink {
+                                            ScrollView {
+                                                HealthTimelineView(events: timelineEvents, limit: nil)
+                                                    .padding()
+                                            }
+                                            .background(Color("baseBackground"))
+                                            .navigationTitle("Full Timeline")
+                                            .navigationBarTitleDisplayMode(.inline)
+                                        } label: {
+                                            Text("See All History")
+                                                .font(.subheadline)
+                                                .fontWeight(.semibold)
+                                                .frame(maxWidth: .infinity)
+                                                .padding()
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 16)
+                                                        .fill(Color("cardBackground"))
+                                                        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+                                                )
+                                        }
+                                        .buttonStyle(.plain)
                                     }
                                 }
                             }
@@ -171,6 +196,42 @@ struct HealthView: View {
                     .foregroundStyle(.secondary.opacity(0.4))
             )
     }
+
+    private func moduleRow(title: String, subtitle: String? = nil, icon: String, color: Color) -> some View {
+        HStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.2))
+                    .frame(width: 44, height: 44)
+                Image(systemName: icon)
+                    .foregroundStyle(color)
+                    .font(.title2)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color("cardBackground"))
+                .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+        )
+    }
 }
 
 #Preview {
@@ -182,4 +243,5 @@ struct HealthView: View {
         .environment(ActivityStore())
         .environment(WeightStore())
         .environment(DietAssistantStore())
+        .environment(MedicationStore())
 }
