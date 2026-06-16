@@ -2,17 +2,17 @@
 //  VaccineCardView.swift
 //  PawPing
 //
-//  Created by Antigravity on 01/04/26.
+//  Created by Atul on 01/04/26.
 //
 
 import SwiftUI
 
 struct VaccineCardView: View {
-    @Environment(VaccineStore.self) var vaccineStore
+    @Environment(HealthStore.self) var healthStore
     
-    private var nearestVaccine: VaccineRecord? {
-        vaccineStore.vaccineRecords
-            .filter { $0.nextDoseDate != nil }
+    private var nearestVaccine: HealthRecord? {
+        healthStore.healthRecords
+            .filter { $0.nextDoseDate != nil && $0.status != .done }
             .sorted { ($0.nextDoseDate ?? Date()) < ($1.nextDoseDate ?? Date()) }
             .first
     }
@@ -43,7 +43,7 @@ struct VaccineCardView: View {
                 
                 VStack(alignment: .leading, spacing: 2) {
                     if let vaccine = nearestVaccine {
-                        Text(vaccine.displayName)
+                        Text(vaccine.name)
                             .font(.system(size: 18, weight: .medium))
                             .lineLimit(1)
                         
@@ -68,5 +68,5 @@ struct VaccineCardView: View {
 
 #Preview {
     VaccineCardView()
-        .environment(VaccineStore())
+        .environment(HealthStore())
 }

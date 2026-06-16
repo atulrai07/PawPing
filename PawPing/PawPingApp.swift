@@ -2,30 +2,103 @@
 //  PawPingApp.swift
 //  PawPing
 //
-//  Created by Atul on 19/01/26.
-//
 
 import SwiftUI
+import Supabase
 
-// @main tells Swift this is THE entry point of our app.
-// Think of it like main() in other languages.
 @main
 struct PawPingApp: App {
-    // MARK: - Stores (single source of truth for the whole app)
     @State private var petStore      = PetStore()
     @State private var activityStore = ActivityStore()
     @State private var careStore     = CareStore()
-    @State private var vaccineStore  = VaccineStore()
-    @State private var symptomStore  = SymptomStore()
+    @State private var healthStore   = HealthStore()
+    @State private var weightStore   = WeightStore()
+    @State private var dietAssistantStore = DietAssistantStore()
+    @State private var medicationStore = MedicationStore()
+    @State private var appState      = AppState()
+    @State private var authStore: AuthStore?
+    
+    // Initial loading and splash
+    @State private var isInitialLoading = true
+    @State private var showSplash = true
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(petStore)
-                .environment(activityStore)
-                .environment(careStore)
-                .environment(vaccineStore)
-                .environment(symptomStore)
+            ZStack {
+                if showSplash {
+                    SplashView(showSplash: $showSplash)
+                        .transition(.opacity)
+                        .zIndex(10)
+                }
+                
+                if let authStore {
+                    Group {
+                        if !appState.hasSeenOnboarding {
+                            OnboardingView {
+                                withAnimation {
+                                    appState.hasSeenOnboarding = true
+                                }
+                            }
+                        } else if isInitialLoading {
+                            ProgressView("Syncing your data...")
+                        } else if !appState.isAuthenticated {
+                            AuthFlowView()
+                        } else if !appState.hasPets {
+                            AddPetView {
+                                appState.hasPets = true
+                            }
+                        } else {
+                            ContentView()
+                        }
+                    }
+                    .environment(authStore)
+                } else {
+                    ProgressView("Connecting...")
+                }
+            }
+            .environment(appState)
+            .environment(petStore)
+            .environment(activityStore)
+            .environment(careStore)
+            .environment(healthStore)
+            .environment(weightStore)
+            .environment(dietAssistantStore)
+            .environment(medicationStore)
+            .task {
+                if authStore == nil {
+                    authStore = AuthStore(appState: appState)
+                }
+                
+                if appState.isAuthenticated {
+                    isInitialLoading = true
+                    await petStore.fetchPets()
+                    activityStore.switchPet(to: petStore.activePet)
+                    appState.hasPets = !petStore.pets.isEmpty
+                    isInitialLoading = false
+                } else {
+                    isInitialLoading = false
+                }
+            }
+            .task(id: appState.isAuthenticated) {
+                if appState.isAuthenticated {
+                    isInitialLoading = true
+                    await petStore.fetchPets()
+                    activityStore.switchPet(to: petStore.activePet)
+                    appState.hasPets = !petStore.pets.isEmpty
+                    isInitialLoading = false
+                }
+            }
+            }
+            .onChange(of: petStore.activePetId) { _, newPetId in
+                let pet = petStore.pets.first { $0.id == newPetId }
+                activityStore.switchPet(to: pet)
+                
+                if let newPetId {
+                    Task {
+                        await healthStore.fetchVaccines(for: newPetId)
+                        await medicationStore.fetchMedications(for: newPetId)
+                    }
+                }
+            }
         }
-    }
 }

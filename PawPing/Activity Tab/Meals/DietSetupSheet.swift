@@ -4,10 +4,6 @@
 //
 //  Created by Atul on 25/04/26.
 //
-//  Sheet for setting up a diet plan.
-//  Inputs: weight (kg/lbs toggle), goal (lose/maintain/gain).
-//  Read-only: breed and age from dog profile.
-//  Live-calculates RER-based calorie target before user commits.
 //
 
 import SwiftUI
@@ -85,9 +81,7 @@ struct DietSetupSheet: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(Color("secondaryText").opacity(0.5))
-                            .font(.system(size: 24))
+                        Image(systemName: "xmark")
                     }
                 }
             }
@@ -103,11 +97,21 @@ struct DietSetupSheet: View {
 
     private var petInfoCard: some View {
         HStack(spacing: 16) {
-            Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
-                .resizable()
-                .scaledToFill()
+            if let urlString = petStore.activePet?.profileImageUrl, let url = URL(string: urlString) {
+                AsyncImage(url: url) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    ProgressView()
+                }
                 .frame(width: 50, height: 50)
                 .clipShape(Circle())
+            } else {
+                Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(petStore.activePet?.name ?? "Pet")
@@ -273,7 +277,9 @@ struct DietSetupSheet: View {
             store.mealDietStore.startDiet(goal: selectedGoal, weightKg: weightKg)
             if var pet = petStore.activePet {
                 pet.weightKg = weightKg
-                petStore.updatePet(pet)
+                Task {
+                    await petStore.updatePet(pet)
+                }
             }
             dismiss()
         } label: {

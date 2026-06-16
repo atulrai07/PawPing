@@ -2,7 +2,7 @@
 //  VetSearchManager.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 
 import Foundation
@@ -46,7 +46,7 @@ class VetSearchManager {
                 
                 // Map to our model and take top 3
                 self.nearbyVets = response.mapItems.prefix(3).map { item in
-                    let clinicLocation = item.location ?? CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                    let clinicLocation = item.location
                     let userLocation = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
                     let distance = userLocation.distance(from: clinicLocation) / 1000.0 // in km
                     

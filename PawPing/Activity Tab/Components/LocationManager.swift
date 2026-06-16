@@ -4,16 +4,11 @@
 //
 //  Created by Atul on 21/03/26.
 //
-//  Wraps Apple's CLLocationManager to track walking distance.
-//  We use the delegate pattern because CLLocationManager requires it —
-//  SwiftUI can't directly observe GPS updates yet.
 //
 
 import Foundation
 import CoreLocation
 
-// We need NSObject because CLLocationManagerDelegate is an Objective-C protocol.
-// @Observable lets SwiftUI react when totalDistance changes.
 @Observable
 class LocationManager: NSObject, CLLocationManagerDelegate {
 
@@ -23,13 +18,12 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     var routeLocations: [CLLocationCoordinate2D] = []
 
     // MARK: - Private
-    // CLLocationManager is the Apple class that talks to the GPS hardware
     private let manager = CLLocationManager()
     private var lastLocation: CLLocation?
 
     override init() {
         super.init()
-        manager.delegate = self  // "tell me when you get new locations"
+        manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.distanceFilter = 3            // only update every 3 metres (saves battery)
         manager.allowsBackgroundLocationUpdates = false
@@ -55,7 +49,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     }
 
     // MARK: - CLLocationManagerDelegate
-    // These methods are called by iOS whenever the GPS has a new reading.
+
 
     func locationManager(_ manager: CLLocationManager,
                          didUpdateLocations locations: [CLLocation]) {
@@ -86,4 +80,4 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
                          didFailWithError error: Error) {
         print("Location error: \(error.localizedDescription)")
     }
-} // LocationManager
+}

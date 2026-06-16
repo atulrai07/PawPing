@@ -18,7 +18,7 @@ struct ExportPassportButton: View {
                 Image(systemName: "arrow.down.to.line")
                     .font(.system(size: 16, weight: .semibold))
                 
-                Text("Export Vaccine Report")
+                Text("Export Health Report")
                     .font(.system(size: 16, weight: .semibold))
             }
             .foregroundStyle(.white)

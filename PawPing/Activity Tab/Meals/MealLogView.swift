@@ -4,9 +4,6 @@
 //
 //  Created by SidMoon — Upgraded to MealsDashboardView on 25/04/26.
 //
-//  The Meals Dashboard — the main hub for the Meals & Diet system.
-//  Shows: date selector, diet plan card, daily summary, meal cards,
-//  insights, and notes. Meal cards open MealLoggingSheet on tap.
 //
 
 import SwiftUI
@@ -14,14 +11,16 @@ import SwiftUI
 struct MealLogView: View {
     @Environment(\.dismiss) private var dismiss
     var store: ActivityStore
+    @Environment(WeightStore.self) var weightStore
+    @Environment(PetStore.self) var petStore
     
-    // Dynamic dates for the current week (MON - SUN)
+    // Dynamic dates for the week containing selectedDate (MON - SUN)
     private var weekDates: [Date] {
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
+        let baseDate = calendar.startOfDay(for: selectedDate)
         
-        // Find the Monday of the current week
-        var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+        // Find the Monday of the week of baseDate
+        var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: baseDate)
         components.weekday = 2 // Monday
         
         guard let monday = calendar.date(from: components) else { return [] }
@@ -30,28 +29,42 @@ struct MealLogView: View {
             calendar.date(byAdding: .day, value: day, to: monday)
         }
     }
-    
-    private var todayIndex: Int {
-        let today = Calendar.current.startOfDay(for: Date())
-        return weekDates.firstIndex(where: { Calendar.current.isDate($0, inSameDayAs: today) }) ?? 0
-    }
 
-    @State private var selectedDateIndex: Int = 0
-    @State private var notesText = ""
+    @State private var selectedDate: Date = Date()
+    @State private var showDatePicker = false
 
     // Sheet states
     @State private var showMealSheet = false
     @State private var selectedMealType: MealType = .breakfast
     @State private var showDietSetup = false
+    @State private var showWeightSheet = false
     
     // Convenience
     private var mealDietStore: MealDietStore {
         store.mealDietStore
     }
 
-    private var totalCalories: Double {
-        store.meals.filter { $0.isTaken }.reduce(0) { $0 + $1.calories }
+    private var selectedDateIndex: Int {
+        let dayStart = Calendar.current.startOfDay(for: selectedDate)
+        return weekDates.firstIndex(where: { Calendar.current.isDate($0, inSameDayAs: dayStart) }) ?? 0
     }
+
+    private var isToday: Bool {
+        Calendar.current.isDateInToday(selectedDate)
+    }
+
+    private var displayedMeals: [Meal] {
+        store.getMeals(for: selectedDate)
+    }
+
+    private var totalCalories: Double {
+        displayedMeals.filter { $0.isTaken }.reduce(0) { $0 + $1.calories }
+    }
+    
+    private var mealsLoggedCount: Int {
+        displayedMeals.filter { $0.isTaken }.count
+    }
+
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -61,16 +74,17 @@ struct MealLogView: View {
                 dateSelector
                 
                 // Diet Card
-                dietSection
-                    .padding(.horizontal)
+                if isToday {
+                    dietSection
+                        .padding(.horizontal)
+                }
 
                 // Daily Summary
                 dailySummary
                     .padding(.horizontal)
                 
-                // Meal Cards
                 VStack(spacing: 14) {
-                    ForEach(store.meals, id: \.id) { meal in
+                    ForEach(displayedMeals, id: \.id) { meal in
                         Button {
                             selectedMealType = meal.mealType
                             showMealSheet = true
@@ -78,6 +92,7 @@ struct MealLogView: View {
                             mealCard(meal: meal)
                         }
                         .buttonStyle(.plain)
+                        .disabled(!isToday && meal.foodType != .custom)
                     }
                 }
                 .padding(.horizontal)
@@ -85,9 +100,6 @@ struct MealLogView: View {
                 // Insights
                 insightsSection
                     .padding(.horizontal)
-                
-                // Notes Section
-                notesSection
                 
             }
             .padding(.top, 8)
@@ -98,24 +110,69 @@ struct MealLogView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "chevron.left")
+                        Image(systemName: "chevron.backward")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.primary)
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showDatePicker = true
+                    } label: {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(Color("baseColor"))
                     }
                 }
             }
         }
         .background(Color("baseBackground"))
         .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .tabBar) 
         .onAppear {
-            selectedDateIndex = todayIndex
+            selectedDate = Calendar.current.startOfDay(for: Date())
         }
         .sheet(isPresented: $showMealSheet) {
-            MealLoggingSheet(store: store, mealType: selectedMealType)
+            MealLoggingSheet(store: store, mealType: selectedMealType, logDate: selectedDate, isReadOnly: !isToday)
                 .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showDatePicker) {
+            NavigationStack {
+                DatePicker(
+                    "Select Date",
+                    selection: $selectedDate,
+                    in: ...Date(),
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(.graphical)
+                .tint(Color("baseColor"))
+                .padding()
+                .navigationTitle("Select Date")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            showDatePicker = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
         }
         .sheet(isPresented: $showDietSetup) {
             DietSetupSheet(store: store)
                 .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showWeightSheet) {
+            if let pet = petStore.activePet {
+                LogWeightSheet(pet: pet)
+                    .presentationDetents([.medium])
+            }
+        }
+        .task(id: petStore.activePetId) {
+            if let petId = petStore.activePetId {
+                weightStore.load(for: petId)
+            }
         }
     }
     
@@ -129,7 +186,7 @@ struct MealLogView: View {
             
             ForEach(0..<currentWeekDates.count, id: \.self) { index in
                 let date = currentWeekDates[index]
-                let isFuture = index > todayIndex
+                let isFuture = date > calendar.startOfDay(for: Date())
                 
                 VStack(spacing: 10) {
                     Text(weekDays[index])
@@ -150,7 +207,7 @@ struct MealLogView: View {
                 .onTapGesture {
                     if !isFuture {
                         withAnimation {
-                            selectedDateIndex = index
+                            selectedDate = date
                         }
                     }
                 }
@@ -170,7 +227,9 @@ struct MealLogView: View {
     }
     
     private func foregroundColorForDateNode(index: Int) -> Color {
-        let isFuture = index > todayIndex
+        let calendar = Calendar.current
+        let date = weekDates[index]
+        let isFuture = date > calendar.startOfDay(for: Date())
         
         if index == selectedDateIndex {
             return .white
@@ -258,7 +317,7 @@ struct MealLogView: View {
                 Text("\(Int(totalCalories))")
                     .font(.system(size: 22, weight: .bold))
                     .contentTransition(.numericText())
-                Text("kcal today")
+                Text("kcal")
                     .font(.system(size: 11))
                     .foregroundStyle(Color("secondaryText"))
             }
@@ -273,7 +332,7 @@ struct MealLogView: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 16))
                     .foregroundStyle(Color("baseColor"))
-                Text("\(store.mealsLoggedToday)/3")
+                Text("\(mealsLoggedCount)/3")
                     .font(.system(size: 22, weight: .bold))
                 Text("logged")
                     .font(.system(size: 11))
@@ -310,11 +369,6 @@ struct MealLogView: View {
 
     private func mealCard(meal: Meal) -> some View {
         HStack(spacing: 14) {
-            // Left accent bar for visual guidance
-            RoundedRectangle(cornerRadius: 3)
-                .fill(mealAccentColor(meal: meal))
-                .frame(width: 4, height: 60)
-
             // Icon
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color("baseColor"))
@@ -348,13 +402,13 @@ struct MealLogView: View {
                 HStack(spacing: 12) {
                     // Food name
                     if let food = meal.foodType {
-                        Label(food.displayName, systemImage: food.icon)
+                        Text(food.displayName)
                             .font(.system(size: 13))
                             .foregroundStyle(Color("secondaryText"))
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                     } else {
-                        Text("Tap to log")
+                        Text(isToday ? "Tap to log" : "Not logged")
                             .font(.system(size: 13))
                             .foregroundStyle(Color("secondaryText").opacity(0.5))
                             .italic()
@@ -428,44 +482,12 @@ struct MealLogView: View {
                 .fill(Color("baseColor").opacity(0.06))
         )
     }
-
-    // MARK: - Notes Section (preserved)
-
-    private var notesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Notes")
-                .font(.system(size: 16, weight: .bold))
-                .padding(.horizontal, 22)
-            
-            HStack {
-                TextField("Add any additional notes here...", text: $notesText)
-                    .font(.system(size: 16))
-                
-                Button {
-                    // Logic to save notes can be added here
-                    print("Notes saved: \(notesText)")
-                } label: {
-                    Text("Save")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color("baseColor"))
-                        .clipShape(Capsule())
-                }
-            }
-            .padding(.leading, 20)
-            .padding(.trailing, 8)
-            .padding(.vertical, 8)
-            .background(Color("cardBackground"))
-            .clipShape(Capsule())
-            .padding(.horizontal)
-        }
-    }
 }
 
 #Preview {
     NavigationStack {
         MealLogView(store: ActivityStore())
+            .environment(PetStore())
+            .environment(WeightStore())
     }
 }

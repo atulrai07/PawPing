@@ -4,9 +4,6 @@
 //
 //  Created by Atul on 01/02/26.
 //
-//  A simple circular progress ring — pass in a 0.0 to 1.0 value
-//  and it draws a rounded stroke around a circle. Used on the
-//  Activity tab to show daily walk progress.
 //
 
 import SwiftUI
@@ -16,22 +13,20 @@ struct CircularProgressView: View {
     
     var body: some View {
         ZStack {
-            // Background track ring (faint)
             Circle()
                 .stroke(Color("baseColor").opacity(0.2), lineWidth: 15)
             
-            // Progress arc — .trim clips the stroke to the progress %
             Circle()
                 .trim(from: 0.0, to: progress)
                 .stroke(
                     Color("baseColor"),
                     style: StrokeStyle(lineWidth: 15, lineCap: .round)
                 )
-                .rotationEffect(.degrees(-90)) // start from 12 o'clock position
+                .rotationEffect(.degrees(-90))
                 .animation(.easeOut, value: progress)
-        } // ZStack — progress ring
+        }
     }
-} // CircularProgressView
+}
 
 #Preview {
     CircularProgressView(progress: 0.38)

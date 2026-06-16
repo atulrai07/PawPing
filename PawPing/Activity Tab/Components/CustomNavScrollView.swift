@@ -21,6 +21,8 @@ private struct StickyNavHeader: View {
     var petStore: PetStore?
     var onAddTap: (() -> Void)?
     let isCollapsed: Bool
+    @State private var showingAddPet = false
+    @State private var showPetSwitcher = false
 
     var body: some View {
         ZStack {
@@ -38,7 +40,6 @@ private struct StickyNavHeader: View {
                                 Circle()
                                     .fill(.ultraThinMaterial)
                                     .frame(width: 36, height: 36)
-                                    .shadow(color: Color("baseColor").opacity(0.3), radius: 6, x: 0, y: 2)
 
                                 Image(systemName: "plus")
                                     .font(.system(size: 16, weight: .bold))
@@ -48,56 +49,111 @@ private struct StickyNavHeader: View {
                         .padding(.trailing, 8)
                     }
 
-                    // Pet switcher menu
-                    Menu {
-                        ForEach(petStore.pets) { pet in
-                            Button {
-                                petStore.switchPet(to: pet.id)
-                            } label: {
-                                Label {
-                                    Text(pet.name)
-                                } icon: {
-                                    if pet.id == petStore.activePetId {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-
-                        Divider()
-
-                        Button {
-                            let newPet = Pet(
-                                id: UUID(),
-                                name: "New Pet",
-                                breed: "Mixed",
-                                gender: .male,
-                                age: "1",
-                                weightKg: 10.0,
-                                imageName: "dog\(min(petStore.pets.count + 1, 3))",
-                                homeLatitude: 28.4210,
-                                homeLongitude: 77.5340
-                            )
-                            petStore.addPet(newPet)
-                            petStore.switchPet(to: newPet.id)
-                        } label: {
-                            Label("Add Pet", systemImage: "plus.circle")
-                        }
+                    // Pet switcher menu button triggering a custom popover (fixes truncation, blank space, and AsyncImage loading)
+                    Button {
+                        showPetSwitcher = true
                     } label: {
                         HStack(spacing: 6) {
                             Circle()
                                 .fill(Color("secondaryText").opacity(0.2))
                                 .frame(width: 36, height: 36)
                                 .overlay(
-                                    Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .clipShape(Circle())
+                                    Group {
+                                        if let urlString = petStore.activePet?.profileImageUrl, let url = URL(string: urlString) {
+                                            AsyncImage(url: url) { image in
+                                                image.resizable().scaledToFill()
+                                            } placeholder: {
+                                                ProgressView()
+                                            }
+                                        } else {
+                                            Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
+                                                .resizable()
+                                                .scaledToFill()
+                                        }
+                                    }
+                                    .clipShape(Circle())
                                 )
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(Color("secondaryText"))
                         }
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: $showPetSwitcher) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(petStore.pets) { pet in
+                                Button {
+                                    petStore.switchPet(to: pet.id)
+                                    showPetSwitcher = false
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
+                                            AsyncImage(url: url) { image in
+                                                image.resizable().scaledToFill()
+                                            } placeholder: {
+                                                Color.gray.opacity(0.2)
+                                            }
+                                            .frame(width: 32, height: 32)
+                                            .clipShape(Circle())
+                                        } else {
+                                            Image(pet.imageName)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 32, height: 32)
+                                                .clipShape(Circle())
+                                        }
+                                        
+                                        Text(pet.name)
+                                            .font(.body)
+                                            .foregroundStyle(.primary)
+                                        
+                                        Spacer()
+                                        
+                                        if pet.id == petStore.activePetId {
+                                            Image(systemName: "checkmark")
+                                                .foregroundStyle(Color("baseColor"))
+                                                .font(.system(size: 14, weight: .bold))
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                
+                                if pet.id != petStore.pets.last?.id {
+                                    Divider()
+                                        .padding(.leading, 60)
+                                }
+                            }
+                            
+                            Divider()
+                            
+                            Button {
+                                showPetSwitcher = false
+                                showingAddPet = true
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundStyle(Color("baseColor"))
+                                        .font(.title3)
+                                        .frame(width: 32)
+                                    
+                                    Text("Add Pet")
+                                        .font(.body)
+                                        .foregroundStyle(.primary)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .frame(width: 220)
+                        .padding(.vertical, 8)
+                        .presentationCompactAdaptation(.popover)
                     }
                 }
             }
@@ -118,19 +174,19 @@ private struct StickyNavHeader: View {
                 .opacity(isCollapsed ? 1 : 0)
         }
         .padding(.horizontal, 16)
-        .padding(.top, isCollapsed ? -8 : 8)
-        .padding(.bottom, isCollapsed ? 12 : 6)
+        .frame(height: 60)
 
         // ── Background gradient
         .background {
             Rectangle()
-                .fill(Color("baseBackground"))
-                .opacity(isCollapsed ? 1 : 0.8)
+                .fill(.ultraThinMaterial)
+                .opacity(isCollapsed ? 1 : 0)
                 .mask {
                     LinearGradient(
                         stops: [
                             .init(color: .black,           location: 0.0),
-                            .init(color: .black.opacity(0.8), location: 0.7),
+                            .init(color: .black.opacity(0.7), location: 0.4),
+                            .init(color: .black.opacity(0.3), location: 0.7),
                             .init(color: .clear,           location: 1.0),
                         ],
                         startPoint: .top,
@@ -140,14 +196,12 @@ private struct StickyNavHeader: View {
                 .ignoresSafeArea(edges: .top)
         }
         
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(.red)
-                .frame(height: 0.5)
-                .opacity(isCollapsed ? 0 : 0)
+        .sheet(isPresented: $showingAddPet) {
+            AddPetView {
+                showingAddPet = false
+            }
         }
-
-        .animation(.spring(response: 0.15, dampingFraction: 0.9), value: isCollapsed)
+        .animation(.easeInOut(duration: 0.2), value: isCollapsed)
     }
 }
 
@@ -157,6 +211,7 @@ private struct CustomNavigationScrollModifier: ViewModifier {
     let title: String
     var petStore: PetStore?
     var onAddTap: (() -> Void)?
+    var refreshAction: (() async -> Void)?
     var collapseThreshold: CGFloat
 
     @State private var scrollOffset: CGFloat = 0
@@ -164,7 +219,10 @@ private struct CustomNavigationScrollModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         ScrollView(showsIndicators: false) {
-            content
+            VStack(spacing: 0) {
+                Color.clear.frame(height: 60)
+                content
+            }
                 // Attach the geometry reader to the content so its minY in
                 // the named coordinate space gives us the raw scroll offset.
                 .background(
@@ -182,12 +240,15 @@ private struct CustomNavigationScrollModifier: ViewModifier {
                     }
                 )
         }
-        .coordinateSpace(name: "_customNavScroll")
+        .refreshable {
+            if let refreshAction {
+                await refreshAction()
+            }
+        }
+        .coordinateSpace(.named("_customNavScroll"))
         .background(Color("baseBackground"))
-        // Hide the system nav bar — the modifier supplies its own header.
         .toolbar(.hidden, for: .navigationBar)
-        // Pin the header above the scroll content without participating in scrolling.
-        .safeAreaInset(edge: .top, spacing: 0) {
+        .overlay(alignment: .top) {
             StickyNavHeader(
                 title: title,
                 petStore: petStore,
@@ -214,12 +275,14 @@ extension View {
         title: String,
         petStore: PetStore? = nil,
         onAddTap: (() -> Void)? = nil,
+        refreshAction: (() async -> Void)? = nil,
         collapseThreshold: CGFloat = 50
     ) -> some View {
         modifier(CustomNavigationScrollModifier(
             title: title,
             petStore: petStore,
             onAddTap: onAddTap,
+            refreshAction: refreshAction,
             collapseThreshold: collapseThreshold
         ))
     }

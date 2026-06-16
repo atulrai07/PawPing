@@ -6,25 +6,28 @@
 //
 
 import Foundation
-
-struct Owner: Identifiable {
-    let id: UUID
-    var name: String
-    var email: String
-    var phone: String?
-    var profileImage: String?
-}
-
-/// Legacy alias — kept so existing code that refers to DogProfile still compiles.
-/// New code should use Pet directly.
-typealias DogProfile = Pet
-
-/// Legacy alias — kept for backward compatibility.
-typealias DogGender = PetGender
+import CoreLocation
 
 // MARK: - Activity
 
-struct WalkActivity {
+struct CoordinateModel: Codable {
+    let latitude: Double
+    let longitude: Double
+    
+    var clLocationCoordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+}
+
+struct Activity: Codable, Identifiable {
+    var id = UUID()
+    var date: Date
+    var routePoints: [CoordinateModel]
+    var distanceInKm: Double
+    var durationMinutes: Int
+}
+
+struct WalkActivity: Codable {
     var currentMinutes: Int
     var goalMinutes: Int
 
@@ -34,13 +37,13 @@ struct WalkActivity {
     }
 }
 
-struct TimeWalkedData: Identifiable {
-    let id = UUID()
+struct TimeWalkedData: Identifiable, Codable {
+    var id = UUID()
     let day: String
     var minutes: Int
 }
 
-struct TimeWalkedGraphModel {
+struct TimeWalkedGraphModel: Codable {
     var data: [TimeWalkedData]
     let goalMinutes: Int
 
@@ -49,13 +52,13 @@ struct TimeWalkedGraphModel {
     }
 }
 
-struct DistanceData: Identifiable {
-    let id = UUID()
+struct DistanceData: Identifiable, Codable {
+    var id = UUID()
     let date: Date
     let distanceInKm: Double
     
     var dayLabel: String {
-        let formatter = DateFormatter() // date to String
+        let formatter = DateFormatter()
         formatter.dateFormat = "EEE" //it will be like MON, TUE
         return formatter.string(from: date)
     }
@@ -67,7 +70,7 @@ struct DistanceData: Identifiable {
     }
 }
 
-struct DistanceSummaryModel {
+struct DistanceSummaryModel: Codable {
     let weekData: [DistanceData]
     let monthData: [DistanceData]
     let weekRange: String
@@ -84,7 +87,7 @@ struct DistanceSummaryModel {
 
 // MARK: - Meals
 
-struct Meal: Identifiable {
+struct Meal: Identifiable, Codable {
     let id: UUID
     var petId: UUID
     var icon: String
@@ -92,12 +95,17 @@ struct Meal: Identifiable {
     var meridian: String
     var date: Date = Date()
     var mealType: MealType
-    var foodType: FoodType?                // nil = not yet selected (replaces old mealName)
-    var quantity: Double = 1.0              // default 1.0 (cup, grams, or units)
+    var foodType: FoodType?
+    var quantity: Double = 1.0
     var unit: String = "cup"
-    var calories: Double = 0               // calculated from food × quantity
-    var ingredients: [MealIngredient] = []  // for custom/homemade meals
+    var calories: Double = 0
+    var ingredients: [MealIngredient] = []
     var isTaken: Bool
+    
+    /// Returns true if this meal's date is today
+    var isToday: Bool {
+        Calendar.current.isDateInToday(date)
+    }
 }
 
 struct MealIngredient: Codable, Identifiable {
@@ -118,45 +126,34 @@ struct USDAFood: Codable, Identifiable {
     let caloriesPer100g: Double
 }
 
-enum MealType: String, Codable {
+enum MealType: String, Codable, CaseIterable {
     case breakfast = "Breakfast"
     case lunch     = "Lunch"
     case dinner    = "Dinner"
+    
+    var icon: String {
+        switch self {
+        case .breakfast: return "sun.max"
+        case .lunch:     return "sunset.fill"
+        case .dinner:    return "moon"
+        }
+    }
+    
+    var defaultTime: String {
+        switch self {
+        case .breakfast: return "8:00"
+        case .lunch:     return "12:30"
+        case .dinner:    return "8:30"
+        }
+    }
+    
+    var defaultMeridian: String {
+        switch self {
+        case .breakfast: return "AM"
+        case .lunch:     return "PM"
+        case .dinner:    return "PM"
+        }
+    }
 }
 
-// MARK: - Vaccines
 
-struct Vaccine: Identifiable {
-    let id: UUID
-    var petId: UUID
-    var name: String
-    var givenDate: Date?
-    var daysLeft: Int
-    var frequency: Int
-    var frequencyType: VaccineFrequencyType
-    var vaccineNotes: String
-}
-
-enum VaccineFrequencyType: String {
-    case days = "Days"
-    case weekly = "Weekly"
-    case monthly = "Monthly"
-    case yearly = "Yearly"
-}
-
-// MARK: - Allergies
-
-struct Allergy: Identifiable {
-    let id: UUID
-    var petId: UUID
-    var allergyName: String
-    var allergyType: AllergyType
-    var allergyNotes: String
-    var allergen: String?
-}
-
-enum AllergyType: String {
-    case food = "Food"
-    case medication = "Medication"
-    case environmental = "Environmental"
-}

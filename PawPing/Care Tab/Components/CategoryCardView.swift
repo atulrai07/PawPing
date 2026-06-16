@@ -2,7 +2,7 @@
 //  CategoryCardView.swift
 //  PawPing
 //
-//  Created by Antigravity on 24/04/26.
+//  Created by Atul on 24/04/26.
 //
 //  A large, guided health flow card for symptom categories.
 //

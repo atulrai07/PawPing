@@ -2,25 +2,27 @@
 //  ContentView.swift
 //  PawPing
 //
-//  Created by Atul on 19/01/26.
+//  Created by SidMoon on 16/03/26.
 //
 
 import SwiftUI
 
 struct ContentView: View {
-
+    @Environment(PetStore.self) var petStore
+    @Environment(AppState.self) var appState
+    
     var body: some View {
         TabView {
-            Tab("Activity", systemImage: "dog.fill") {
+            Tab("Home", systemImage: "house.fill") {
                 ActivityView()
             }
 
-            Tab("Care", systemImage: "pawprint.fill") {
-                CareView()
+            Tab("Vaccine", systemImage: "syringe.fill") {
+                HealthView()
             }
 
-            Tab("Vaccine", systemImage: "syringe.fill") {
-                VaccineView()
+            Tab("Find", systemImage: "magnifyingglass") {
+                CareView()
             }
 
             Tab("Profile", systemImage: "person.fill") {
@@ -30,14 +32,21 @@ struct ContentView: View {
             }
         }
         .tint(Color("baseColor"))
+        .task {
+            await petStore.fetchPets()
+        }
     }
 }
 
 #Preview {
     ContentView()
         .environment(PetStore())
+        .environment(AppState())
         .environment(ActivityStore())
+        .environment(HealthStore())
         .environment(CareStore())
-        .environment(VaccineStore())
-        .environment(SymptomStore())
+        .environment(AuthStore())
+        .environment(WeightStore())
+        .environment(DietAssistantStore())
+        .environment(MedicationStore())
 }

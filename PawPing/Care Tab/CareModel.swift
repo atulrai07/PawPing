@@ -9,6 +9,7 @@
 
 import Foundation
 import CoreLocation
+import MapKit
 
 // MARK: - Care Type
 
@@ -18,30 +19,20 @@ enum CareType: String, CaseIterable {
     case dayCare = "Day Care"
 }
 
-// MARK: - Unified Care Location
-// One struct for both vets and day cares.
-// subType is nil for vets (defaults to "Veterinary Clinic" in the UI).
-// For day cares it holds something like "Pet Boarding Service" or "Pet DayCare".
+// MARK: - Place Model
+// Dynamic model for MapKit results
 
-struct CareLocation: Identifiable {
-    let id: UUID
+struct PlaceModel: Identifiable, Equatable {
+    let id = UUID()
     var name: String
-    var subType: String?
-    var rating: Double
-    var distance: Double       // in km
-    var imageName: String      // asset catalog image name
     var latitude: Double
     var longitude: Double
-    var contactNumber: String?
-    var email: String?
+    var distance: Double       // in km
+    var category: CareType
     var address: String?
-    var openingTime: String?
-    var closingTime: String?
-    
-    // Extra stats shown in VetClinicDetails
-    var petSeen: String?       // e.g. "850+"
-    var experience: String?    // e.g. "12 Years"
-    var about: String?
+    var phone: String?
+    var websiteURL: URL?
+    var mapItem: MKMapItem?    // Store the original map item to avoid deprecations
 
     /// Convenience — converts lat/lng into the type MapKit needs
     var coordinate: CLLocationCoordinate2D {
@@ -51,5 +42,15 @@ struct CareLocation: Identifiable {
     /// Formatted distance string for display (e.g. "1.2 km away")
     var distanceString: String {
         String(format: "%.1f km away", distance)
+    }
+    
+    // Manual Equatable implementation since MKMapItem is not Equatable
+    static func == (lhs: PlaceModel, rhs: PlaceModel) -> Bool {
+        lhs.name == rhs.name &&
+        lhs.latitude == rhs.latitude &&
+        lhs.longitude == rhs.longitude &&
+        lhs.distance == rhs.distance &&
+        lhs.category == rhs.category &&
+        lhs.address == rhs.address
     }
 }

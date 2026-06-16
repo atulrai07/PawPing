@@ -4,9 +4,6 @@
 //
 //  Created by Atul on 25/04/26.
 //
-//  Compact badge displaying calorie count with a flame icon.
-//  Used on meal cards and in the logging sheet for instant feedback.
-//  Animates smoothly when calorie value changes.
 //
 
 import SwiftUI

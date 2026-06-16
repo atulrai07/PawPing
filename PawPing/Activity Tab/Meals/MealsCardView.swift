@@ -13,11 +13,13 @@ struct MealsCardView: View {
 
     var body: some View {
         ZStack {
+            // MARK: - Card Background
             RoundedRectangle(cornerRadius: 28)
                 .fill(Color("cardBackground"))
                 .frame(width: 175, height: 190)
             
             VStack(alignment: .leading) {
+                // MARK: - Header (Aligned with Vaccine Card)
                 HStack {
                     Text("Meals")
                         .font(.system(size: 22, weight: .regular))
@@ -34,54 +36,48 @@ struct MealsCardView: View {
                         )
                 }
                 
-                // Calorie summary
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.orange)
-                    Text("\(Int(store.totalCaloriesToday)) kcal")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Color("secondaryText"))
-                }
-                .padding(.top, -2)
-
                 Spacer()
                 
-                // Meals
-                HStack(spacing: 8) {
-                    ForEach(store.meals, id: \.id) { (meal: Meal) in
-                        Capsule()
-                            .fill(Color("secondaryCardBackground"))
-                            .frame(width: 40, height: 105)
-                            .overlay(
-                                VStack {
-                                    Circle()
-                                        .fill(Color("baseColor"))
-                                        .frame(width: 28, height: 28)
-                                        .overlay(
-                                            Image(systemName: String(meal.icon))
-                                                .foregroundStyle(.white)
-                                                .font(.system(size: 14, weight: .medium))
-                                        )
-                                        .padding(.top, 8)
-                                    
-                                    HStack(alignment: .lastTextBaseline, spacing: 1) {
-                                        Text(meal.time)
-                                            .font(.system(size: 10, weight: .medium))
-                                        Text(meal.meridian)
-                                            .font(.system(size: 6, weight: .medium))
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Image(systemName: meal.isTaken ? "checkmark.circle.fill" : "circle")
-                                        .foregroundStyle(meal.isTaken ? Color("baseColor") : .secondary)
-                                        .font(.system(size: 16, weight: .regular))
-                                        .padding(.bottom, 10)
-                                }
-                            )
+                // MARK: - Meal List (Centered to match Vaccine card balance)
+                VStack(spacing: 12) {
+                    ForEach(store.meals, id: \.id) { meal in
+                        HStack(spacing: 8) {
+                            // Meal Icon (SF Symbol)
+                            Image(systemName: meal.mealType.icon)
+                                .font(.system(size: 14))
+                                .foregroundStyle(Color("baseColor"))
+                                .frame(width: 18)
+                            
+                            // Meal Details
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(meal.mealType.rawValue)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                
+                                Text("\(meal.time) \(meal.meridian)")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(Color("secondaryText"))
+                            }
+                            
+                            Spacer()
+                            
+                            // Completion Status
+                            if meal.isTaken {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color("baseColor"))
+                                    .font(.system(size: 18))
+                            } else {
+                                Circle()
+                                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1.5)
+                                    .frame(width: 18, height: 18)
+                            }
+                        }
                     }
                 }
+                
+                Spacer()
             }
             .padding(16)
             .frame(width: 175, height: 190, alignment: .leading)

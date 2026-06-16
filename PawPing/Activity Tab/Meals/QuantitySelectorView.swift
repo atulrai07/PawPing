@@ -4,7 +4,6 @@
 //
 //  Created by Atul on 25/04/26.
 //
-//  Quantity selector supporting quick select capsules and manual numeric input.
 //
 
 import SwiftUI
