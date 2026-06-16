@@ -71,7 +71,6 @@ struct HealthView: View {
                                 HStack {
                                     Text("Health Timeline")
                                         .font(.system(size: 18, weight: .bold))
-                                        .foregroundStyle(Color("baseColor"))
                                     
                                     Spacer()
                                     
@@ -166,7 +165,7 @@ struct HealthView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(Color("baseColor"))
+                .foregroundStyle(.black)
                 .padding(.horizontal)
 
             content()

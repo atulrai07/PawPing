@@ -38,16 +38,48 @@ struct HealthRecordDetailView: View {
                 }
             }
             
-            if rec.vetName != nil || rec.vetAddress != nil || rec.vetPhone != nil {
+            if rec.isCompleted || rec.vetName != nil || rec.vetAddress != nil || rec.vetPhone != nil {
                 Section("Vet Clinic") {
-                    if let name = rec.vetName {
-                        detailRow(title: "Clinic Name", value: name)
+                    HStack {
+                        Text("Clinic Name")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(rec.vetName ?? "Not Specified")
+                            .foregroundStyle(rec.vetName == nil ? .secondary : .primary)
                     }
-                    if let address = rec.vetAddress {
+                    
+                    if let address = rec.vetAddress, !address.isEmpty {
                         detailRow(title: "Address", value: address)
                     }
-                    if let phone = rec.vetPhone {
-                        detailRow(title: "Phone", value: phone)
+                    
+                    HStack {
+                        Text("Phone")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if let phone = rec.vetPhone, !phone.isEmpty {
+                            let cleanedPhone = phone.filter { "+0123456789".contains($0) }
+                            if !cleanedPhone.isEmpty {
+                                Button {
+                                    if let url = URL(string: "tel://\(cleanedPhone)") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "phone.fill")
+                                            .font(.system(size: 12))
+                                        Text(phone)
+                                            .fontWeight(.semibold)
+                                    }
+                                    .foregroundStyle(Color("baseColor"))
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                Text(phone)
+                            }
+                        } else {
+                            Text("Not Specified")
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
