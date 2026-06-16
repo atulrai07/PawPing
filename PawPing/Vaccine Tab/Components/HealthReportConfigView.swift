@@ -86,11 +86,21 @@ struct HealthReportConfigView: View {
     
     private var dogProfileCard: some View {
         HStack(spacing: 16) {
-            Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
-                .resizable()
-                .scaledToFill()
+            if let urlString = petStore.activePet?.profileImageUrl, let url = URL(string: urlString) {
+                AsyncImage(url: url) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    ProgressView()
+                }
                 .frame(width: 70, height: 70)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 70, height: 70)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(petStore.activePet?.name ?? "Pet")

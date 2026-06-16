@@ -68,7 +68,6 @@ struct EmergencyGuideView: View {
                                     Text(vet.address)
                                         .font(.system(size: 12))
                                         .foregroundStyle(.secondary)
-                                        .lineLimit(1)
                                 }
                                 
                                 Spacer()

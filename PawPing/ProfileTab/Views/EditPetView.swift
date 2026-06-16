@@ -33,46 +33,51 @@ struct EditPetView: View {
         let currentPet = petStore.activePet
         
         NavigationStack {
-            VStack(spacing: 0) {
-                // Pet image picker — no card background
-                PhotosPicker(selection: $selectedItem, matching: .images) {
-                    ZStack(alignment: .bottomTrailing) {
-                        if let data = selectedImageData, let uiImage = UIImage(data: data) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 100, height: 100)
-                                .clipShape(Circle())
-                        } else if let pet = currentPet {
-                            if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
-                                AsyncImage(url: url) { image in
-                                    image.resizable().scaledToFill()
-                                } placeholder: {
-                                    Color.gray.opacity(0.2)
+            Form {
+                Section {
+                    HStack {
+                        Spacer()
+                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                            ZStack(alignment: .bottomTrailing) {
+                                if let data = selectedImageData, let uiImage = UIImage(data: data) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(Circle())
+                                } else if let pet = currentPet {
+                                    if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
+                                        AsyncImage(url: url) { image in
+                                            image.resizable().scaledToFill()
+                                        } placeholder: {
+                                            Color.gray.opacity(0.2)
+                                        }
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(Circle())
+                                    } else {
+                                        Image(pet.imageName)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 100, height: 100)
+                                            .clipShape(Circle())
+                                    }
                                 }
-                                .frame(width: 100, height: 100)
-                                .clipShape(Circle())
-                            } else {
-                                Image(pet.imageName)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 100, height: 100)
-                                    .clipShape(Circle())
+                                
+                                Circle()
+                                    .fill(Color("baseColor"))
+                                    .frame(width: 32, height: 32)
+                                    .overlay(
+                                        Image(systemName: "camera.fill")
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(.white)
+                                    )
                             }
                         }
-                        
-                        Circle()
-                            .fill(Color("baseColor"))
-                            .frame(width: 32, height: 32)
-                            .overlay(
-                                Image(systemName: "camera.fill")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(.white)
-                            )
+                        Spacer()
                     }
+                    .padding(.vertical, 8)
+                    .listRowBackground(Color.clear)
                 }
-                .padding(.top, 20)
-                .padding(.bottom, 8)
                 .onChange(of: selectedItem) { _, newItem in
                     Task {
                         if let data = try? await newItem?.loadTransferable(type: Data.self) {
@@ -81,58 +86,56 @@ struct EditPetView: View {
                     }
                 }
 
-                Form {
-                    Section("Basic Info") {
-                        TextField("Name", text: $name)
-                        TextField("Breed", text: $breed)
+                Section("Basic Info") {
+                    TextField("Name", text: $name)
+                    TextField("Breed", text: $breed)
+                }
+                
+                Section("Details") {
+                    HStack {
+                        Text("Weight")
+                        Spacer()
+                        TextField("20", value: $weight, format: .number)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 60)
+                        Text("kg")
+                            .foregroundStyle(.secondary)
                     }
+                    DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
+                    Toggle("Neutered", isOn: $isNeutered)
+                }
+                
+                Section {
+                    Toggle("Custom Walk Goal", isOn: $useCustomGoal)
+                        .tint(Color("baseColor"))
                     
-                    Section("Details") {
+                    if useCustomGoal {
                         HStack {
-                            Text("Weight")
+                            Text("Daily Walk Goal")
                             Spacer()
-                            TextField("20", value: $weight, format: .number)
-                                .keyboardType(.decimalPad)
+                            TextField("60", value: $walkGoalMinutes, format: .number)
+                                .keyboardType(.numberPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 60)
-                            Text("kg")
+                            Text("min")
                                 .foregroundStyle(.secondary)
                         }
-                        DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
-                        Toggle("Neutered", isOn: $isNeutered)
                     }
                     
-                    Section {
-                        Toggle("Custom Walk Goal", isOn: $useCustomGoal)
-                            .tint(Color("baseColor"))
-                        
-                        if useCustomGoal {
-                            HStack {
-                                Text("Daily Walk Goal")
-                                Spacer()
-                                TextField("60", value: $walkGoalMinutes, format: .number)
-                                    .keyboardType(.numberPad)
-                                    .multilineTextAlignment(.trailing)
-                                    .frame(width: 60)
-                                Text("min")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        HStack(spacing: 4) {
-                            Image(systemName: "pawprint.fill")
-                                .font(.caption2)
-                                .foregroundStyle(Color("baseColor"))
-                            Text("Recommended for \(breed.isEmpty ? "this breed" : breed): \(breedRecommendation) min/day")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    } header: {
-                        Text("Activity Goal")
-                    } footer: {
-                        if !useCustomGoal {
-                            Text("Goal is set automatically based on breed and age. Toggle on to set a custom value.")
-                        }
+                    HStack(spacing: 4) {
+                        Image(systemName: "pawprint.fill")
+                            .font(.caption2)
+                            .foregroundStyle(Color("baseColor"))
+                        Text("Recommended for \(breed.isEmpty ? "this breed" : breed): \(breedRecommendation) min/day")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Activity Goal")
+                } footer: {
+                    if !useCustomGoal {
+                        Text("Goal is set automatically based on breed and age. Toggle on to set a custom value.")
                     }
                 }
             }

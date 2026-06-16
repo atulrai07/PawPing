@@ -22,6 +22,7 @@ private struct StickyNavHeader: View {
     var onAddTap: (() -> Void)?
     let isCollapsed: Bool
     @State private var showingAddPet = false
+    @State private var showPetSwitcher = false
 
     var body: some View {
         ZStack {
@@ -48,29 +49,9 @@ private struct StickyNavHeader: View {
                         .padding(.trailing, 8)
                     }
 
-                    // Pet switcher menu
-                    Menu {
-                        ForEach(petStore.pets) { pet in
-                            Button {
-                                petStore.switchPet(to: pet.id)
-                            } label: {
-                                Label {
-                                    Text(pet.name)
-                                } icon: {
-                                    if pet.id == petStore.activePetId {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-
-                        Divider()
-
-                        Button {
-                            showingAddPet = true
-                        } label: {
-                            Label("Add Pet", systemImage: "plus.circle")
-                        }
+                    // Pet switcher menu button triggering a custom popover (fixes truncation, blank space, and AsyncImage loading)
+                    Button {
+                        showPetSwitcher = true
                     } label: {
                         HStack(spacing: 6) {
                             Circle()
@@ -96,6 +77,83 @@ private struct StickyNavHeader: View {
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(Color("secondaryText"))
                         }
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: $showPetSwitcher) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(petStore.pets) { pet in
+                                Button {
+                                    petStore.switchPet(to: pet.id)
+                                    showPetSwitcher = false
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
+                                            AsyncImage(url: url) { image in
+                                                image.resizable().scaledToFill()
+                                            } placeholder: {
+                                                Color.gray.opacity(0.2)
+                                            }
+                                            .frame(width: 32, height: 32)
+                                            .clipShape(Circle())
+                                        } else {
+                                            Image(pet.imageName)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 32, height: 32)
+                                                .clipShape(Circle())
+                                        }
+                                        
+                                        Text(pet.name)
+                                            .font(.body)
+                                            .foregroundStyle(.primary)
+                                        
+                                        Spacer()
+                                        
+                                        if pet.id == petStore.activePetId {
+                                            Image(systemName: "checkmark")
+                                                .foregroundStyle(Color("baseColor"))
+                                                .font(.system(size: 14, weight: .bold))
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                
+                                if pet.id != petStore.pets.last?.id {
+                                    Divider()
+                                        .padding(.leading, 60)
+                                }
+                            }
+                            
+                            Divider()
+                            
+                            Button {
+                                showPetSwitcher = false
+                                showingAddPet = true
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundStyle(Color("baseColor"))
+                                        .font(.title3)
+                                        .frame(width: 32)
+                                    
+                                    Text("Add Pet")
+                                        .font(.body)
+                                        .foregroundStyle(.primary)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .frame(width: 220)
+                        .padding(.vertical, 8)
+                        .presentationCompactAdaptation(.popover)
                     }
                 }
             }

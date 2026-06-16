@@ -90,6 +90,72 @@ struct Medication: Identifiable, Codable {
         }
         return .active
     }
+
+    // MARK: - Dynamic Schedule Helpers
+    
+    struct DoseSlot: Identifiable, Hashable {
+        var id: String { "\(time)-\(index)" }
+        let index: Int
+        let time: String // Scheduled time string, e.g. "09:00 AM"
+        let completedDate: Date? // Date it was taken, nil if pending
+    }
+    
+    func isActive(on date: Date) -> Bool {
+        let calendar = Calendar.current
+        let startOfDayDate = calendar.startOfDay(for: date)
+        let startOfStartDate = calendar.startOfDay(for: startDate)
+        
+        if startOfDayDate < startOfStartDate {
+            return false
+        }
+        
+        if let endDate = endDate {
+            let startOfEndDate = calendar.startOfDay(for: endDate)
+            if startOfDayDate > startOfEndDate {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    var dailyScheduledTimes: [String] {
+        switch frequency {
+        case .onceDaily:
+            return ["09:00 AM"]
+        case .twiceDaily:
+            return ["09:00 AM", "09:00 PM"]
+        case .every8Hours:
+            return ["08:00 AM", "04:00 PM", "12:00 AM"]
+        case .asNeeded:
+            return []
+        }
+    }
+    
+    func completedDoses(on date: Date) -> [Date] {
+        let calendar = Calendar.current
+        return completedDoses.filter { calendar.isDate($0, inSameDayAs: date) }
+            .sorted()
+    }
+    
+    func doseSlots(for date: Date) -> [DoseSlot] {
+        let scheduled = dailyScheduledTimes
+        if scheduled.isEmpty {
+            // As Needed: return already taken doses today, plus one pending placeholder at the end
+            let completed = completedDoses(on: date)
+            var slots = completed.enumerated().map { index, doseDate in
+                DoseSlot(index: index, time: "Logged Dose", completedDate: doseDate)
+            }
+            slots.append(DoseSlot(index: slots.count, time: "As Needed", completedDate: nil))
+            return slots
+        }
+        
+        let completed = completedDoses(on: date)
+        return scheduled.enumerated().map { index, timeStr in
+            let completedDate = index < completed.count ? completed[index] : nil
+            return DoseSlot(index: index, time: timeStr, completedDate: completedDate)
+        }
+    }
 }
 
 // MARK: - TimelineEventProtocol Conformance

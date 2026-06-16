@@ -44,11 +44,11 @@ struct HealthView: View {
                             HealthSummaryCard(summary: store.summary)
                                 .padding(.horizontal)
 
-                            // Navigation Links to Modules
                             VStack(spacing: 12) {
                                 NavigationLink(destination: MedicationListView()) {
                                     moduleRow(title: "Medications", subtitle: "\(medicationStore.activeMedicationsCount) Active", icon: "pills.fill", color: .purple)
                                 }
+                                .buttonStyle(.plain)
                             }
                             .padding(.horizontal)
 
@@ -220,12 +220,12 @@ struct HealthView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.black)
                 
                 if let subtitle {
                     Text(subtitle)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.gray)
                 }
             }
             

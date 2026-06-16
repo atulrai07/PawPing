@@ -89,6 +89,11 @@ class PetStore {
     
     @MainActor
     func updatePet(_ pet: Pet) async {
+        // Update local memory state immediately to enable universal real-time UI updates
+        if let index = pets.firstIndex(where: { $0.id == pet.id }) {
+            pets[index] = pet
+        }
+        
         do {
             try await client
                 .from("pets")

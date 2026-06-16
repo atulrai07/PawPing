@@ -10,6 +10,9 @@ struct MedicationDetailView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showDeleteConfirmation = false
     @State private var showEditMedication = false
+    @State private var showLogDoseSheet = false
+    @State private var selectedSlot: Medication.DoseSlot? = nil
+    @State private var timeGiven = Date()
     
     let medication: Medication
     
@@ -27,6 +30,56 @@ struct MedicationDetailView: View {
                     Text(med.status.rawValue.capitalized)
                         .foregroundStyle(statusColor(for: med.status))
                         .fontWeight(.semibold)
+                }
+            }
+            
+            if med.isActive(on: Date()) {
+                Section("Today's Schedule") {
+                    let slots = med.doseSlots(for: Date())
+                    ForEach(slots) { slot in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(slot.time)
+                                    .font(.headline)
+                                
+                                if let date = slot.completedDate {
+                                    Text("Taken at \(date.formatted(date: .omitted, time: .shortened))")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.green)
+                                } else {
+                                    Text("Pending")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            if let _ = slot.completedDate {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                    .font(.title2)
+                            } else {
+                                Button {
+                                    selectedSlot = slot
+                                    timeGiven = Date()
+                                    showLogDoseSheet = true
+                                } label: {
+                                    if slot.time == "As Needed" {
+                                        Label("Log Dose", systemImage: "plus.circle.fill")
+                                            .foregroundStyle(Color("baseColor"))
+                                            .fontWeight(.semibold)
+                                    } else {
+                                        Image(systemName: "circle")
+                                            .foregroundStyle(.secondary)
+                                            .font(.title2)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
                 }
             }
             
@@ -93,6 +146,64 @@ struct MedicationDetailView: View {
         }
         .sheet(isPresented: $showEditMedication) {
             AddMedicationView(medicationToEdit: med)
+        }
+        .sheet(isPresented: $showLogDoseSheet) {
+            if let slot = selectedSlot {
+                NavigationStack {
+                    VStack(spacing: 24) {
+                        VStack(spacing: 8) {
+                            Image(systemName: "pills.fill")
+                                .font(.system(size: 48))
+                                .foregroundStyle(Color("baseColor"))
+                                .padding()
+                                .background(Color("baseColor").opacity(0.1))
+                                .clipShape(Circle())
+                            
+                            Text("Log Dose")
+                                .font(.title2)
+                                .bold()
+                            
+                            Text("Log dose for \(med.name) (\(med.dosage) \(med.unit.rawValue)) scheduled for \(slot.time).")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.top, 24)
+                        
+                        DatePicker("Time Given", selection: $timeGiven, displayedComponents: .hourAndMinute)
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                        
+                        Spacer()
+                        
+                        Button {
+                            store.logDose(for: med.id, date: timeGiven)
+                            showLogDoseSheet = false
+                        } label: {
+                            Text("Confirm Done")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(Color("baseColor"))
+                                .cornerRadius(16)
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 16)
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                showLogDoseSheet = false
+                            }
+                        }
+                    }
+                }
+                .presentationDetents([.medium])
+            }
         }
     }
     

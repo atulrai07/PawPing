@@ -97,11 +97,21 @@ struct DietSetupSheet: View {
 
     private var petInfoCard: some View {
         HStack(spacing: 16) {
-            Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
-                .resizable()
-                .scaledToFill()
+            if let urlString = petStore.activePet?.profileImageUrl, let url = URL(string: urlString) {
+                AsyncImage(url: url) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    ProgressView()
+                }
                 .frame(width: 50, height: 50)
                 .clipShape(Circle())
+            } else {
+                Image(petStore.activePet?.imageName ?? Pet.defaultImageName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(petStore.activePet?.name ?? "Pet")

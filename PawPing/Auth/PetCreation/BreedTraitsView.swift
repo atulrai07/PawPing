@@ -121,12 +121,13 @@ struct BreedTraitsView: View {
         isSaving = true
         
         Task {
-            var finalImageName = petData.image
+            var profileUrl: String? = nil
+            let finalImageName = petData.image
             
             // Upload image if selected
             if let data = petData.imageData {
                 if let urlString = await petStore.uploadImage(data: data) {
-                    finalImageName = urlString
+                    profileUrl = urlString
                 }
             }
             
@@ -138,6 +139,7 @@ struct BreedTraitsView: View {
                 age: calculateAge(from: petData.birthday),
                 weightKg: petData.weight,
                 imageName: finalImageName,
+                profileImageUrl: profileUrl,
                 homeLatitude: 28.4210,
                 homeLongitude: 77.5340,
                 birthday: Pet.birthdayString(from: petData.birthday),

@@ -11,6 +11,7 @@ struct MyPetsView: View {
     @Environment(PetStore.self) var petStore
     @State private var showingAddPet = false
     @State private var selectedPet: Pet? = nil
+    @State private var petToDelete: Pet? = nil
     
     var body: some View {
         List {
@@ -54,14 +55,25 @@ struct MyPetsView: View {
                 }
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
-                        Task {
-                            await petStore.deletePet(id: pet.id)
-                        }
+                        petToDelete = pet
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
                 }
             }
+        }
+        .alert("Do you really want to delete?", isPresented: Binding(
+            get: { petToDelete != nil },
+            set: { if !$0 { petToDelete = nil } }
+        ), presenting: petToDelete) { pet in
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                Task {
+                    await petStore.deletePet(id: pet.id)
+                }
+            }
+        } message: { _ in
+            Text("All the data for this pet will be lost")
         }
         .navigationTitle("My Pets")
         .toolbar {
