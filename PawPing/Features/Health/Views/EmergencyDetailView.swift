@@ -32,9 +32,6 @@ struct EmergencyDetailView: View {
                 if let videoID = guide.videoID {
                     VStack(alignment: .leading, spacing: 14) {
                         HStack(spacing: 8) {
-                            Image(systemName: "play.tv.fill")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(.secondary)
                             Text("VIDEO TUTORIAL")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(.secondary)
@@ -54,10 +51,7 @@ struct EmergencyDetailView: View {
                 // Symptoms / Identification Check
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 8) {
-                        Image(systemName: "eyes")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.secondary)
-                        Text("How to Identify")
+                        Text("HOW TO IDENTIFY")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.secondary)
                             .tracking(1)
@@ -67,10 +61,6 @@ struct EmergencyDetailView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         ForEach(guide.symptoms, id: \.self) { symptom in
                             HStack(alignment: .top, spacing: 10) {
-                                Image(systemName: "square.fill.and.line.vertical.and.square")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(guide.color)
-                                    .padding(.top, 3)
                                 Text(symptom)
                                     .font(.system(size: 15, weight: .medium))
                                     .foregroundStyle(.primary)
@@ -87,9 +77,6 @@ struct EmergencyDetailView: View {
                 // Action Steps Flow
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 8) {
-                        Image(systemName: "checklist")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.secondary)
                         Text("SOP ACTION STEPS")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.secondary)
@@ -127,34 +114,7 @@ struct EmergencyDetailView: View {
                 }
                 .padding(.horizontal)
                 
-                // Critical Safety Alert
-                if let warning = guide.warning {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 16))
-                                .foregroundStyle(.red)
-                            Text("CRITICAL VET WARNING")
-                                .font(.system(size: 13, weight: .black))
-                                .foregroundStyle(.red)
-                                .tracking(1)
-                        }
-                        
-                        Text(warning)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.red.opacity(0.9))
-                            .lineSpacing(4)
-                    }
-                    .padding(18)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.red.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.red.opacity(0.2), lineWidth: 1)
-                    )
-                    .padding(.horizontal)
-                }
+
                 
                 Spacer(minLength: 40)
             }

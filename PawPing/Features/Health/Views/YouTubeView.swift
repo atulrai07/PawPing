@@ -122,9 +122,6 @@ struct VideoTutorialCard: View {
             .frame(height: 180)
             .overlay(
                 VStack(spacing: 8) {
-                    Image(systemName: "play.rectangle.fill")
-                        .font(.system(size: 36))
-                        .foregroundStyle(.white.opacity(0.7))
                     Text("Video Tutorial")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.white.opacity(0.6))

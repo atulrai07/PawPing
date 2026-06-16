@@ -27,7 +27,7 @@ enum EmergencyStaticData {
         EmergencyGuide(
             title: "CPR (Heart Stop)",
             icon: "heart.text.square.fill",
-            color: .red,
+            color: Color("baseColor"),
             symptoms: [
                 "Unconscious and unresponsive",
                 "No visible breathing (chest not rising)",
@@ -46,7 +46,7 @@ enum EmergencyStaticData {
         EmergencyGuide(
             title: "Choking",
             icon: "lungs.fill",
-            color: .orange,
+            color: Color("baseColor"),
             symptoms: [
                 "Frantic pawing at the mouth",
                 "Gagging, coughing, or gasping",
@@ -65,7 +65,7 @@ enum EmergencyStaticData {
         EmergencyGuide(
             title: "Poison Ingestion",
             icon: "exclamationmark.triangle.fill",
-            color: .purple,
+            color: Color("baseColor"),
             symptoms: [
                 "Vomiting, diarrhea, or excessive drooling",
                 "Seizures or sudden tremors",
@@ -84,7 +84,7 @@ enum EmergencyStaticData {
         EmergencyGuide(
             title: "Heat Stroke",
             icon: "sun.max.fill",
-            color: .red,
+            color: Color("baseColor"),
             symptoms: [
                 "Heavy, loud, or frantic panting",
                 "Bright red gums and thick saliva",
@@ -103,7 +103,7 @@ enum EmergencyStaticData {
         EmergencyGuide(
             title: "Bleeding & Wounds",
             icon: "drop.fill",
-            color: .red,
+            color: Color("baseColor"),
             symptoms: [
                 "Active blood dripping or spurting",
                 "Deep lacerations or puncture wounds",

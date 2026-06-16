@@ -5,6 +5,8 @@ struct OnboardingPageView: View {
     let items: [OnboardingItem]
     var onGetStarted: () -> Void
     
+    @State private var isMovingForward = true
+    
     var body: some View {
         GeometryReader { geo in
             let safeAreaInsets = geo.safeAreaInsets
@@ -29,7 +31,7 @@ struct OnboardingPageView: View {
                                     }
                                 }
                                 .font(.system(size: 17, weight: .regular))
-                                .foregroundStyle(.black.opacity(0.45))
+                                .foregroundStyle(.secondary)
                             } else {
                                 Text("Skip")
                                     .font(.system(size: 17, weight: .regular))
@@ -56,8 +58,8 @@ struct OnboardingPageView: View {
                                 .scaledToFit()
                                 .padding(.horizontal, currentPage == 1 ? 30 : 50)
                                 .transition(.asymmetric(
-                                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                                    removal: .move(edge: .leading).combined(with: .opacity)
+                                    insertion: isMovingForward ? .move(edge: .trailing).combined(with: .opacity) : .move(edge: .leading).combined(with: .opacity),
+                                    removal: isMovingForward ? .move(edge: .leading).combined(with: .opacity) : .move(edge: .trailing).combined(with: .opacity)
                                 ))
                                 .id("dog-\(currentPage)")
                         }
@@ -81,7 +83,7 @@ struct OnboardingPageView: View {
                         
                         Text(currentItem.description)
                             .font(.system(size: 16, weight: .regular))
-                            .foregroundStyle(.black.opacity(0.55))
+                            .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 32)
                             .transition(.opacity)
@@ -104,12 +106,15 @@ struct OnboardingPageView: View {
                 .frame(height: dynamicCardHeight)
                 .background(
                     UnevenRoundedRectangle(topLeadingRadius: OnboardingLayout.cardCornerRadius, topTrailingRadius: OnboardingLayout.cardCornerRadius)
-                        .fill(.white)
+                        .fill(Color("cardBackground"))
                         .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: -4)
                         .ignoresSafeArea(edges: .bottom)
                 )
             }
             .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentPage)
+            .onChange(of: currentPage) { oldValue, newValue in
+                isMovingForward = newValue > oldValue
+            }
             .ignoresSafeArea(edges: .bottom)
         }
     }
