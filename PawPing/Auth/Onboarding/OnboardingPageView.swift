@@ -2,10 +2,9 @@ import SwiftUI
 
 struct OnboardingPageView: View {
     @Binding var currentPage: Int
+    @Binding var isMovingForward: Bool
     let items: [OnboardingItem]
     var onGetStarted: () -> Void
-    
-    @State private var isMovingForward = true
     
     var body: some View {
         GeometryReader { geo in
@@ -26,6 +25,7 @@ struct OnboardingPageView: View {
                             Spacer()
                             if currentPage < items.count - 1 {
                                 Button("Skip") {
+                                    isMovingForward = true
                                     withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                                         currentPage = items.count - 1
                                     }
@@ -94,6 +94,7 @@ struct OnboardingPageView: View {
                     
                     PrimaryButton(title: currentPage == items.count - 1 ? "Get Started" : "Next") {
                         if currentPage < items.count - 1 {
+                            isMovingForward = true
                             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                                 currentPage += 1
                             }
@@ -112,9 +113,6 @@ struct OnboardingPageView: View {
                 )
             }
             .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentPage)
-            .onChange(of: currentPage) { oldValue, newValue in
-                isMovingForward = newValue > oldValue
-            }
             .ignoresSafeArea(edges: .bottom)
         }
     }
@@ -161,6 +159,7 @@ struct PrimaryButton: View {
 #Preview {
     OnboardingPageView(
         currentPage: .constant(0),
+        isMovingForward: .constant(true),
         items: onboardingData,
         onGetStarted: {}
     )

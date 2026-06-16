@@ -23,7 +23,16 @@ struct ActivityView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
+            Group {
+                if petStore.pets.isEmpty {
+                    ContentUnavailableView(
+                        "No Pets Added",
+                        systemImage: "pawprint.fill",
+                        description: Text("Add a pet from your Profile to start tracking activity.")
+                    )
+                    .navigationTitle("Home")
+                } else {
+                    VStack(spacing: 16) {
 
                 // MARK: - Walked Card
                 ZStack {
@@ -178,6 +187,8 @@ struct ActivityView: View {
             }
             .navigationDestination(isPresented: $showEmergencyGuide) {
                 EmergencyGuideView()
+            }
+                }
             }
         }
         .fullScreenCover(isPresented: $showWalkFlow) {

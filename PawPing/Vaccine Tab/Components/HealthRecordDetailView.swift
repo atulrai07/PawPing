@@ -94,7 +94,7 @@ struct HealthRecordDetailView: View {
                 Button(role: .destructive) {
                     showDeleteConfirmation = true
                 } label: {
-                    Text("Delete Vaccination")
+                    Text("Delete \(rec.recordType.displayName)")
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
