@@ -72,7 +72,7 @@ struct PawPingApp: App {
                 if appState.isAuthenticated {
                     isInitialLoading = true
                     await petStore.fetchPets()
-                    activityStore.switchPet(to: petStore.activePetId)
+                    activityStore.switchPet(to: petStore.activePet)
                     appState.hasPets = !petStore.pets.isEmpty
                     isInitialLoading = false
                 } else {
@@ -83,14 +83,15 @@ struct PawPingApp: App {
                 if appState.isAuthenticated {
                     isInitialLoading = true
                     await petStore.fetchPets()
-                    activityStore.switchPet(to: petStore.activePetId)
+                    activityStore.switchPet(to: petStore.activePet)
                     appState.hasPets = !petStore.pets.isEmpty
                     isInitialLoading = false
                 }
             }
             }
             .onChange(of: petStore.activePetId) { _, newPetId in
-                activityStore.switchPet(to: newPetId)
+                let pet = petStore.pets.first { $0.id == newPetId }
+                activityStore.switchPet(to: pet)
                 
                 if let newPetId {
                     Task {

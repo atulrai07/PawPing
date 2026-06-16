@@ -13,6 +13,7 @@ import CoreLocation
 class ActivityStore {
 
     var activePetId: UUID?
+    var activePet: Pet?
     var meals: [Meal] = []
     var walkActivity: WalkActivity
     var timeWalkedGraph: TimeWalkedGraphModel
@@ -50,10 +51,13 @@ class ActivityStore {
     var isPaused: Bool = false
     var locationManager = LocationManager()
     private var walkTimer: Timer?
+    private var walkStartTime: Date?
+    private var accumulatedSeconds: TimeInterval = 0
 
     init() {
-        self.walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: 60)
-        self.timeWalkedGraph = TimeWalkedGraphModel(data: [], goalMinutes: 60)
+        let defaultGoal = BreedDataService.defaultGoalMinutes
+        self.walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: defaultGoal)
+        self.timeWalkedGraph = TimeWalkedGraphModel(data: [], goalMinutes: defaultGoal)
         self.distanceSummary = DistanceSummaryModel(weekData: [], monthData: [], weekRange: "", monthName: "")
     }
 
@@ -85,12 +89,15 @@ class ActivityStore {
         let route_points: [CoordinateModel]
     }
 
-    func switchPet(to petId: UUID?) {
-        self.activePetId = petId
+    func switchPet(to pet: Pet?) {
+        self.activePetId = pet?.id
+        self.activePet = pet
         // Sync sub-stores
-        mealDietStore.switchPet(to: petId)
+        mealDietStore.switchPet(to: pet?.id)
         
-        guard let petId else { return }
+        guard let pet else { return }
+        let petId = pet.id
+        let resolvedGoal = BreedDataService.shared.resolveWalkGoal(for: pet)
         let key = "activity_store_data_\(petId.uuidString)"
         
         if let data = UserDefaults.standard.data(forKey: key),
@@ -109,8 +116,12 @@ class ActivityStore {
             }
             
             self.meals = loadedMeals
-            self.walkActivity = storedData.walkActivity
-            self.timeWalkedGraph = storedData.timeWalkedGraph
+            
+            // Override goalMinutes with the dynamically resolved value
+            var restoredWalk = storedData.walkActivity
+            restoredWalk.goalMinutes = resolvedGoal
+            self.walkActivity = restoredWalk
+            self.timeWalkedGraph = TimeWalkedGraphModel(data: storedData.timeWalkedGraph.data, goalMinutes: resolvedGoal)
             self.distanceSummary = storedData.distanceSummary
             
             let walksKey = "walk_activities_\(petId.uuidString)"
@@ -123,7 +134,7 @@ class ActivityStore {
         } else {
             // New pet, initialize default state
             self.meals = Self.defaultMeals(for: petId)
-            self.walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: 60)
+            self.walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: resolvedGoal)
             
             self.timeWalkedGraph = TimeWalkedGraphModel(
                 data: [
@@ -135,7 +146,7 @@ class ActivityStore {
                     TimeWalkedData(day: "SAT", minutes: 0),
                     TimeWalkedData(day: "SUN", minutes: 0)
                 ],
-                goalMinutes: 60
+                goalMinutes: resolvedGoal
             )
             
             let calendar = Calendar.current
@@ -239,7 +250,13 @@ class ActivityStore {
                     }
                     
                     self.meals = loadedMeals
-                    self.walkActivity = storedData.walkActivity
+                    
+                    // Override goalMinutes with the dynamically resolved value
+                    var restoredWalk = storedData.walkActivity
+                    if let pet = self.activePet {
+                        restoredWalk.goalMinutes = BreedDataService.shared.resolveWalkGoal(for: pet)
+                    }
+                    self.walkActivity = restoredWalk
                     self.timeWalkedGraph = storedData.timeWalkedGraph
                     self.distanceSummary = storedData.distanceSummary
                     // self.activities = storedData.activities ?? []
@@ -401,6 +418,8 @@ class ActivityStore {
     func startWalk() {
         isWalking = true
         isPaused = false
+        accumulatedSeconds = 0
+        walkStartTime = Date()
         elapsedSeconds = 0
         locationManager.requestPermission()
         locationManager.startTracking()
@@ -412,6 +431,12 @@ class ActivityStore {
         walkTimer = nil
         locationManager.stopTracking()
 
+        if let start = walkStartTime {
+            elapsedSeconds = accumulatedSeconds + Date().timeIntervalSince(start)
+        } else {
+            elapsedSeconds = accumulatedSeconds
+        }
+        
         let walkedMinutes = Int(elapsedSeconds / 60)
         
         let routeCoordinates = locationManager.routeLocations.map {
@@ -430,6 +455,8 @@ class ActivityStore {
         isWalking = false
         isPaused = false
         elapsedSeconds = 0
+        accumulatedSeconds = 0
+        walkStartTime = nil
         locationManager.totalDistance = 0
         
         rebuildStats()
@@ -449,8 +476,14 @@ class ActivityStore {
             walkTimer?.invalidate()
             walkTimer = nil
             locationManager.stopTracking()
+            if let start = walkStartTime {
+                accumulatedSeconds += Date().timeIntervalSince(start)
+            }
+            walkStartTime = nil
+            elapsedSeconds = accumulatedSeconds
         } else {
             locationManager.startTracking()
+            walkStartTime = Date()
             startTimer()
         }
     }
@@ -565,9 +598,14 @@ class ActivityStore {
 
     private func startTimer() {
         walkTimer?.invalidate()
-        walkTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] _ in
+        walkTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
             guard let self else { return }
-            self.elapsedSeconds += 0.01
+            self.updateElapsedSeconds()
         }
+    }
+
+    private func updateElapsedSeconds() {
+        guard isWalking, !isPaused, let walkStartTime else { return }
+        self.elapsedSeconds = self.accumulatedSeconds + Date().timeIntervalSince(walkStartTime)
     }
 }

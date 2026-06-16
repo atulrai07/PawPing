@@ -164,7 +164,7 @@ struct ActivityView: View {
                     await petStore.fetchPets()
                     if let activeId = petStore.activePetId {
                         // Re-sync all stores for the active pet
-                        store.switchPet(to: activeId)
+                        store.switchPet(to: petStore.activePet)
                         await healthStore.fetchVaccines(for: activeId)
                         await medicationStore.fetchMedications(for: activeId)
                     }

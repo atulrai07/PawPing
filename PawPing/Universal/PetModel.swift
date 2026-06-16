@@ -20,6 +20,7 @@ struct Pet: Identifiable, Codable, Hashable {
     var homeLongitude: Double
     var birthday: String? = nil    // Stored as "yyyy-MM-dd" to match Supabase date column
     var isNeutered: Bool? = nil
+    var walkGoalMinutes: Int? = nil  // User-set custom goal, nil = use breed default
 
     static let defaultImageName = "profilePhoto"
     
@@ -38,6 +39,7 @@ struct Pet: Identifiable, Codable, Hashable {
         case homeLongitude = "home_longitude"
         case birthday
         case isNeutered = "is_neutered"
+        case walkGoalMinutes = "walk_goal_minutes"
     }
     
     // MARK: - Helpers

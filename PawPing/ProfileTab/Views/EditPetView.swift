@@ -17,10 +17,17 @@ struct EditPetView: View {
     @State private var weight: Double = 0
     @State private var birthday: Date = Date()
     @State private var isNeutered: Bool = false
+    @State private var walkGoalMinutes: Int = 60
+    @State private var useCustomGoal: Bool = false
     
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var selectedImageData: Data? = nil
     @State private var isUploading = false
+    
+    /// The breed-recommended walk goal (with age adjustment)
+    private var breedRecommendation: Int {
+        BreedDataService.shared.ageAdjustedWalkMinutes(for: breed, birthday: birthday)
+    }
     
     var body: some View {
         let currentPet = petStore.activePet
@@ -94,6 +101,39 @@ struct EditPetView: View {
                         DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
                         Toggle("Neutered", isOn: $isNeutered)
                     }
+                    
+                    Section {
+                        Toggle("Custom Walk Goal", isOn: $useCustomGoal)
+                            .tint(Color("baseColor"))
+                        
+                        if useCustomGoal {
+                            HStack {
+                                Text("Daily Walk Goal")
+                                Spacer()
+                                TextField("60", value: $walkGoalMinutes, format: .number)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(width: 60)
+                                Text("min")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        
+                        HStack(spacing: 4) {
+                            Image(systemName: "pawprint.fill")
+                                .font(.caption2)
+                                .foregroundStyle(Color("baseColor"))
+                            Text("Recommended for \(breed.isEmpty ? "this breed" : breed): \(breedRecommendation) min/day")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } header: {
+                        Text("Activity Goal")
+                    } footer: {
+                        if !useCustomGoal {
+                            Text("Goal is set automatically based on breed and age. Toggle on to set a custom value.")
+                        }
+                    }
                 }
             }
             .navigationTitle("Edit Pet")
@@ -116,6 +156,15 @@ struct EditPetView: View {
                     weight = pet.weightKg
                     birthday = pet.birthdayDate ?? Date()
                     isNeutered = pet.isNeutered ?? false
+                    
+                    // Load walk goal
+                    if let customGoal = pet.walkGoalMinutes {
+                        walkGoalMinutes = customGoal
+                        useCustomGoal = true
+                    } else {
+                        walkGoalMinutes = BreedDataService.shared.resolveWalkGoal(for: pet)
+                        useCustomGoal = false
+                    }
                 }
             }
         }
@@ -137,6 +186,7 @@ struct EditPetView: View {
             pet.weightKg = weight
             pet.birthday = Pet.birthdayString(from: birthday)
             pet.isNeutered = isNeutered
+            pet.walkGoalMinutes = useCustomGoal ? walkGoalMinutes : nil
             
             await petStore.updatePet(pet)
             isUploading = false
