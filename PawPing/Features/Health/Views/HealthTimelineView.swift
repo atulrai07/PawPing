@@ -6,16 +6,13 @@
 import SwiftUI
 
 struct HealthTimelineView: View {
-    @Environment(HealthStore.self) var healthStore
-    @Environment(MedicationStore.self) var medicationStore
-    
     var events: [TimelineEvent]
     var limit: Int? = nil
     
     var sortedEvents: [TimelineEvent] {
-        var sorted = events.sorted { $0.eventDate > $1.eventDate }
+        var sorted = events.sorted { $0.eventDate < $1.eventDate }
         if let limit = limit {
-            sorted = Array(sorted.prefix(limit))
+            sorted = Array(sorted.suffix(limit))
         }
         return sorted
     }
@@ -24,101 +21,149 @@ struct HealthTimelineView: View {
         if events.isEmpty {
             ContentUnavailableView("No Health Events", systemImage: "clock.arrow.circlepath", description: Text("Your pet's health journey will appear here."))
         } else {
-            VStack(spacing: 0) {
-                ForEach(Array(sortedEvents.enumerated()), id: \.element.id) { index, event in
-                    Group {
-                        if event.type == .medication {
-                            if let med = medicationStore.medications.first(where: { $0.id == event.id }) {
-                                NavigationLink(destination: MedicationDetailView(medication: med)) {
-                                    TimelineRow(event: event, isLast: index == sortedEvents.count - 1)
-                                }
-                            } else {
-                                TimelineRow(event: event, isLast: index == sortedEvents.count - 1)
-                            }
-                        } else {
-                            if let record = healthStore.healthRecords.first(where: { $0.id == event.id }) {
-                                NavigationLink(destination: HealthRecordDetailView(record: record)) {
-                                    TimelineRow(event: event, isLast: index == sortedEvents.count - 1)
-                                }
-                            } else {
-                                TimelineRow(event: event, isLast: index == sortedEvents.count - 1)
-                            }
-                        }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 0) {
+                    ForEach(Array(sortedEvents.enumerated()), id: \.element.id) { index, event in
+                        let isLast = index == sortedEvents.count - 1
+                        TimelineNodeView(event: event, isLast: isLast)
                     }
-                    .buttonStyle(.plain)
                 }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 16)
             }
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color("cardBackground"))
-                    .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-            )
         }
     }
 }
 
-struct TimelineRow: View {
+struct TimelineNodeView: View {
     let event: TimelineEvent
     let isLast: Bool
     
+    // Status Logic for the UI
+    // If it's done -> Completed
+    // If it's upcoming and the nearest one -> Upcoming
+    // Else -> Planned
+    private var nodeState: NodeState {
+        if event.isCompleted {
+            return .completed
+        } else {
+            // A simple approximation: if it's overdue or within 30 days, it's Upcoming. Otherwise, Planned.
+            let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: event.eventDate).day ?? 0
+            if daysUntil <= 30 {
+                return .upcoming
+            } else {
+                return .planned
+            }
+        }
+    }
+    
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Icon Column
-            VStack {
+        HStack(spacing: 0) {
+            VStack(spacing: 8) {
+                // Circle Node
                 ZStack {
                     Circle()
-                        .fill(event.type.color.opacity(0.2))
-                        .frame(width: 44, height: 44)
+                        .fill(nodeState.fillColor)
+                        .frame(width: 50, height: 50)
+                        .overlay(
+                            Circle()
+                                .stroke(nodeState.strokeColor, lineWidth: nodeState == .completed ? 0 : 2)
+                        )
                     
-                    Image(systemName: event.type.iconName)
-                        .foregroundStyle(event.type.color)
-                        .font(.system(size: 20))
+                    Image(systemName: nodeState.iconName)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(nodeState.iconColor)
+                        .rotationEffect(.degrees(nodeState.iconName == "syringe.fill" ? -45 : 0))
                 }
                 
-                if !isLast {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 2)
-                        .padding(.vertical, 4)
+                // Labels
+                VStack(spacing: 2) {
+                    Text(event.title)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                        .lineLimit(1)
+                    
+                    Text(nodeState.label)
+                        .font(.system(size: 11, weight: nodeState == .upcoming ? .semibold : .regular))
+                        .foregroundStyle(nodeState.labelColor)
                 }
+                .frame(width: 80) // Fixed width to keep alignment clean
             }
             
-            // Content Column
-            VStack(alignment: .leading, spacing: 4) {
-                Text(event.title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                
-                Text(event.subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                
-                Text(event.eventDate, style: .date)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+            // Connector Line
+            if !isLast {
+                Rectangle()
+                    .fill(nodeState == .completed ? .green.opacity(0.3) : .gray.opacity(0.2))
+                    .frame(width: 30, height: 2)
+                    .padding(.bottom, 32) // Align with the center of the 50x50 circle
+                    .padding(.horizontal, -10)
+                    .zIndex(-1)
             }
-            .padding(.top, 8)
-            .padding(.bottom, isLast ? 16 : 8)
-            
-            Spacer()
-            
-            HStack(spacing: 10) {
-                if event.isCompleted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                }
-                
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .font(.system(size: 14, weight: .bold))
-            }
-            .padding(.top, 12)
         }
-        .padding(.horizontal, 16)
+    }
+    
+    enum NodeState {
+        case completed
+        case upcoming
+        case planned
+        
+        var fillColor: Color {
+            switch self {
+            case .completed: return Color.green.opacity(0.15)
+            case .upcoming: return Color.white
+            case .planned: return Color.white
+            }
+        }
+        
+        var strokeColor: Color {
+            switch self {
+            case .completed: return .clear
+            case .upcoming: return Color(hex: "6E54D7") ?? .purple
+            case .planned: return Color.gray.opacity(0.3)
+            }
+        }
+        
+        var iconColor: Color {
+            switch self {
+            case .completed: return .green
+            case .upcoming: return Color(hex: "6E54D7") ?? .purple
+            case .planned: return .gray
+            }
+        }
+        
+        var iconName: String {
+            switch self {
+            case .completed: return "checkmark"
+            case .upcoming: return "syringe.fill"
+            case .planned: return "syringe.fill"
+            }
+        }
+        
+        var label: String {
+            switch self {
+            case .completed: return "Completed"
+            case .upcoming: return "Upcoming"
+            case .planned: return "Planned"
+            }
+        }
+        
+        var labelColor: Color {
+            switch self {
+            case .completed: return .gray
+            case .upcoming: return Color(hex: "6E54D7") ?? .purple
+            case .planned: return .gray
+            }
+        }
     }
 }
 
 #Preview {
-    HealthTimelineView(events: [])
+    let mockRecords = [
+        HealthRecord(id: UUID(), petId: UUID(), type: "vaccine", name: "Puppy Core", dateGiven: Date().addingTimeInterval(-86400 * 100), nextDoseDate: nil, notes: "", isCompleted: true),
+        HealthRecord(id: UUID(), petId: UUID(), type: "vaccine", name: "Leptospirosis", dateGiven: Date().addingTimeInterval(-86400 * 300), nextDoseDate: Date().addingTimeInterval(86400 * 5), notes: "", isCompleted: false),
+        HealthRecord(id: UUID(), petId: UUID(), type: "vaccine", name: "Booster", dateGiven: Date().addingTimeInterval(-86400 * 300), nextDoseDate: Date().addingTimeInterval(86400 * 45), notes: "", isCompleted: false)
+    ]
+    let mockEvents = mockRecords.map { TimelineEvent(from: $0) }
+    HealthTimelineView(events: mockEvents)
+        .padding()
 }

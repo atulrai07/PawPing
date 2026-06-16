@@ -27,6 +27,17 @@ struct VetClinicDetails: View {
         return false
     }
     
+    // Generating consistent pseudo-random rating based on name length to simulate data
+    private var mockRating: String {
+        let ratings = ["4.5", "4.6", "4.7", "4.8", "4.9", "5.0"]
+        let index = item.name.count % ratings.count
+        return ratings[index]
+    }
+    
+    private var mockReviews: Int {
+        return (item.name.count * 13) % 250 + 40
+    }
+    
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
@@ -71,15 +82,31 @@ struct VetClinicDetails: View {
                         }
                         
                         // Center Titles
-                        VStack(spacing: 4) {
+                        VStack(spacing: 6) {
                             Text(item.name)
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundStyle(.primary)
                                 .multilineTextAlignment(.center)
                             
-                            Text(item.category.rawValue)
-                                .font(.system(size: 14))
-                                .foregroundStyle(.gray)
+                            HStack(spacing: 8) {
+                                Text(item.displayCategoryName)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(.gray)
+                                
+                                Text("•")
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(.gray)
+                                
+                                HStack(spacing: 4) {
+                                    Image(systemName: "star.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                                    
+                                    Text("\(mockRating) (\(mockReviews) reviews)")
+                                        .font(.system(size: 14))
+                                        .foregroundStyle(.gray)
+                                }
+                            }
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.horizontal, 60)

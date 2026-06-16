@@ -18,6 +18,7 @@ import SwiftUI
 private struct StickyNavHeader: View {
 
     let title: String
+    var subtitle: String?
     var petStore: PetStore?
     var onAddTap: (() -> Void)?
     let isCollapsed: Bool
@@ -158,13 +159,27 @@ private struct StickyNavHeader: View {
                 }
             }
 
-            // Large title (fades out on scroll)
-            Text(title)
-                .font(.system(size: 34, weight: .bold))
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .opacity(isCollapsed ? 0 : 1)
-                .scaleEffect(isCollapsed ? 0.9 : 1.0, anchor: .leading)
+            // Large title and subtitle (fades out on scroll)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(.primary)
+                
+                if let subtitle {
+                    HStack(spacing: 6) {
+                        Text(subtitle)
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundStyle(.gray)
+                        Image(systemName: "shield")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .opacity(isCollapsed ? 0 : 1)
+            .scaleEffect(isCollapsed ? 0.9 : 1.0, anchor: .leading)
+            .offset(y: subtitle != nil ? 10 : 0) // Shift down if we have a subtitle to align better with pet icon
 
             // Inline title (fades in on scroll)
             Text(title)
@@ -209,10 +224,12 @@ private struct StickyNavHeader: View {
 
 private struct CustomNavigationScrollModifier: ViewModifier {
     let title: String
+    var subtitle: String?
     var petStore: PetStore?
     var onAddTap: (() -> Void)?
     var refreshAction: (() async -> Void)?
     var collapseThreshold: CGFloat
+    var backgroundColor: Color
 
     @State private var scrollOffset: CGFloat = 0
     @State private var isCollapsed = false
@@ -220,7 +237,7 @@ private struct CustomNavigationScrollModifier: ViewModifier {
     func body(content: Content) -> some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-                Color.clear.frame(height: 60)
+                Color.clear.frame(height: subtitle != nil ? 90 : 60)
                 content
             }
                 // Attach the geometry reader to the content so its minY in
@@ -246,11 +263,12 @@ private struct CustomNavigationScrollModifier: ViewModifier {
             }
         }
         .coordinateSpace(.named("_customNavScroll"))
-        .background(Color("baseBackground"))
+        .background(backgroundColor)
         .toolbar(.hidden, for: .navigationBar)
         .overlay(alignment: .top) {
             StickyNavHeader(
                 title: title,
+                subtitle: subtitle,
                 petStore: petStore,
                 onAddTap: onAddTap,
                 isCollapsed: isCollapsed
@@ -273,17 +291,21 @@ extension View {
     ///   - collapseThreshold:  Scroll distance (pt) before the title collapses. Default 50.
     func customNavigationScroll(
         title: String,
+        subtitle: String? = nil,
         petStore: PetStore? = nil,
         onAddTap: (() -> Void)? = nil,
         refreshAction: (() async -> Void)? = nil,
-        collapseThreshold: CGFloat = 50
+        collapseThreshold: CGFloat = 50,
+        backgroundColor: Color = Color("baseBackground")
     ) -> some View {
         modifier(CustomNavigationScrollModifier(
             title: title,
+            subtitle: subtitle,
             petStore: petStore,
             onAddTap: onAddTap,
             refreshAction: refreshAction,
-            collapseThreshold: collapseThreshold
+            collapseThreshold: collapseThreshold,
+            backgroundColor: backgroundColor
         ))
     }
 }

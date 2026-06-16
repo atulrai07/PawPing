@@ -26,6 +26,14 @@ class ActivityStore {
             return Calendar.current.dateComponents([.year, .month, .day], from: activity.date)
         })
     }
+    
+    /// Average walk duration per active day
+    var averageWalkDurationPerDay: Int {
+        let uniqueDays = Set(activities.map { Calendar.current.startOfDay(for: $0.date) }).count
+        guard uniqueDays > 0 else { return 0 }
+        let totalMinutes = activities.reduce(0) { $0 + $1.durationMinutes }
+        return totalMinutes / uniqueDays
+    }
 
     /// Total walked minutes today, including the active walk session in real-time
     var liveWalkedMinutes: Int {
