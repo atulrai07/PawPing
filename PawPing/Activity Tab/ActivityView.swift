@@ -147,7 +147,7 @@ struct ActivityView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal)
-                .sheet(isPresented: $showDietChat) {
+                .fullScreenCover(isPresented: $showDietChat) {
                     DietAssistantView()
                         .environment(dietAssistantStore)
                 }
