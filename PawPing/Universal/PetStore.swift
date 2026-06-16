@@ -133,7 +133,7 @@ class PetStore {
         do {
             let fileName = UUID().uuidString + ".jpg"
             
-            try await SupabaseConfig.storageClient.storage
+            try await SupabaseConfig.client.storage
                 .from("pet-avatars")
                 .upload(
                     fileName,
@@ -142,7 +142,7 @@ class PetStore {
                 )
             
             // Get public URL
-            let publicURL = try SupabaseConfig.storageClient.storage
+            let publicURL = try SupabaseConfig.client.storage
                 .from("pet-avatars")
                 .getPublicURL(path: fileName)
             

@@ -81,7 +81,12 @@ struct EditPetView: View {
                 .onChange(of: selectedItem) { _, newItem in
                     Task {
                         if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                            selectedImageData = data
+                            if let uiImage = UIImage(data: data),
+                               let compressedData = uiImage.jpegData(compressionQuality: 0.7) {
+                                selectedImageData = compressedData
+                            } else {
+                                selectedImageData = data
+                            }
                         }
                     }
                 }
