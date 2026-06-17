@@ -23,8 +23,8 @@ struct CareView: View {
     @Environment(PetStore.self) var petStore
     @Environment(AppState.self) var appState
 
-    // Categories to display in horizontal list (excluding dayCare from UI, but supported if needed)
-    let displayCategories: [CareType] = [.all, .vet, .grooming, .petStore, .outdoor]
+    // Categories to display in horizontal list
+    let displayCategories: [CareType] = [.all, .vet, .grooming, .petStore, .outdoor, .dayCare]
 
     var filteredLocations: [PlaceModel] {
         let sourceList: [PlaceModel]

@@ -168,7 +168,16 @@ struct HealthSummary {
 
     init(from records: [HealthRecord]) {
         doneCount     = records.filter { $0.status == .done }.count
-        upcomingCount = records.filter { $0.status == .upcoming }.count
+        
+        let now = Date()
+        upcomingCount = records.filter { record in
+            if record.status == .upcoming, let nextDose = record.nextDoseDate {
+                let daysUntil = Calendar.current.dateComponents([.day], from: now, to: nextDose).day ?? 0
+                return daysUntil <= 30
+            }
+            return false
+        }.count
+        
         overdueCount  = records.filter { $0.status == .overdue }.count
     }
 

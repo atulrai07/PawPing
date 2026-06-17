@@ -21,6 +21,10 @@ struct ActivityView: View {
     @State private var showDistanceSummary = false
     @State private var showDietChat = false
     @State private var showEmergencyGuide = false
+    @State private var showMemoriesGallery = false
+    
+    @State private var showMealLogSheet = false
+    @State private var selectedMealType: MealType = .breakfast
 
     var body: some View {
         NavigationStack {
@@ -36,8 +40,8 @@ struct ActivityView: View {
                     VStack(spacing: 24) {
                         heroSection
                         mealsSection
-                        quickActionsSection
-                        highlightsSection
+                        emergencyActionSection
+                        recentMemoriesSection
                     }
                     .padding(.top, 16)
                     .padding(.bottom, 80)
@@ -63,6 +67,13 @@ struct ActivityView: View {
                     }
                     .navigationDestination(isPresented: $showEmergencyGuide) {
                         EmergencyGuideView()
+                    }
+                    .navigationDestination(isPresented: $showMemoriesGallery) {
+                        MemoriesGalleryView()
+                    }
+                    .sheet(isPresented: $showMealLogSheet) {
+                        MealLoggingSheet(store: store, mealType: selectedMealType, logDate: Date(), isReadOnly: false)
+                            .presentationDetents([.large])
                     }
                 }
             }
@@ -155,7 +166,12 @@ struct ActivityView: View {
 
     // MARK: - Meals Section
     private var mealsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        let todayMeals = store.getMeals(for: Date())
+        let b = todayMeals.first(where: { $0.mealType == .breakfast })
+        let l = todayMeals.first(where: { $0.mealType == .lunch })
+        let d = todayMeals.first(where: { $0.mealType == .dinner })
+        
+        return VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Meals")
                     .font(.system(size: 18, weight: .bold))
@@ -174,65 +190,115 @@ struct ActivityView: View {
             .padding(.horizontal)
             
             HStack(spacing: 12) {
-                MealCardView(title: "Breakfast", time: "8:00 AM", iconName: "sun.max.fill", iconColor: .homeYellow, imageName: "bowl_pink", isCompleted: true) {
-                    showMealsLog = true
+                MealCardView(
+                    title: "Breakfast", 
+                    time: b?.isTaken == true ? "\(b!.time) \(b!.meridian)" : "8:00 AM", 
+                    iconName: "sun.max.fill", 
+                    iconColor: .homeYellow, 
+                    imageName: "bowl_pink", 
+                    isCompleted: b?.isTaken ?? false
+                ) {
+                    selectedMealType = .breakfast
+                    showMealLogSheet = true
                 }
-                MealCardView(title: "Lunch", time: "12:30 PM", iconName: "sun.min.fill", iconColor: .orange, imageName: "bowl_yellow", isCompleted: false) {
-                    showMealsLog = true
+                MealCardView(
+                    title: "Lunch", 
+                    time: l?.isTaken == true ? "\(l!.time) \(l!.meridian)" : "12:30 PM", 
+                    iconName: "sun.min.fill", 
+                    iconColor: .orange, 
+                    imageName: "bowl_yellow", 
+                    isCompleted: l?.isTaken ?? false
+                ) {
+                    selectedMealType = .lunch
+                    showMealLogSheet = true
                 }
-                MealCardView(title: "Dinner", time: "8:30 PM", iconName: "moon.fill", iconColor: .homePurple, imageName: "bowl_blue", isCompleted: false) {
-                    showMealsLog = true
+                MealCardView(
+                    title: "Dinner", 
+                    time: d?.isTaken == true ? "\(d!.time) \(d!.meridian)" : "8:30 PM", 
+                    iconName: "moon.fill", 
+                    iconColor: .homePurple, 
+                    imageName: "bowl_blue", 
+                    isCompleted: d?.isTaken ?? false
+                ) {
+                    selectedMealType = .dinner
+                    showMealLogSheet = true
                 }
             }
             .padding(.horizontal)
         }
     }
 
-    // MARK: - Quick Actions Section
-    private var quickActionsSection: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-            QuickActionView(title: "Health", subtitle: "Checkups & stats", iconName: "heart.text.square.fill", iconColor: .red) {
-                // Navigate to Health
+    // MARK: - Emergency Action Plan Section
+    private var emergencyActionSection: some View {
+        Button {
+            showEmergencyGuide = true
+        } label: {
+            HStack(spacing: 16) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.orange.opacity(0.15))
+                    .frame(width: 54, height: 54)
+                    .overlay(
+                        Image(systemName: "cross.case.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.orange)
+                    )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Emergency Action Plan")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.homeTextDark)
+                    Text("Tap for immediate medical guidance")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.homeTextGray)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.homeTextGray)
             }
-            QuickActionView(title: "Reminders", subtitle: "Medications & more", iconName: "calendar.badge.clock", iconColor: .homePurple) {
-                // Navigate to Reminders
-            }
-            QuickActionView(title: "Safety", subtitle: "Emergency help", iconName: "shield.fill", iconColor: .orange) {
-                showEmergencyGuide = true
-            }
-            QuickActionView(title: "Diary", subtitle: "Notes & moments", iconName: "book.closed.fill", iconColor: .teal) {
-                // Navigate to Diary
-            }
+            .padding(16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
+        .buttonStyle(.plain)
     }
 
-    // MARK: - Highlights Section
-    private var highlightsSection: some View {
+    // MARK: - Recent Memories Section
+    private var recentMemoriesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("\(petStore.activePet?.name ?? "Your pet")'s Highlights")
+                Text("Recent Memories")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.homeTextDark)
                 
                 Spacer()
                 
-                HStack(spacing: 4) {
-                    Text("This week")
-                    Image(systemName: "chevron.down")
+                Button {
+                    showMemoriesGallery = true
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.gray)
                 }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.homeTextGray)
             }
             .padding(.horizontal)
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                StatCardView(title: "Avg. Walk", value: "28", unit: "min", subtitle: "", iconName: "flame.fill", iconColor: .homeGreen, graphType: .line(Color.homeGreen))
-                StatCardView(title: "Weight", value: "24.5", unit: "kg", subtitle: "", iconName: "scalemass.fill", iconColor: .homePurple, graphType: .line(Color.homePurple))
-                StatCardView(title: "Hydration", value: "Great", unit: "", subtitle: "Keep it up!", iconName: "drop.fill", iconColor: .homeBlue, graphType: .bar(Color.homeBlue))
-                StatCardView(title: "Mood", value: "Happy", unit: "", subtitle: "Very active", iconName: "face.smiling.fill", iconColor: .homeYellow, graphType: .bar(Color.homeYellow))
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(1...3, id: \.self) { index in
+                        Image("memory_image\(index)")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 140, height: 140)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
         }
     }
 }
@@ -420,6 +486,39 @@ struct StatCardView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+}
+
+// MARK: - Memories Gallery View
+struct MemoriesGalleryView: View {
+    let columns = [GridItem(.flexible()), GridItem(.flexible())]
+    
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 16) {
+                ForEach(1...3, id: \.self) { index in
+                    Image("memory_image\(index)")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 160, maxHeight: 160)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("All Memories")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    // Action to add image (Camera/Gallery picker)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(hex: "6E54D7") ?? .purple)
+                }
+            }
+        }
     }
 }
 
