@@ -15,12 +15,8 @@ struct ActivityView: View {
     @Environment(MedicationStore.self) var medicationStore
     @Environment(AppState.self) var appState
 
-    @State private var showWalkFlow = false
-    @State private var countdownFinished = false
-    @State private var showMealsLog = false
-    @State private var showDistanceSummary = false
-    @State private var showDietChat = false
-    @State private var showEmergencyGuide = false
+    @State private var showPetSwitcher = false
+    @State private var showingAddPet = false
 
     var body: some View {
         NavigationStack {
@@ -33,15 +29,17 @@ struct ActivityView: View {
                     )
                     .navigationTitle("Home")
                 } else {
-                    VStack(spacing: 24) {
-                        heroSection
-                        mealsSection
-                        quickActionsSection
-                        highlightsSection
+                    VStack(spacing: 32) {
+                        DynamicHeroCardView()
+                        
+                        DailyTimelineView()
+                        
+                        RecentMemoriesView()
+                        
+                        WellnessInsightCardView()
                     }
                     .padding(.top, 16)
                     .padding(.bottom, 80)
-                    .background(Color.white)
                     .customNavigationScroll(
                         title: "Home",
                         petStore: petStore,
@@ -55,185 +53,87 @@ struct ActivityView: View {
                         },
                         backgroundColor: .white
                     )
-                    .navigationDestination(isPresented: $showMealsLog) {
-                        MealLogView(store: store)
-                    }
-                    .navigationDestination(isPresented: $showDistanceSummary) {
-                        DistanceSummaryView(store: store)
-                    }
-                    .navigationDestination(isPresented: $showEmergencyGuide) {
-                        EmergencyGuideView()
-                    }
                 }
             }
         }
-        .fullScreenCover(isPresented: $showWalkFlow) {
-            WalkFlowContainer(
-                store: store,
-                startWithTracking: countdownFinished,
-                onDismiss: {
-                    showWalkFlow = false
-                }
-            )
-        }
     }
 
-    // MARK: - Hero Section (Today's Walk)
-    private var heroSection: some View {
-        ZStack {
-            Image("card_bg")
-                .resizable()
-                .scaledToFill()
-                .frame(height: 200) // Increased height for breathing room
-                .clipShape(RoundedRectangle(cornerRadius: 24))
-            
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 14) { // Increased spacing
-                    HStack(spacing: 8) {
-                        Text("Today's Walk")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.homeTextGray)
-                    }
-                    
-                    HStack(alignment: .lastTextBaseline, spacing: 4) {
-                        Text("\(store.liveWalkedMinutes)")
-                            .font(.system(size: 38, weight: .bold)) // Slightly larger
-                            .foregroundColor(.homePurple)
-                        
-                        Text("/\(store.walkActivity.goalMinutes) min")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.homeTextGray)
-                    }
-                    
-                    // Progress Bar
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(Color.homePurple.opacity(0.2))
-                                .frame(height: 8) // Slightly thicker
-                            
-                            let rawProgress = CGFloat(store.liveWalkedMinutes) / CGFloat(max(store.walkActivity.goalMinutes, 1))
-                            let progress = min(max(rawProgress, 0.15), 1.0) // Show at least 15% progress visually
-                            Capsule()
-                                .fill(Color.homePurple)
-                                .frame(width: geo.size.width * progress, height: 8)
-                        }
-                    }
-                    .frame(height: 8)
-                    .padding(.bottom, 6)
-                    
-                    Button {
-                        if store.isWalking {
-                            countdownFinished = true
-                        } else {
-                            countdownFinished = false
-                        }
-                        showWalkFlow = true
-                    } label: {
-                        HStack {
-                            Text(store.isWalking ? "Resume" : "Let's go!")
-                            Image(systemName: "arrow.right")
-                        }
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(Color.homePurple)
-                        .clipShape(Capsule())
-                        .shadow(color: Color.homePurple.opacity(0.3), radius: 8, x: 0, y: 4)
-                    }
-                }
-                .padding(.leading, 24)
-                .padding(.vertical, 24) // Added vertical padding
-                
-                Spacer(minLength: 170)
-            }
-        }
-        .padding(.horizontal)
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-    }
-
-    // MARK: - Meals Section
-    private var mealsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Meals")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
-                
-                Spacer()
-                
+    // MARK: - Pet Switcher Menu
+    private var petSwitcherMenu: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(petStore.pets) { pet in
                 Button {
-                    showMealsLog = true
+                    petStore.switchPet(to: pet.id)
+                    showPetSwitcher = false
                 } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                    HStack(spacing: 12) {
+                        if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
+                            AsyncImage(url: url) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Color.gray.opacity(0.2)
+                            }
+                            .frame(width: 32, height: 32)
+                            .clipShape(Circle())
+                        } else {
+                            Image(pet.imageName)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 32, height: 32)
+                                .clipShape(Circle())
+                        }
+                        
+                        Text(pet.name)
+                            .font(.body)
+                            .foregroundStyle(.primary)
+                        
+                        Spacer()
+                        
+                        if pet.id == petStore.activePetId {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.orange)
+                                .font(.system(size: 14, weight: .bold))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .contentShape(Rectangle())
                 }
-            }
-            .padding(.horizontal)
-            
-            HStack(spacing: 12) {
-                MealCardView(title: "Breakfast", time: "8:00 AM", iconName: "sun.max.fill", iconColor: .homeYellow, imageName: "bowl_pink", isCompleted: true) {
-                    showMealsLog = true
-                }
-                MealCardView(title: "Lunch", time: "12:30 PM", iconName: "sun.min.fill", iconColor: .orange, imageName: "bowl_yellow", isCompleted: false) {
-                    showMealsLog = true
-                }
-                MealCardView(title: "Dinner", time: "8:30 PM", iconName: "moon.fill", iconColor: .homePurple, imageName: "bowl_blue", isCompleted: false) {
-                    showMealsLog = true
-                }
-            }
-            .padding(.horizontal)
-        }
-    }
-
-    // MARK: - Quick Actions Section
-    private var quickActionsSection: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-            QuickActionView(title: "Health", subtitle: "Checkups & stats", iconName: "heart.text.square.fill", iconColor: .red) {
-                // Navigate to Health
-            }
-            QuickActionView(title: "Reminders", subtitle: "Medications & more", iconName: "calendar.badge.clock", iconColor: .homePurple) {
-                // Navigate to Reminders
-            }
-            QuickActionView(title: "Safety", subtitle: "Emergency help", iconName: "shield.fill", iconColor: .orange) {
-                showEmergencyGuide = true
-            }
-            QuickActionView(title: "Diary", subtitle: "Notes & moments", iconName: "book.closed.fill", iconColor: .teal) {
-                // Navigate to Diary
-            }
-        }
-        .padding(.horizontal)
-    }
-
-    // MARK: - Highlights Section
-    private var highlightsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("\(petStore.activePet?.name ?? "Your pet")'s Highlights")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                .buttonStyle(.plain)
                 
-                Spacer()
-                
-                HStack(spacing: 4) {
-                    Text("This week")
-                    Image(systemName: "chevron.down")
+                if pet.id != petStore.pets.last?.id {
+                    Divider()
+                        .padding(.leading, 60)
                 }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.homeTextGray)
             }
-            .padding(.horizontal)
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                StatCardView(title: "Avg. Walk", value: "28", unit: "min", subtitle: "", iconName: "flame.fill", iconColor: .homeGreen, graphType: .line(Color.homeGreen))
-                StatCardView(title: "Weight", value: "24.5", unit: "kg", subtitle: "", iconName: "scalemass.fill", iconColor: .homePurple, graphType: .line(Color.homePurple))
-                StatCardView(title: "Hydration", value: "Great", unit: "", subtitle: "Keep it up!", iconName: "drop.fill", iconColor: .homeBlue, graphType: .bar(Color.homeBlue))
-                StatCardView(title: "Mood", value: "Happy", unit: "", subtitle: "Very active", iconName: "face.smiling.fill", iconColor: .homeYellow, graphType: .bar(Color.homeYellow))
+            Divider()
+            
+            Button {
+                showPetSwitcher = false
+                showingAddPet = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundStyle(Color.orange)
+                        .font(.title3)
+                        .frame(width: 32)
+                    
+                    Text("Add Pet")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal)
+            .buttonStyle(.plain)
         }
+        .frame(width: 220)
+        .padding(.vertical, 8)
+        .presentationCompactAdaptation(.popover)
     }
 }
 
@@ -425,7 +325,7 @@ struct StatCardView: View {
 
 // MARK: - Walk Flow Container (Countdown → Tracking)
 
-private struct WalkFlowContainer: View {
+struct WalkFlowContainer: View {
     var store: ActivityStore
     var startWithTracking: Bool
     var onDismiss: () -> Void
