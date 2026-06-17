@@ -36,7 +36,7 @@ struct HealthSummaryCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(petName) is Protected")
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Text("Great job! You're keeping\n\(petName) healthy and safe.")
                         .font(.system(size: 13))
@@ -69,7 +69,7 @@ struct HealthSummaryCard: View {
         .background(
             ZStack(alignment: .topTrailing) {
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(hex: "F8F6FF") ?? .purple.opacity(0.05))
+                    .fill(Color.heroLavenderStart)
                 
                 // Decorative Paw Print
                 Image(systemName: "pawprint.fill")

@@ -53,7 +53,7 @@ struct ProfileView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
             }
-            .background(Color.white.ignoresSafeArea())
+            .background(LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea())
             .task {
                 if petStore.currentUserProfile == nil || petStore.currentUserProfile?.id != authStore.appState?.currentUserId {
                     await petStore.fetchUserProfile()
@@ -110,7 +110,7 @@ private extension ProfileView {
             
             Text("Let's add your first pet.")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                .foregroundStyle(Color.textPrimary)
             
             Button {
                 showingAddPet = true
@@ -174,7 +174,7 @@ private extension ProfileView {
                                         .foregroundStyle(.white)
                                 )
                                 .overlay(
-                                    Circle().stroke(Color.white, lineWidth: 3)
+                                    Circle().stroke(Color.cardIvory, lineWidth: 3)
                                 )
                                 .offset(x: 4, y: 4)
                         }
@@ -184,7 +184,7 @@ private extension ProfileView {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(pet.name)
                             .font(.system(size: 28, weight: .bold))
-                            .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                            .foregroundStyle(Color.textPrimary)
                         
                         Text(pet.breed)
                             .font(.system(size: 13, weight: .medium))
@@ -207,7 +207,7 @@ private extension ProfileView {
                 }
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
-                .background(Color.white.opacity(0.5))
+                .background(Color.cardIvory.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 
 
@@ -216,7 +216,7 @@ private extension ProfileView {
             .background(
                 ZStack(alignment: .topTrailing) {
                     RoundedRectangle(cornerRadius: 32)
-                        .fill(Color(hex: "F8F6FF") ?? .purple.opacity(0.05))
+                        .fill(Color.heroLavenderStart)
                     
                     Image(systemName: "pawprint.fill")
                         .font(.system(size: 140))
@@ -237,7 +237,7 @@ private extension ProfileView {
                 .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
             Text(text)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                .foregroundStyle(Color.textPrimary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -258,7 +258,7 @@ private extension ProfileView {
             VStack(alignment: .leading, spacing: 4) {
                 Text("My Pets")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                    .foregroundStyle(Color.textPrimary)
                 Text("View and manage your pets")
                     .font(.system(size: 13))
                     .foregroundStyle(.gray)
@@ -279,7 +279,7 @@ private extension ProfileView {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white)
+                .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
         )
     }
@@ -288,7 +288,7 @@ private extension ProfileView {
         VStack(alignment: .leading, spacing: 16) {
             Text("Owner Information")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                .foregroundStyle(Color.textPrimary)
             
             VStack(spacing: 0) {
                 ownerRow(
@@ -305,7 +305,7 @@ private extension ProfileView {
             }
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.white)
+                    .fill(Color.cardIvory)
                     .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
             )
         }
@@ -328,7 +328,7 @@ private extension ProfileView {
                     .foregroundStyle(.gray)
                 Text(value)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                    .foregroundStyle(Color.textPrimary)
             }
             
             Spacer()
@@ -345,13 +345,13 @@ private extension ProfileView {
         VStack(alignment: .leading, spacing: 16) {
             Text("Vet & Emergency")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                .foregroundStyle(Color.textPrimary)
             
             NavigationLink(destination: SavedVetsView()) {
                 HStack(spacing: 16) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white.opacity(0.8))
+                            .fill(Color.cardIvory.opacity(0.8))
                             .frame(width: 48, height: 48)
                         Image(systemName: "cross.case.fill")
                             .font(.system(size: 20))
@@ -361,7 +361,7 @@ private extension ProfileView {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Saved Vets")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                            .foregroundStyle(Color.textPrimary)
                         Text("Quick access to your saved clinics")
                             .font(.system(size: 13))
                             .foregroundStyle(.gray)
@@ -375,7 +375,7 @@ private extension ProfileView {
                             .foregroundStyle(.red)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(Capsule().fill(Color.white.opacity(0.8)))
+                            .background(Capsule().fill(Color.cardIvory.opacity(0.8)))
                     }
                     
                     Image(systemName: "chevron.right")
@@ -397,7 +397,7 @@ private extension ProfileView {
         VStack(alignment: .leading, spacing: 16) {
             Text("Settings")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                .foregroundStyle(Color.textPrimary)
             
             VStack(spacing: 0) {
                 NavigationLink(destination: PrivacyPolicyView()) {
@@ -421,7 +421,7 @@ private extension ProfileView {
             }
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.white)
+                    .fill(Color.cardIvory)
                     .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
             )
         }
@@ -429,18 +429,14 @@ private extension ProfileView {
     
     private func settingsRow(icon: String, iconColor: Color, title: String) -> some View {
         HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(iconColor.opacity(0.1))
-                    .frame(width: 32, height: 32)
-                Image(systemName: icon)
-                    .font(.system(size: 14))
-                    .foregroundStyle(iconColor)
-            }
+            Image(systemName: icon)
+                .font(.system(size: 18))
+                .foregroundStyle(iconColor)
+                .frame(width: 24, alignment: .center)
             
             Text(title)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                .foregroundStyle(Color.textPrimary)
             
             Spacer()
             
@@ -464,7 +460,7 @@ private extension ProfileView {
                 .padding(.vertical, 16)
                 .background(
                     RoundedRectangle(cornerRadius: 24)
-                        .fill(Color(hex: "F8F6FF") ?? .purple.opacity(0.1))
+                        .fill(Color.heroLavenderStart)
                 )
         }
     }

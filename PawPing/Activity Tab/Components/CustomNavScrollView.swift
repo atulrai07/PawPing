@@ -263,7 +263,10 @@ private struct CustomNavigationScrollModifier: ViewModifier {
             }
         }
         .coordinateSpace(.named("_customNavScroll"))
-        .background(backgroundColor)
+        .background(
+            LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+        )
         .toolbar(.hidden, for: .navigationBar)
         .overlay(alignment: .top) {
             StickyNavHeader(

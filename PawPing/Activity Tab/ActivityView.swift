@@ -47,7 +47,7 @@ struct ActivityView: View {
                     }
                     .padding(.top, 16)
                     .padding(.bottom, 80)
-                    .background(Color.white)
+                    .background(.clear)
                     .customNavigationScroll(
                         title: "Home",
                         petStore: petStore,
@@ -59,7 +59,7 @@ struct ActivityView: View {
                                 await medicationStore.fetchMedications(for: activeId)
                             }
                         },
-                        backgroundColor: .white
+                        backgroundColor: .clear
                     )
                     .navigationDestination(isPresented: $showMealsLog) {
                         MealLogView(store: store)
@@ -105,7 +105,7 @@ struct ActivityView: View {
                     HStack(spacing: 8) {
                         Text("Today's Walk")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                     }
                     
                     HStack(alignment: .lastTextBaseline, spacing: 4) {
@@ -115,7 +115,7 @@ struct ActivityView: View {
                         
                         Text("/\(store.walkActivity.goalMinutes) min")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                     }
                     
                     // Progress Bar
@@ -177,7 +177,7 @@ struct ActivityView: View {
             HStack {
                 Text("Meals")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                 
                 Spacer()
                 
@@ -186,7 +186,7 @@ struct ActivityView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                 }
             }
             .padding(.horizontal)
@@ -248,20 +248,20 @@ struct ActivityView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Emergency Guide")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.homeTextDark)
+                        .foregroundColor(.textPrimary)
                     Text("Tap for immediate medical guidance")
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.homeTextGray)
+                    .foregroundColor(.textSecondary)
             }
             .padding(16)
-            .background(Color.white)
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
             .padding(.horizontal)
@@ -275,7 +275,7 @@ struct ActivityView: View {
             HStack {
                 Text("Recent Memories")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                 
                 Spacer()
                 
@@ -350,12 +350,12 @@ struct MealCardView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.homeTextDark)
+                            .foregroundColor(.textPrimary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                         Text(time)
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }
@@ -363,7 +363,7 @@ struct MealCardView: View {
                     Spacer(minLength: 4)
                     
                     Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(isCompleted ? .homePurple : .homeTextGray.opacity(0.3))
+                        .foregroundColor(isCompleted ? .homePurple : .textSecondary.opacity(0.3))
                         .font(.system(size: 18))
                 }
                 
@@ -374,7 +374,7 @@ struct MealCardView: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity)
-            .background(Color.white)
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 3)
         }
@@ -404,12 +404,12 @@ struct QuickActionView: View {
                 VStack(spacing: 2) {
                     Text(title)
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.homeTextDark)
+                        .foregroundColor(.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Text(subtitle)
                         .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -418,7 +418,7 @@ struct QuickActionView: View {
             .padding(.vertical, 10)
             .padding(.horizontal, 4)
             .frame(maxWidth: .infinity)
-            .background(Color.white)
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
         }
@@ -448,7 +448,7 @@ struct StatCardView: View {
                     .font(.system(size: 10))
                 Text(title)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -456,13 +456,13 @@ struct StatCardView: View {
             HStack(alignment: .lastTextBaseline, spacing: 2) {
                 Text(value)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 if !unit.isEmpty {
                     Text(unit)
                         .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -470,7 +470,7 @@ struct StatCardView: View {
             if !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.system(size: 9, weight: .medium))
-                    .foregroundColor(.homeTextGray)
+                    .foregroundColor(.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -512,7 +512,7 @@ struct StatCardView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: 110)
-        .background(Color.white)
+        .background(Color.cardIvory)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }

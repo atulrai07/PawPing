@@ -72,7 +72,7 @@ struct HealthView: View {
                                 HStack {
                                     Text("Vaccine Journey")
                                         .font(.system(size: 18, weight: .bold))
-                                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                                        .foregroundStyle(Color.textPrimary)
                                     
                                     Spacer()
                                     
@@ -103,7 +103,7 @@ struct HealthView: View {
                         }
                         .padding(.top, 16)
                     }
-                    .background(Color.white)
+                    .background(.clear)
                     .task(id: petId) {
                         await store.fetchVaccines(for: petId)
                         await medicationStore.fetchMedications(for: petId)
@@ -124,7 +124,7 @@ struct HealthView: View {
                         showAddRecord = true
                     }
                 },
-                backgroundColor: .white
+                backgroundColor: .clear
             )
             .sheet(isPresented: $showAddRecord) {
                 if let petId = petStore.activePetId {
@@ -159,7 +159,7 @@ struct HealthView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Active Medications")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                    .foregroundStyle(Color.textPrimary)
                 
                 Text("\(medicationStore.activeMedicationsCount) Active")
                     .font(.system(size: 13, weight: .medium))
@@ -173,7 +173,7 @@ struct HealthView: View {
                 .font(.system(size: 14, weight: .semibold))
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color.cardIvory)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
@@ -193,7 +193,7 @@ struct HealthView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(record.name)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                    .foregroundStyle(Color.textPrimary)
                 
                 HStack(spacing: 6) {
                     Image(systemName: "calendar")
@@ -213,7 +213,7 @@ struct HealthView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white)
+                .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         )
         .overlay(
@@ -260,7 +260,7 @@ struct HealthView: View {
         .padding(32)
         .background(
             RoundedRectangle(cornerRadius: 32)
-                .fill(Color.white)
+                .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
         )
         .overlay(
@@ -332,7 +332,7 @@ struct HistoryRowItem: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(record.name)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                    .foregroundStyle(Color.textPrimary)
                 
                 HStack(spacing: 6) {
                     Image(systemName: "calendar")
@@ -352,7 +352,7 @@ struct HistoryRowItem: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white)
+                .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         )
         .overlay(
