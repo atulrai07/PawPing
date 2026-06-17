@@ -32,6 +32,35 @@ extension Color {
     static let homeGreen = Color(hex: "5AC98C") ?? .green
     static let homeBlue = Color(hex: "5C9CFF") ?? .blue
     static let homeYellow = Color(hex: "FFCC00") ?? .yellow
+    
+    // MARK: - Warm Premium Color System (Dynamic for Dark Mode)
+    static let bgWarmTop = dynamicColor(lightHex: "FFFFFF", darkHex: "121212")
+    static let bgWarmBottom = dynamicColor(lightHex: "FFFFFF", darkHex: "000000")
+    
+    static let heroLavenderStart = dynamicColor(lightHex: "F7F3FF", darkHex: "2C2244")
+    static let heroLavenderEnd = dynamicColor(lightHex: "FCF8FF", darkHex: "1A142A")
+    
+    static let cardIvory = dynamicColor(lightHex: "FFFFFE", darkHex: "1C1C1E")
+    static let memoryCream = dynamicColor(lightHex: "FFFCF9", darkHex: "1C1C1E")
+    static let emergencyPeach = dynamicColor(lightHex: "FFF4EA", darkHex: "3A2012")
+    
+    static let textPrimary = dynamicColor(lightHex: "161616", darkHex: "FFFFFF", defaultColor: .white)
+    static let textSecondary = dynamicColor(lightHex: "6F6A63", darkHex: "A1A1AA", defaultColor: .gray)
+    static let textTertiary = dynamicColor(lightHex: "A39E98", darkHex: "71717A", defaultColor: .gray)
+    
+    static let mealBreakfast = dynamicColor(lightHex: "FFC2D1", darkHex: "99405B")
+    static let mealLunch = dynamicColor(lightHex: "FFE4B5", darkHex: "A87E42")
+    static let mealDinner = dynamicColor(lightHex: "B5D4FF", darkHex: "3B6AA0")
+
+    static func dynamicColor(lightHex: String, darkHex: String, defaultColor: Color = .clear) -> Color {
+        return Color(UIColor { traitCollection in
+            if traitCollection.userInterfaceStyle == .dark {
+                return UIColor(Color(hex: darkHex) ?? defaultColor)
+            } else {
+                return UIColor(Color(hex: lightHex) ?? defaultColor)
+            }
+        })
+    }
 }
 
 // MARK: - Hex Initializer

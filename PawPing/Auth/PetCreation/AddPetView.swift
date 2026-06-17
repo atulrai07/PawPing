@@ -79,25 +79,6 @@ struct AddPetView: View {
                     .padding(.vertical, 8)
                     .listRowBackground(Color.clear)
                 }
-                }
-                .onChange(of: pickedImage) { _, newImage in
-                    if let newImage, let compressedData = newImage.jpegData(compressionQuality: 0.7) {
-                        selectedImageData = compressedData
-                    }
-                }
-                .confirmationDialog("Select Image Source", isPresented: $showingImageSourceOptions) {
-                    Button("Take Photo") {
-                        imageSourceType = .camera
-                        showingImagePicker = true
-                    }
-                    Button("Choose from Photo Library") {
-                        imageSourceType = .photoLibrary
-                        showingImagePicker = true
-                    }
-                    Button("Cancel", role: .cancel) {}
-                }
-                .sheet(isPresented: $showingImagePicker) {
-                    ImagePicker(selectedImage: $pickedImage, sourceType: imageSourceType)
                 
                 // MARK: - Details Section
                 Section(header: Text("Basic Information")) {
@@ -146,6 +127,25 @@ struct AddPetView: View {
                     Toggle("Neutered / Spayed", isOn: $isNeutered)
                         .tint(Color("baseColor"))
                 }
+            }
+            .onChange(of: pickedImage) { _, newImage in
+                if let newImage, let compressedData = newImage.jpegData(compressionQuality: 0.7) {
+                    selectedImageData = compressedData
+                }
+            }
+            .confirmationDialog("Select Image Source", isPresented: $showingImageSourceOptions) {
+                Button("Take Photo") {
+                    imageSourceType = .camera
+                    showingImagePicker = true
+                }
+                Button("Choose from Photo Library") {
+                    imageSourceType = .photoLibrary
+                    showingImagePicker = true
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+            .sheet(isPresented: $showingImagePicker) {
+                ImagePicker(selectedImage: $pickedImage, sourceType: imageSourceType)
             }
             .navigationTitle("Create Profile")
             .navigationBarTitleDisplayMode(.inline)

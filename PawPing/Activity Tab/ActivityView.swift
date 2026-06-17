@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ActivityView: View {
     @Environment(ActivityStore.self) var store
@@ -42,10 +43,11 @@ struct ActivityView: View {
                         mealsSection
                         emergencyActionSection
                         recentMemoriesSection
+                        walkGraphsSection
                     }
                     .padding(.top, 16)
                     .padding(.bottom, 80)
-                    .background(Color.white)
+                    .background(.clear)
                     .customNavigationScroll(
                         title: "Home",
                         petStore: petStore,
@@ -57,7 +59,7 @@ struct ActivityView: View {
                                 await medicationStore.fetchMedications(for: activeId)
                             }
                         },
-                        backgroundColor: .white
+                        backgroundColor: .clear
                     )
                     .navigationDestination(isPresented: $showMealsLog) {
                         MealLogView(store: store)
@@ -103,7 +105,7 @@ struct ActivityView: View {
                     HStack(spacing: 8) {
                         Text("Today's Walk")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                     }
                     
                     HStack(alignment: .lastTextBaseline, spacing: 4) {
@@ -113,7 +115,7 @@ struct ActivityView: View {
                         
                         Text("/\(store.walkActivity.goalMinutes) min")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                     }
                     
                     // Progress Bar
@@ -175,7 +177,7 @@ struct ActivityView: View {
             HStack {
                 Text("Meals")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                 
                 Spacer()
                 
@@ -184,7 +186,7 @@ struct ActivityView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                 }
             }
             .padding(.horizontal)
@@ -244,22 +246,22 @@ struct ActivityView: View {
                     )
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Emergency Action Plan")
+                    Text("Emergency Guide")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.homeTextDark)
+                        .foregroundColor(.textPrimary)
                     Text("Tap for immediate medical guidance")
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.homeTextGray)
+                    .foregroundColor(.textSecondary)
             }
             .padding(16)
-            .background(Color.white)
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
             .padding(.horizontal)
@@ -273,7 +275,7 @@ struct ActivityView: View {
             HStack {
                 Text("Recent Memories")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                 
                 Spacer()
                 
@@ -288,18 +290,45 @@ struct ActivityView: View {
             .padding(.horizontal)
             
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(1...3, id: \.self) { index in
-                        Image("memory_image\(index)")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 140, height: 140)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                if store.memories.isEmpty {
+                    VStack(spacing: 8) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 32))
+                            .foregroundColor(.gray.opacity(0.5))
+                        Text("No memories yet. Tap the arrow to add photos!")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.gray)
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 140)
+                    .padding(.horizontal)
+                } else {
+                    HStack(spacing: 12) {
+                        ForEach(store.memories.prefix(3)) { memory in
+                            if let url = URL(string: memory.imageUrl) {
+                                AsyncImage(url: url) { image in
+                                    image.resizable().scaledToFill()
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                .frame(width: 140, height: 140)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
             }
         }
+    }
+
+    // MARK: - Walk Graphs Section
+    private var walkGraphsSection: some View {
+        NavigationLink(destination: DistanceSummaryView(store: store)) {
+            WalkTimeGraphView(model: store.timeWalkedGraph)
+                .padding(.top, 8)
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -321,12 +350,12 @@ struct MealCardView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.homeTextDark)
+                            .foregroundColor(.textPrimary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                         Text(time)
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }
@@ -334,7 +363,7 @@ struct MealCardView: View {
                     Spacer(minLength: 4)
                     
                     Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(isCompleted ? .homePurple : .homeTextGray.opacity(0.3))
+                        .foregroundColor(isCompleted ? .homePurple : .textSecondary.opacity(0.3))
                         .font(.system(size: 18))
                 }
                 
@@ -345,7 +374,7 @@ struct MealCardView: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity)
-            .background(Color.white)
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 3)
         }
@@ -375,12 +404,12 @@ struct QuickActionView: View {
                 VStack(spacing: 2) {
                     Text(title)
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.homeTextDark)
+                        .foregroundColor(.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Text(subtitle)
                         .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -389,7 +418,7 @@ struct QuickActionView: View {
             .padding(.vertical, 10)
             .padding(.horizontal, 4)
             .frame(maxWidth: .infinity)
-            .background(Color.white)
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
         }
@@ -419,7 +448,7 @@ struct StatCardView: View {
                     .font(.system(size: 10))
                 Text(title)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -427,13 +456,13 @@ struct StatCardView: View {
             HStack(alignment: .lastTextBaseline, spacing: 2) {
                 Text(value)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 if !unit.isEmpty {
                     Text(unit)
                         .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -441,7 +470,7 @@ struct StatCardView: View {
             if !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.system(size: 9, weight: .medium))
-                    .foregroundColor(.homeTextGray)
+                    .foregroundColor(.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -483,7 +512,7 @@ struct StatCardView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: 110)
-        .background(Color.white)
+        .background(Color.cardIvory)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
@@ -491,32 +520,208 @@ struct StatCardView: View {
 
 // MARK: - Memories Gallery View
 struct MemoriesGalleryView: View {
+    @Environment(ActivityStore.self) var store
+    @Environment(PetStore.self) var petStore
+    
+    enum ImagePickerSource: String, Identifiable {
+        case camera, library
+        var id: String { rawValue }
+        var type: UIImagePickerController.SourceType {
+            self == .camera ? .camera : .photoLibrary
+        }
+    }
+    
+    @State private var activeImageSource: ImagePickerSource? = nil
+    @State private var pickedImage: UIImage? = nil
+    @State private var isUploading = false
+    @State private var selectedMemory: PetMemory? = nil
+    
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(1...3, id: \.self) { index in
-                    Image("memory_image\(index)")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 160, maxHeight: 160)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+            if store.memories.isEmpty && !isUploading {
+                VStack(spacing: 16) {
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.system(size: 40))
+                        .foregroundColor(.gray.opacity(0.5))
+                    Text("No memories yet.\nTap + to add some!")
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(.gray)
                 }
+                .padding(.top, 60)
+            } else {
+                LazyVGrid(columns: columns, spacing: 16) {
+                    if isUploading {
+                        VStack {
+                            ProgressView()
+                            Text("Uploading...")
+                                .font(.caption)
+                                .foregroundStyle(.gray)
+                        }
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 160, maxHeight: 160)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    
+                    ForEach(store.memories) { memory in
+                        if let url = URL(string: memory.imageUrl) {
+                            Button {
+                                selectedMemory = memory
+                            } label: {
+                                AsyncImage(url: url) { image in
+                                    image.resizable().scaledToFill()
+                                } placeholder: {
+                                    Color.gray.opacity(0.2)
+                                }
+                                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 160, maxHeight: 160)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                            }
+                            .buttonStyle(.plain)
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    withAnimation {
+                                        store.deleteMemory(id: memory.id)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding()
             }
-            .padding()
         }
         .navigationTitle("All Memories")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    // Action to add image (Camera/Gallery picker)
+                Menu {
+                    Button {
+                        activeImageSource = .camera
+                    } label: {
+                        Label("Take Photo", systemImage: "camera")
+                    }
+                    
+                    Button {
+                        activeImageSource = .library
+                    } label: {
+                        Label("Choose from Library", systemImage: "photo.on.rectangle")
+                    }
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(Color(hex: "6E54D7") ?? .purple)
                 }
+                .disabled(isUploading)
+            }
+        }
+        .fullScreenCover(item: $activeImageSource) { source in
+            ImagePicker(selectedImage: $pickedImage, sourceType: source.type)
+                .ignoresSafeArea()
+        }
+        .fullScreenCover(item: $selectedMemory) { memory in
+            MemoryDetailView(memory: memory) {
+                store.deleteMemory(id: memory.id)
+                selectedMemory = nil
+            }
+        }
+        .onChange(of: pickedImage) { _, newImage in
+            if let newImage {
+                isUploading = true
+                Task {
+                    await store.addMemory(image: newImage, petStore: petStore)
+                    pickedImage = nil
+                    isUploading = false
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Memory Detail View
+
+struct MemoryDetailView: View {
+    @Environment(\.dismiss) var dismiss
+    let memory: PetMemory
+    let onDelete: () -> Void
+    
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            if let url = URL(string: memory.imageUrl) {
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        // Optional pinch-to-zoom could go here, but scaledToFit provides a great standard viewing experience
+                } placeholder: {
+                    ProgressView()
+                        .tint(.white)
+                }
+            }
+            
+            VStack {
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(Circle())
+                    }
+                    
+                    Spacer()
+                    
+                    if let url = URL(string: memory.imageUrl) {
+                        ShareLink(item: url) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(12)
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 16)
+                
+                Spacer()
+                
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Added on")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.7))
+                        Text(memory.createdAt, style: .date)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.red)
+                            .padding(12)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(Circle())
+                    }
+                }
+                .padding()
+                .background(
+                    LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top)
+                )
             }
         }
     }

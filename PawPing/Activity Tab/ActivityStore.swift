@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 import Supabase
 import CoreLocation
 
@@ -19,6 +20,7 @@ class ActivityStore {
     var timeWalkedGraph: TimeWalkedGraphModel
     var distanceSummary: DistanceSummaryModel
     var activities: [Activity] = []
+    var memories: [PetMemory] = []
     
     var walkedDates: Set<DateComponents> {
         Set(activities.compactMap { activity in
@@ -76,6 +78,7 @@ class ActivityStore {
         var timeWalkedGraph: TimeWalkedGraphModel
         var distanceSummary: DistanceSummaryModel
         var activities: [Activity]?
+        var memories: [PetMemory]?
     }
     
     private struct PetAppStateUpload: Codable {
@@ -139,6 +142,8 @@ class ActivityStore {
             } else {
                 self.activities = storedData.activities ?? []
             }
+            
+            self.memories = storedData.memories ?? []
         } else {
             // New pet, initialize default state
             self.meals = Self.defaultMeals(for: petId)
@@ -178,6 +183,8 @@ class ActivityStore {
                 monthName: "Current Month"
             )
             
+            self.memories = []
+            
             saveData(for: petId)
             saveActivitiesLocally(for: petId)
         }
@@ -203,7 +210,8 @@ class ActivityStore {
             walkActivity: walkActivity,
             timeWalkedGraph: timeWalkedGraph,
             distanceSummary: distanceSummary,
-            activities: nil
+            activities: nil,
+            memories: memories
         )
         
         if let encoded = try? JSONEncoder().encode(dataToSave) {
@@ -267,6 +275,7 @@ class ActivityStore {
                     self.walkActivity = restoredWalk
                     self.timeWalkedGraph = storedData.timeWalkedGraph
                     self.distanceSummary = storedData.distanceSummary
+                    self.memories = storedData.memories ?? []
                     // self.activities = storedData.activities ?? []
                     
                     // Update local cache
@@ -626,5 +635,24 @@ class ActivityStore {
     private func updateElapsedSeconds() {
         guard isWalking, !isPaused, let walkStartTime else { return }
         self.elapsedSeconds = self.accumulatedSeconds + Date().timeIntervalSince(walkStartTime)
+    }
+
+    // MARK: - Memories
+    
+    @MainActor
+    func addMemory(image: UIImage, petStore: PetStore) async {
+        guard let data = image.jpegData(compressionQuality: 0.6) else { return }
+        
+        if let url = await petStore.uploadImage(data: data) {
+            let memory = PetMemory(id: UUID(), imageUrl: url, createdAt: Date())
+            self.memories.insert(memory, at: 0)
+            saveData(for: activePetId)
+        }
+    }
+    
+    @MainActor
+    func deleteMemory(id: UUID) {
+        self.memories.removeAll { $0.id == id }
+        saveData(for: activePetId)
     }
 }
