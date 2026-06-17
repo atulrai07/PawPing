@@ -46,10 +46,17 @@ struct HealthView: View {
                         VStack(spacing: 32) {
                             
                             // 1. Protection Summary Card
-                            HealthSummaryCard(summary: store.summary, petName: petName)
+                            HealthSummaryCard(summary: store.summary)
                                 .padding(.horizontal, 20)
 
-                            // 2. Dynamic Hero Card OR Empty State
+                            // 2. Active Medications Card
+                            NavigationLink(destination: MedicationListView()) {
+                                activeMedicationsCard()
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 20)
+
+                            // 3. Dynamic Hero Card OR Empty State
                             if store.healthRecords.isEmpty {
                                 emptyOnboardingState(petName: petName)
                                     .padding(.horizontal, 20)
@@ -67,37 +74,42 @@ struct HealthView: View {
                                 .padding(.horizontal, 20)
                             }
                             
-                            // 3. Vaccine Journey Timeline
+                            // 4. Health Timeline
                             VStack(alignment: .leading, spacing: 12) {
                                 HStack {
-                                    Text("Vaccine Journey")
+                                    Text("Health Timeline")
                                         .font(.system(size: 18, weight: .bold))
                                         .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
                                     
                                     Spacer()
                                     
-                                    if timelineEvents.count > 4 {
-                                        NavigationLink {
-                                            FullHistoryListView(records: doneRecords)
-                                        } label: {
+                                    NavigationLink {
+                                        FullTimelineView(events: timelineEvents)
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Text("See All")
                                             Image(systemName: "chevron.right")
-                                                .font(.system(size: 14, weight: .semibold))
-                                                .foregroundStyle(.gray)
                                         }
-                                        .buttonStyle(.plain)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
                                     }
+                                    .buttonStyle(.plain)
                                 }
                                 .padding(.horizontal, 20)
 
-                                HealthTimelineView(events: timelineEvents, limit: nil)
+                                VStack(spacing: 0) {
+                                    HealthTimelineView(events: timelineEvents, limit: 5)
+                                }
+                                .padding(16)
+                                .background(Color.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+                                )
+                                .padding(.horizontal, 20)
                             }
-
-                            // 4. Active Medications Card
-                            NavigationLink(destination: MedicationListView()) {
-                                activeMedicationsCard()
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 20)
 
                             Spacer(minLength: 80)
                         }
@@ -292,75 +304,7 @@ struct HealthView: View {
     }
 }
 
-// MARK: - Full History List View
-struct FullHistoryListView: View {
-    let records: [HealthRecord]
-    
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                ForEach(records.sorted { $0.dateGiven > $1.dateGiven }) { record in
-                    NavigationLink(destination: HealthRecordDetailView(record: record)) {
-                        HistoryRowItem(record: record)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(20)
-        }
-        .navigationTitle("Full History")
-        .navigationBarTitleDisplayMode(.inline)
-        .background(Color(hex: "F9F9FB") ?? .gray.opacity(0.05))
-    }
-}
 
-struct HistoryRowItem: View {
-    let record: HealthRecord
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(Color.green.opacity(0.15))
-                    .frame(width: 44, height: 44)
-                
-                Image(systemName: "checkmark")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(.green)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(record.name)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
-                
-                HStack(spacing: 6) {
-                    Image(systemName: "calendar")
-                        .font(.system(size: 12))
-                    Text(record.dateGiven.formatted(.dateTime.day().month(.wide).year()))
-                        .font(.system(size: 13))
-                }
-                .foregroundStyle(.gray)
-            }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .foregroundStyle(.gray)
-                .font(.system(size: 14, weight: .semibold))
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-        )
-    }
-}
 
 #Preview {
     HealthView()
