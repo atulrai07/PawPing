@@ -98,27 +98,6 @@ private extension ProfileView {
             }
             Spacer()
             
-            // Notification Bell
-            Button {
-                // TODO: Handle Notifications routing
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 44, height: 44)
-                        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
-                    
-                    Image(systemName: "bell")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
-                }
-                .overlay(alignment: .topTrailing) {
-                    Circle()
-                        .fill(Color.red)
-                        .frame(width: 10, height: 10)
-                        .offset(x: -2, y: 2)
-                }
-            }
         }
     }
     

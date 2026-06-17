@@ -58,6 +58,7 @@ struct DistanceSummaryView: View {
             
             Spacer()
         }
+        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: selectedRange)
         .background(Color("baseBackground"))
         .navigationTitle("Distance")
         .navigationBarTitleDisplayMode(.inline)
