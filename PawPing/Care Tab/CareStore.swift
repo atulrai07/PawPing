@@ -104,15 +104,15 @@ class CareStore: NSObject, CLLocationManagerDelegate {
         Task { @MainActor in
             do {
                 async let fetchedVets = search(query: "veterinary clinic", near: location, category: .vet)
-                async let fetchedDaycares = search(query: "pet daycare", near: location, category: .dayCare)
-                async let fetchedPetCare = search(query: "pet care", near: location, category: .dayCare)
+                async let fetchedDaycares = search(query: "dog daycare", near: location, category: .dayCare)
+                async let fetchedBoarding = search(query: "dog boarding", near: location, category: .dayCare)
                 async let fetchedGroomers = search(query: "pet grooming", near: location, category: .grooming)
                 async let fetchedStores = search(query: "pet store", near: location, category: .petStore)
                 async let fetchedOutdoors = search(query: "dog park", near: location, category: .outdoor)
                 
                 let v = try await fetchedVets
                 let d1 = try await fetchedDaycares
-                let d2 = try await fetchedPetCare
+                let d2 = try await fetchedBoarding
                 let g = try await fetchedGroomers
                 let s = try await fetchedStores
                 let o = try await fetchedOutdoors
@@ -175,6 +175,20 @@ class CareStore: NSObject, CLLocationManagerDelegate {
         // Filter out results that are too far away (e.g. > 50km) to ensure they are actually "nearby"
         // Also sort by distance strictly.
         results = results.filter { $0.distance < 50.0 }
+        
+        // Filter out vet clinics/hospitals from daycares to ensure clean lists
+        if category == .dayCare {
+            results = results.filter { item in
+                let lowerName = item.name.lowercased()
+                return !lowerName.contains("hospital") && 
+                       !lowerName.contains("clinic") && 
+                       !lowerName.contains("veterinary") &&
+                       !lowerName.contains("vet ") &&
+                       !lowerName.hasSuffix(" vet") &&
+                       lowerName != "vet"
+            }
+        }
+        
         results.sort { $0.distance < $1.distance }
         
         return Array(results.prefix(15))
