@@ -12,6 +12,7 @@ struct ContentView: View {
     @Environment(AppState.self) var appState
     
     var body: some View {
+        @Bindable var store = petStore
         TabView {
             Tab("Home", systemImage: "house.fill") {
                 ActivityView()
@@ -34,6 +35,13 @@ struct ContentView: View {
         .tint(Color("baseColor"))
         .task {
             await petStore.fetchPets()
+        }
+        .alert("Error", isPresented: $store.showError) {
+            Button("OK", role: .cancel) {
+                store.lastError = nil
+            }
+        } message: {
+            Text(store.lastError ?? "An unknown error occurred.")
         }
     }
 }

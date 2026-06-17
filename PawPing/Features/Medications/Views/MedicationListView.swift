@@ -93,60 +93,50 @@ struct MedicationListView: View {
         .sheet(isPresented: $showLogDoseSheet) {
             if let med = selectedMedication, let slot = selectedSlot {
                 NavigationStack {
-                    VStack(spacing: 24) {
-                        VStack(spacing: 8) {
-                            Image(systemName: "pills.fill")
-                                .font(.system(size: 48))
-                                .foregroundStyle(Color("baseColor"))
-                                .padding()
-                                .background(Color("baseColor").opacity(0.1))
-                                .clipShape(Circle())
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            VStack(spacing: 8) {
+                                Image(systemName: "pills.fill")
+                                    .font(.system(size: 48))
+                                    .foregroundStyle(Color("baseColor"))
+                                    .padding()
+                                    .background(Color("baseColor").opacity(0.1))
+                                    .clipShape(Circle())
+                                
+                                Text("Log dose for \(med.name) (\(med.dosage) \(med.unit.rawValue)) scheduled for \(slot.time).")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                    .lineLimit(nil)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(.top, 16)
                             
-                            Text("Log Dose")
-                                .font(.title2)
-                                .bold()
-                            
-                            Text("Log dose for \(med.name) (\(med.dosage) \(med.unit.rawValue)) scheduled for \(slot.time).")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                                .lineLimit(nil)
-                                .fixedSize(horizontal: false, vertical: true)
+                            DatePicker("Time Given", selection: $timeGiven, displayedComponents: .hourAndMinute)
+                                .datePickerStyle(.wheel)
+                                .labelsHidden()
                         }
-                        .padding(.top, 24)
-                        
-                        DatePicker("Time Given", selection: $timeGiven, displayedComponents: .hourAndMinute)
-                            .datePickerStyle(.wheel)
-                            .labelsHidden()
-                        
-                        Spacer()
-                        
-                        Button {
-                            store.logDose(for: med.id, date: timeGiven)
-                            
-                            // Trigger haptic feedback
-                            let generator = UINotificationFeedbackGenerator()
-                            generator.notificationOccurred(.success)
-                            
-                            showLogDoseSheet = false
-                        } label: {
-                            Text("Confirm Done")
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(Color("baseColor"))
-                                .cornerRadius(16)
-                        }
-                        .padding(.horizontal)
-                        .padding(.bottom, 16)
                     }
+                    .navigationTitle("Log Dose")
+                    .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("Cancel") {
                                 showLogDoseSheet = false
                             }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") {
+                                store.logDose(for: med.id, date: timeGiven)
+                                
+                                // Trigger haptic feedback
+                                let generator = UINotificationFeedbackGenerator()
+                                generator.notificationOccurred(.success)
+                                
+                                showLogDoseSheet = false
+                            }
+                            .bold()
                         }
                     }
                 }

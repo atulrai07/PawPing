@@ -7,8 +7,10 @@ import SwiftUI
 
 struct DietAssistantView: View {
     @Environment(DietAssistantStore.self) var store
+    @Environment(\.dismiss) var dismiss
     @State private var inputText: String = ""
     @FocusState private var inputFocused: Bool
+    @State private var showDisclaimer: Bool = true
 
     var body: some View {
         NavigationStack {
@@ -22,6 +24,17 @@ struct DietAssistantView: View {
             .navigationTitle("Diet & Health Assistant")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color("baseBackground"))
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundStyle(.primary)
+                            .fontWeight(.semibold)
+                    }
+                }
+            }
         }
     }
 
@@ -30,25 +43,35 @@ struct DietAssistantView: View {
     private var chatView: some View {
         VStack(spacing: 0) {
             // Veterinary Disclaimer Banner
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "exclamationmark.shield.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(Color("baseColor"))
-                    .padding(.top, 2)
-                
-                Text("AI-generated tips are for suggestions only. Always consult a veterinarian before taking any action regarding your pet's health.")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(Color("secondaryText"))
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
+            if showDisclaimer {
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "exclamationmark.shield.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color("baseColor"))
+                        .padding(.top, 2)
+                    
+                    Text("AI-generated tips are for suggestions only. Always consult a veterinarian before taking any action regarding your pet's health.")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color("secondaryText"))
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(12)
+                .background(Color("cardBackground"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 3)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 6)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            showDisclaimer = false
+                        }
+                    }
+                }
             }
-            .padding(12)
-            .background(Color("cardBackground"))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 3)
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 6)
 
             // Message list
             ScrollViewReader { proxy in

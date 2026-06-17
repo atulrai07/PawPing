@@ -37,7 +37,6 @@ actor NotificationManager {
         // Schedule a sample notification 10 seconds from now (for testing), or daily
         // We'll use calendar triggers for daily
         
-        let calendar = Calendar.current
         var dateComponents = DateComponents()
         dateComponents.hour = 9 // 9 AM
         

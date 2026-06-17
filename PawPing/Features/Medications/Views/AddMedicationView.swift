@@ -115,22 +115,10 @@ struct AddMedicationView: View {
                             .foregroundStyle(.pawPrimary)
                     }
                     
-                    if !vetName.isEmpty || !vetAddress.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            TextField("Clinic/Vet Name", text: $vetName)
-                                .font(.headline)
-                            
-                            TextField("Address", text: $vetAddress)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            
-                            TextField("Phone", text: $vetPhone)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .keyboardType(.phonePad)
-                        }
-                        .padding(.vertical, 4)
-                    }
+                    TextField("Clinic/Vet Name", text: $vetName)
+                    TextField("Address", text: $vetAddress)
+                    TextField("Phone", text: $vetPhone)
+                        .keyboardType(.phonePad)
                 }
             }
             .navigationTitle(medicationToEdit == nil ? "Add Medication" : "Edit Medication")

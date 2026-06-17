@@ -14,8 +14,16 @@ struct MyPetsView: View {
     @State private var petToDelete: Pet? = nil
     
     var body: some View {
-        List {
-            ForEach(petStore.pets) { pet in
+        Group {
+            if petStore.pets.isEmpty {
+                ContentUnavailableView(
+                    "No Pets Added",
+                    systemImage: "pawprint.fill",
+                    description: Text("You haven't added any pets yet. Tap + to add one.")
+                )
+            } else {
+                List {
+                    ForEach(petStore.pets) { pet in
                 HStack(spacing: 16) {
                     if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
                         AsyncImage(url: url) { image in
@@ -59,6 +67,8 @@ struct MyPetsView: View {
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
+                }
+                }
                 }
             }
         }

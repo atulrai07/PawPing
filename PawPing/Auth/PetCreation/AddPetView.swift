@@ -20,8 +20,11 @@ struct AddPetView: View {
     @State private var selectedImageName: String = "dog1"
     @State private var showingBreedPicker = false
     
-    @State private var selectedItem: PhotosPickerItem? = nil
+    @State private var pickedImage: UIImage? = nil
     @State private var selectedImageData: Data? = nil
+    @State private var showingImageSourceOptions = false
+    @State private var showingImagePicker = false
+    @State private var imageSourceType: UIImagePickerController.SourceType = .photoLibrary
     
     @State private var navigateToBreedTraits = false
     
@@ -32,10 +35,12 @@ struct AddPetView: View {
                 Section {
                     HStack {
                         Spacer()
-                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                        Button {
+                            showingImageSourceOptions = true
+                        } label: {
                             VStack(spacing: 12) {
                                 ZStack(alignment: .bottomTrailing) {
-                                    if let data = selectedImageData, let uiImage = UIImage(data: data) {
+                                    if let uiImage = pickedImage {
                                         Image(uiImage: uiImage)
                                             .resizable()
                                             .scaledToFill()
@@ -68,23 +73,31 @@ struct AddPetView: View {
                                     .bold()
                             }
                         }
+                        .buttonStyle(.plain)
                         Spacer()
                     }
                     .padding(.vertical, 8)
                     .listRowBackground(Color.clear)
                 }
-                .onChange(of: selectedItem) { _, newItem in
-                    Task {
-                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                            if let uiImage = UIImage(data: data),
-                               let compressedData = uiImage.jpegData(compressionQuality: 0.7) {
-                                selectedImageData = compressedData
-                            } else {
-                                selectedImageData = data
-                            }
-                        }
+                }
+                .onChange(of: pickedImage) { _, newImage in
+                    if let newImage, let compressedData = newImage.jpegData(compressionQuality: 0.7) {
+                        selectedImageData = compressedData
                     }
                 }
+                .confirmationDialog("Select Image Source", isPresented: $showingImageSourceOptions) {
+                    Button("Take Photo") {
+                        imageSourceType = .camera
+                        showingImagePicker = true
+                    }
+                    Button("Choose from Photo Library") {
+                        imageSourceType = .photoLibrary
+                        showingImagePicker = true
+                    }
+                    Button("Cancel", role: .cancel) {}
+                }
+                .sheet(isPresented: $showingImagePicker) {
+                    ImagePicker(selectedImage: $pickedImage, sourceType: imageSourceType)
                 
                 // MARK: - Details Section
                 Section(header: Text("Basic Information")) {

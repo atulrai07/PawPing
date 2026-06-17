@@ -12,12 +12,12 @@ struct SplashView: View {
             VStack {
                 HStack {
                     Spacer()
-                    Image("buttonPawFirstScreenOnboarding")
+                    Image("topPawFirstScreenOnboarding")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 280)
                         .opacity(0.4) // Subtle watermark style
-                        .offset(x: 80, y: -40)
+                        .offset(x: 20, y: -20)
                 }
                 Spacer()
             }

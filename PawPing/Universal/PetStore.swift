@@ -6,6 +6,7 @@
 import Foundation
 import Observation
 import Supabase
+import UIKit
 
 @MainActor
 @Observable
@@ -17,6 +18,7 @@ class PetStore {
     var currentUserProfile: UserModel? = nil
     var savedVets: [SavedVet] = []
     var lastError: String? = nil
+    var showError: Bool = false
     
     func clear() {
         self.pets = []
@@ -24,6 +26,7 @@ class PetStore {
         self.currentUserProfile = nil
         self.savedVets = []
         self.lastError = nil
+        self.showError = false
     }
     
     var activePet: Pet? {
@@ -56,6 +59,8 @@ class PetStore {
             }
         } catch {
             print("  Error fetching pets: \(error)")
+            self.lastError = "Failed to fetch pets. Please check your connection."
+            self.showError = true
         }
     }
     
@@ -78,6 +83,7 @@ class PetStore {
             return true
         } catch {
             self.lastError = error.localizedDescription
+            self.showError = true
             print("Error adding pet: \(error.localizedDescription)")
             return false
         }
@@ -104,6 +110,8 @@ class PetStore {
             await fetchPets()
         } catch {
             print("Error updating pet: \(error)")
+            self.lastError = "Failed to update pet."
+            self.showError = true
         }
     }
     
@@ -123,6 +131,8 @@ class PetStore {
             }
         } catch {
             print("  Error deleting pet: \(error)")
+            self.lastError = "Failed to delete pet."
+            self.showError = true
         }
     }
     
@@ -131,13 +141,18 @@ class PetStore {
     @MainActor
     func uploadImage(data: Data) async -> String? {
         do {
+            var finalData = data
+            if let uiImage = UIImage(data: data), let compressed = uiImage.jpegData(compressionQuality: 0.6) {
+                finalData = compressed
+            }
+            
             let fileName = UUID().uuidString + ".jpg"
             
             try await SupabaseConfig.client.storage
                 .from("pet-avatars")
                 .upload(
                     fileName,
-                    data: data,
+                    data: finalData,
                     options: FileOptions(contentType: "image/jpeg")
                 )
             
@@ -149,6 +164,8 @@ class PetStore {
             return publicURL.absoluteString
         } catch {
             print("  Error uploading image: \(error)")
+            self.lastError = "Failed to upload image."
+            self.showError = true
             return nil
         }
     }
