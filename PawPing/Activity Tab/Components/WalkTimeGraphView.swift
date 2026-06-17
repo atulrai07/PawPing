@@ -19,8 +19,9 @@ struct WalkTimeGraphView: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 28)
-                .fill(Color("cardBackground"))
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white)
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
 
             VStack(alignment: .leading, spacing: 12) {
 
