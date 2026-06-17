@@ -10,13 +10,40 @@
 import Foundation
 import CoreLocation
 import MapKit
+import SwiftUI
 
 // MARK: - Care Type
 
-/// The two modes in the Care tab's segmented control
+/// The modes in the Care tab's category selector
 enum CareType: String, CaseIterable {
-    case vet     = "Vet Care"
-    case dayCare = "Day Care"
+    case all      = "All"
+    case vet      = "Vet"
+    case dayCare  = "Day Care"
+    case grooming = "Grooming"
+    case petStore = "Store"
+    case outdoor  = "Outdoor"
+    
+    var iconName: String {
+        switch self {
+        case .all: return "stethoscope"
+        case .vet: return "cross.case.fill"
+        case .dayCare: return "pawprint.fill"
+        case .grooming: return "scissors"
+        case .petStore: return "storefront.fill"
+        case .outdoor: return "tree.fill"
+        }
+    }
+    
+    var displayColor: Color {
+        switch self {
+        case .all: return Color(hex: "6E54D7") ?? .purple
+        case .vet: return .green
+        case .dayCare: return .blue
+        case .grooming: return .orange
+        case .petStore: return .blue
+        case .outdoor: return Color(hex: "6E54D7") ?? .purple
+        }
+    }
 }
 
 // MARK: - Place Model
@@ -42,6 +69,18 @@ struct PlaceModel: Identifiable, Equatable {
     /// Formatted distance string for display (e.g. "1.2 km away")
     var distanceString: String {
         String(format: "%.1f km away", distance)
+    }
+    
+    /// The real category name from MapKit, formatted nicely
+    var displayCategoryName: String {
+        if let raw = mapItem?.pointOfInterestCategory?.rawValue {
+            let name = raw.replacingOccurrences(of: "MKPOICategory", with: "")
+            let spaced = name.replacingOccurrences(of: "([a-z])([A-Z])", with: "$1 $2", options: .regularExpression)
+            if !spaced.isEmpty {
+                return spaced
+            }
+        }
+        return category.rawValue
     }
     
     // Manual Equatable implementation since MKMapItem is not Equatable

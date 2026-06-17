@@ -17,12 +17,31 @@ class CareStore: NSObject, CLLocationManagerDelegate {
 
     var vets: [PlaceModel] = []
     var dayCares: [PlaceModel] = []
+    var groomers: [PlaceModel] = []
+    var petStores: [PlaceModel] = []
+    var outdoors: [PlaceModel] = []
+    
+    var allPlaces: [PlaceModel] {
+        let all = vets + dayCares + groomers + petStores + outdoors
+        // Use a Set to ensure we don't have exact duplicates in the 'all' view
+        var unique = [PlaceModel]()
+        var seen = Set<String>()
+        for place in all {
+            let key = "\(place.name)_\(place.latitude)_\(place.longitude)"
+            if !seen.contains(key) {
+                seen.insert(key)
+                unique.append(place)
+            }
+        }
+        return unique.sorted { $0.distance < $1.distance }
+    }
     
     var isLoading: Bool = false
     var isLocationDenied: Bool = false
     
     private let locationManager = CLLocationManager()
     var lastLocation: CLLocation?
+    var currentAreaName: String?
     
     override init() {
         super.init()
@@ -64,6 +83,13 @@ class CareStore: NSObject, CLLocationManagerDelegate {
             return
         }
         lastLocation = location
+        
+        CLGeocoder().reverseGeocodeLocation(location) { [weak self] placemarks, _ in
+            if let placemark = placemarks?.first {
+                self?.currentAreaName = placemark.subLocality ?? placemark.locality ?? "You"
+            }
+        }
+        
         fetchPlaces(near: location)
     }
     
@@ -80,10 +106,16 @@ class CareStore: NSObject, CLLocationManagerDelegate {
                 async let fetchedVets = search(query: "veterinary clinic", near: location, category: .vet)
                 async let fetchedDaycares = search(query: "pet daycare", near: location, category: .dayCare)
                 async let fetchedPetCare = search(query: "pet care", near: location, category: .dayCare)
+                async let fetchedGroomers = search(query: "pet grooming", near: location, category: .grooming)
+                async let fetchedStores = search(query: "pet store", near: location, category: .petStore)
+                async let fetchedOutdoors = search(query: "dog park", near: location, category: .outdoor)
                 
                 let v = try await fetchedVets
                 let d1 = try await fetchedDaycares
                 let d2 = try await fetchedPetCare
+                let g = try await fetchedGroomers
+                let s = try await fetchedStores
+                let o = try await fetchedOutdoors
                 
                 // Merge daycares and remove duplicates
                 let combinedDaycares = d1 + d2
@@ -98,6 +130,9 @@ class CareStore: NSObject, CLLocationManagerDelegate {
                 
                 self.vets = v
                 self.dayCares = uniqueDaycares
+                self.groomers = g
+                self.petStores = s
+                self.outdoors = o
                 self.isLoading = false
                 
             } catch {

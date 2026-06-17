@@ -13,6 +13,7 @@ struct ActivityView: View {
     @Environment(HealthStore.self) var healthStore
     @Environment(DietAssistantStore.self) var dietAssistantStore
     @Environment(MedicationStore.self) var medicationStore
+    @Environment(AppState.self) var appState
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
@@ -32,162 +33,37 @@ struct ActivityView: View {
                     )
                     .navigationTitle("Home")
                 } else {
-                    VStack(spacing: 16) {
-
-                // MARK: - Walked Card
-                ZStack {
-                    RoundedRectangle(cornerRadius: 28)
-                        .fill(Color("cardBackground"))
-                        .frame(height: 160)
-
-                    HStack(spacing: 20) {
-                        CircularProgressView(progress: store.liveProgress)
-                            .frame(width: 100, height: 100)
-                            .padding(.leading, 20)
-
-                        Spacer()
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Walked")
-                                .font(.system(size: 18, weight: .medium))
-                                .foregroundStyle(Color("secondaryText"))
-                            
-                            HStack (spacing:0){
-                                Text("\(store.liveWalkedMinutes)/")
-                                Text("\(store.walkActivity.goalMinutes)min")
-                                    .foregroundStyle(Color("baseColor"))
+                    VStack(spacing: 24) {
+                        heroSection
+                        mealsSection
+                        quickActionsSection
+                        highlightsSection
+                    }
+                    .padding(.top, 16)
+                    .padding(.bottom, 80)
+                    .background(Color.white)
+                    .customNavigationScroll(
+                        title: "Home",
+                        petStore: petStore,
+                        refreshAction: {
+                            await petStore.fetchPets()
+                            if let activeId = petStore.activePetId {
+                                store.switchPet(to: petStore.activePet)
+                                await healthStore.fetchVaccines(for: activeId)
+                                await medicationStore.fetchMedications(for: activeId)
                             }
-                            .bold()
-                            .font(.system(size: 28, weight: .bold))
-
-                            if store.isWalking {
-                                // reopens the tracking view (no countdown)
-                                Button {
-                                    countdownFinished = true
-                                    showWalkFlow = true
-                                } label: {
-                                    WalkingLabel()
-                                }
-                                .padding(.top, 4)
-                            } else {
-                                Button {
-                                    countdownFinished = false
-                                    showWalkFlow = true
-                                } label: {
-                                    Text("START")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Color("baseColor"))
-                                        .padding(.horizontal, 24)
-                                        .padding(.vertical, 8)
-                                        .background(
-                                            Capsule()
-                                                .stroke(Color("baseColor"), lineWidth: 1.5)
-                                        )
-                                }
-                                .padding(.top, 4)
-                            }
-                        }
-                        Spacer()
+                        },
+                        backgroundColor: .white
+                    )
+                    .navigationDestination(isPresented: $showMealsLog) {
+                        MealLogView(store: store)
                     }
-                }
-                .frame(height: 160)
-                .padding(.horizontal)
-
-                // MARK: - Vaccine & Meals Row
-                HStack(spacing: 16) {
-                    // Vaccine Card
-                    Button {
-                        // TODO: Direct navigation to Vaccine Tab
-                    } label: {
-                        VaccineCardView()
+                    .navigationDestination(isPresented: $showDistanceSummary) {
+                        DistanceSummaryView(store: store)
                     }
-                    .buttonStyle(.plain)
-
-                    // Meals Card
-                    Button {
-                        showMealsLog = true
-                    } label: {
-                        MealsCardView(store: store)
+                    .navigationDestination(isPresented: $showEmergencyGuide) {
+                        EmergencyGuideView()
                     }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal)
-
-                // MARK: - Diet Assistant Card
-                Button {
-                    showDietChat = true
-                } label: {
-                    HStack(spacing: 14) {
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color("baseColor").opacity(0.12))
-                            .frame(width: 52, height: 52)
-                            .overlay(
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(Color("baseColor"))
-                            )
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Diet & Health Assistant")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.primary)
-                            Text(chatCardSubtitle)
-                                .font(.system(size: 12))
-                                .foregroundStyle(Color("secondaryText"))
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Color("secondaryText").opacity(0.4))
-                    }
-                    .padding(16)
-                    .background(Color("cardBackground"))
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal)
-                .fullScreenCover(isPresented: $showDietChat) {
-                    DietAssistantView()
-                        .environment(dietAssistantStore)
-                }
-
-                // MARK: - Emergency Guide Card
-                emergencyGuideShortcut
-
-                // MARK: - Graph Card
-                Button {
-                    showDistanceSummary = true
-                } label: {
-                    WalkTimeGraphView(model: store.timeWalkedGraph)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.top, 10)
-            .padding(.bottom, 80)
-            .customNavigationScroll(
-                title: "Home",
-                petStore: petStore,
-                refreshAction: {
-                    // Pull to Refresh Logic
-                    await petStore.fetchPets()
-                    if let activeId = petStore.activePetId {
-                        // Re-sync all stores for the active pet
-                        store.switchPet(to: petStore.activePet)
-                        await healthStore.fetchVaccines(for: activeId)
-                        await medicationStore.fetchMedications(for: activeId)
-                    }
-                }
-            )
-            .navigationDestination(isPresented: $showMealsLog) {
-                MealLogView(store: store)
-            }
-            .navigationDestination(isPresented: $showDistanceSummary) {
-                DistanceSummaryView(store: store)
-            }
-            .navigationDestination(isPresented: $showEmergencyGuide) {
-                EmergencyGuideView()
-            }
                 }
             }
         }
@@ -202,62 +78,357 @@ struct ActivityView: View {
         }
     }
 
-    // Computed subtitle
-    private var chatCardSubtitle: String {
-        switch dietAssistantStore.availability {
-        case .available:                 return "Ask anything about your dog's diet"
-        case .unsupportedDevice:         return "Requires iPhone 15 Pro or iPhone 16"
-        case .appleIntelligenceDisabled: return "Enable Apple Intelligence in Settings"
-        case .modelDownloading:          return "AI model is downloading..."
-        case .unknown:                   return "Currently unavailable"
+    // MARK: - Hero Section (Today's Walk)
+    private var heroSection: some View {
+        ZStack {
+            Image("card_bg")
+                .resizable()
+                .scaledToFill()
+                .frame(height: 200) // Increased height for breathing room
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+            
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 14) { // Increased spacing
+                    HStack(spacing: 8) {
+                        Text("Today's Walk")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.homeTextGray)
+                    }
+                    
+                    HStack(alignment: .lastTextBaseline, spacing: 4) {
+                        Text("\(store.liveWalkedMinutes)")
+                            .font(.system(size: 38, weight: .bold)) // Slightly larger
+                            .foregroundColor(.homePurple)
+                        
+                        Text("/\(store.walkActivity.goalMinutes) min")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.homeTextGray)
+                    }
+                    
+                    // Progress Bar
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color.homePurple.opacity(0.2))
+                                .frame(height: 8) // Slightly thicker
+                            
+                            let rawProgress = CGFloat(store.liveWalkedMinutes) / CGFloat(max(store.walkActivity.goalMinutes, 1))
+                            let progress = min(max(rawProgress, 0.15), 1.0) // Show at least 15% progress visually
+                            Capsule()
+                                .fill(Color.homePurple)
+                                .frame(width: geo.size.width * progress, height: 8)
+                        }
+                    }
+                    .frame(height: 8)
+                    .padding(.bottom, 6)
+                    
+                    Button {
+                        if store.isWalking {
+                            countdownFinished = true
+                        } else {
+                            countdownFinished = false
+                        }
+                        showWalkFlow = true
+                    } label: {
+                        HStack {
+                            Text(store.isWalking ? "Resume" : "Let's go!")
+                            Image(systemName: "arrow.right")
+                        }
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.homePurple)
+                        .clipShape(Capsule())
+                        .shadow(color: Color.homePurple.opacity(0.3), radius: 8, x: 0, y: 4)
+                    }
+                }
+                .padding(.leading, 24)
+                .padding(.vertical, 24) // Added vertical padding
+                
+                Spacer(minLength: 170)
+            }
+        }
+        .padding(.horizontal)
+        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+    }
+
+    // MARK: - Meals Section
+    private var mealsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Meals")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.homeTextDark)
+                
+                Spacer()
+                
+                Button {
+                    showMealsLog = true
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.homeTextGray)
+                }
+            }
+            .padding(.horizontal)
+            
+            HStack(spacing: 12) {
+                MealCardView(title: "Breakfast", time: "8:00 AM", iconName: "sun.max.fill", iconColor: .homeYellow, imageName: "bowl_pink", isCompleted: true) {
+                    showMealsLog = true
+                }
+                MealCardView(title: "Lunch", time: "12:30 PM", iconName: "sun.min.fill", iconColor: .orange, imageName: "bowl_yellow", isCompleted: false) {
+                    showMealsLog = true
+                }
+                MealCardView(title: "Dinner", time: "8:30 PM", iconName: "moon.fill", iconColor: .homePurple, imageName: "bowl_blue", isCompleted: false) {
+                    showMealsLog = true
+                }
+            }
+            .padding(.horizontal)
         }
     }
 
-    /// Quick access to the Emergency SOP & First Aid guides
-    private var emergencyGuideShortcut: some View {
-        Button {
-            showEmergencyGuide = true
-        } label: {
-            HStack(spacing: 14) {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.red.opacity(0.12))
-                    .frame(width: 52, height: 52)
-                    .overlay(
-                        Image(systemName: "heart.text.square.fill")
-                            .font(.system(size: 22))
-                            .foregroundStyle(.red)
-                    )
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Emergency Guide")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.primary)
-                    Text("CPR, choking, poisoning SOPs")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color("secondaryText"))
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color("secondaryText").opacity(0.4))
+    // MARK: - Quick Actions Section
+    private var quickActionsSection: some View {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+            QuickActionView(title: "Health", subtitle: "Checkups & stats", iconName: "heart.text.square.fill", iconColor: .red) {
+                // Navigate to Health
             }
-            .padding(16)
-            .background(Color("cardBackground"))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+            QuickActionView(title: "Reminders", subtitle: "Medications & more", iconName: "calendar.badge.clock", iconColor: .homePurple) {
+                // Navigate to Reminders
+            }
+            QuickActionView(title: "Safety", subtitle: "Emergency help", iconName: "shield.fill", iconColor: .orange) {
+                showEmergencyGuide = true
+            }
+            QuickActionView(title: "Diary", subtitle: "Notes & moments", iconName: "book.closed.fill", iconColor: .teal) {
+                // Navigate to Diary
+            }
         }
-        .buttonStyle(.plain)
         .padding(.horizontal)
+    }
+
+    // MARK: - Highlights Section
+    private var highlightsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("\(petStore.activePet?.name ?? "Your pet")'s Highlights")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.homeTextDark)
+                
+                Spacer()
+                
+                HStack(spacing: 4) {
+                    Text("This week")
+                    Image(systemName: "chevron.down")
+                }
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.homeTextGray)
+            }
+            .padding(.horizontal)
+            
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                StatCardView(title: "Avg. Walk", value: "28", unit: "min", subtitle: "", iconName: "flame.fill", iconColor: .homeGreen, graphType: .line(Color.homeGreen))
+                StatCardView(title: "Weight", value: "24.5", unit: "kg", subtitle: "", iconName: "scalemass.fill", iconColor: .homePurple, graphType: .line(Color.homePurple))
+                StatCardView(title: "Hydration", value: "Great", unit: "", subtitle: "Keep it up!", iconName: "drop.fill", iconColor: .homeBlue, graphType: .bar(Color.homeBlue))
+                StatCardView(title: "Mood", value: "Happy", unit: "", subtitle: "Very active", iconName: "face.smiling.fill", iconColor: .homeYellow, graphType: .bar(Color.homeYellow))
+            }
+            .padding(.horizontal)
+        }
     }
 }
 
+// MARK: - Helper Views
+
+struct MealCardView: View {
+    let title: String
+    let time: String
+    let iconName: String
+    let iconColor: Color
+    let imageName: String
+    let isCompleted: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .center, spacing: 8) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.homeTextDark)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Text(time)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.homeTextGray)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    
+                    Spacer(minLength: 4)
+                    
+                    Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(isCompleted ? .homePurple : .homeTextGray.opacity(0.3))
+                        .font(.system(size: 18))
+                }
+                
+                Image(imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 70)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 3)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct QuickActionView: View {
+    let title: String
+    let subtitle: String
+    let iconName: String
+    let iconColor: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(iconColor.opacity(0.1))
+                    .frame(width: 44, height: 44)
+                    .overlay(
+                        Image(systemName: iconName)
+                            .foregroundColor(iconColor)
+                            .font(.system(size: 18))
+                    )
+                
+                VStack(spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.homeTextDark)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    Text(subtitle)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.homeTextGray)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
+            .padding(.vertical, 10)
+            .padding(.horizontal, 4)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+enum StatGraphType {
+    case line(Color)
+    case bar(Color)
+}
+
+struct StatCardView: View {
+    let title: String
+    let value: String
+    let unit: String
+    let subtitle: String
+    let iconName: String
+    let iconColor: Color
+    let graphType: StatGraphType
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 4) {
+                Image(systemName: iconName)
+                    .foregroundColor(iconColor)
+                    .font(.system(size: 10))
+                Text(title)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.homeTextDark)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            
+            HStack(alignment: .lastTextBaseline, spacing: 2) {
+                Text(value)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.homeTextDark)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                if !unit.isEmpty {
+                    Text(unit)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.homeTextGray)
+                        .lineLimit(1)
+                }
+            }
+            
+            if !subtitle.isEmpty {
+                Text(subtitle)
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(.homeTextGray)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            
+            Spacer(minLength: 4)
+            
+            // Mock Graph
+            GeometryReader { geo in
+                switch graphType {
+                case .line(let color):
+                    Path { path in
+                        path.move(to: CGPoint(x: 0, y: geo.size.height))
+                        path.addLine(to: CGPoint(x: geo.size.width * 0.25, y: geo.size.height * 0.6))
+                        path.addLine(to: CGPoint(x: geo.size.width * 0.5, y: geo.size.height * 0.8))
+                        path.addLine(to: CGPoint(x: geo.size.width * 0.75, y: geo.size.height * 0.4))
+                        path.addLine(to: CGPoint(x: geo.size.width, y: geo.size.height * 0.2))
+                    }
+                    .stroke(color, lineWidth: 2)
+                    
+                    // Dots
+                    ForEach(0..<5, id: \.self) { i in
+                        Circle()
+                            .fill(color)
+                            .frame(width: 4, height: 4)
+                            .position(x: geo.size.width * CGFloat(i) * 0.25, y: i == 0 ? geo.size.height : (i == 1 ? geo.size.height * 0.6 : (i == 2 ? geo.size.height * 0.8 : (i == 3 ? geo.size.height * 0.4 : geo.size.height * 0.2))))
+                    }
+                case .bar(let color):
+                    HStack(alignment: .bottom, spacing: 4) {
+                        ForEach(0..<7, id: \.self) { i in
+                            Capsule()
+                                .fill(i == 6 ? color : color.opacity(0.3))
+                                .frame(width: 4, height: CGFloat.random(in: geo.size.height * 0.4...geo.size.height))
+                        }
+                    }
+                }
+            }
+            .frame(height: 20)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 110)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+}
 
 // MARK: - Walk Flow Container (Countdown → Tracking)
 
 private struct WalkFlowContainer: View {
     var store: ActivityStore
     var startWithTracking: Bool
-    var onDismiss: () -> Void //what does this do ?
+    var onDismiss: () -> Void
 
     @State private var showTracking: Bool
 
@@ -287,49 +458,6 @@ private struct WalkFlowContainer: View {
             )
             .transition(.opacity)
         }
-    }
-}
-
-// MARK: - Animated "WALKING..." Label
-
-private struct WalkingLabel: View {
-    @State private var dotCount = 0
-
-    private var dots: String {
-        String(repeating: ".", count: dotCount + 1)
-    }
-
-    private var hiddenText: String { "WALKING..." }
-
-    var body: some View {
-        Text("WALKING\(dots)")
-            .font(.system(size: 14, weight: .medium))
-            .foregroundStyle(.white)
-            .frame(width: textWidth(hiddenText))
-            .padding(.horizontal, 24)
-            .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(Color("baseColor"))
-            )
-            .task {
-                while !Task.isCancelled {
-                    try? await Task.sleep(for: .seconds(0.5))
-                    dotCount = (dotCount + 1) % 3
-                }
-            }
-    }
-
-    private func textWidth(_ text: String) -> CGFloat {
-        let font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        let attributes: [NSAttributedString.Key: Any] = [.font: font]
-        let size = (text as NSString).boundingRect(
-            with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
-            options: .usesLineFragmentOrigin,
-            attributes: attributes,
-            context: nil
-        ).size
-        return ceil(size.width)
     }
 }
 
