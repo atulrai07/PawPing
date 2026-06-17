@@ -34,17 +34,16 @@ struct ActivityView: View {
                     .navigationTitle("Home")
                 } else {
                     VStack(spacing: 24) {
-                        headerSection
                         heroSection
                         mealsSection
                         quickActionsSection
                         highlightsSection
                     }
-                    .padding(.top, -30)
+                    .padding(.top, 16)
                     .padding(.bottom, 80)
                     .background(Color.white)
                     .customNavigationScroll(
-                        title: "", // Removed "Home" title
+                        title: "Home",
                         petStore: petStore,
                         refreshAction: {
                             await petStore.fetchPets()
@@ -79,53 +78,18 @@ struct ActivityView: View {
         }
     }
 
-    // MARK: - Header
-    private var headerSection: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 4) {
-                let userName = appState.currentUserName.split(separator: " ").first ?? "Sarah"
-                Text("Hey, \(userName)! 👋")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.homeTextGray)
-                
-                let petName = petStore.activePet?.name ?? "Luna"
-                
-                HStack(alignment: .center, spacing: 8) {
-                    Text("Good morning,\n\(petName)")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.homeTextDark)
-                        .lineSpacing(4)
-                    
-                    Image(systemName: "heart")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(.pink)
-                        .padding(.top, 28) // Align with the second line
-                }
-            }
-            
-            Spacer()
-        }
-        .padding(.horizontal)
-    }
-
     // MARK: - Hero Section (Today's Walk)
     private var heroSection: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 24)
-                .fill(LinearGradient(gradient: Gradient(colors: [Color.homeLightPurple, Color.white]), startPoint: .topLeading, endPoint: .bottomTrailing))
+            Image("card_bg")
+                .resizable()
+                .scaledToFill()
                 .frame(height: 200) // Increased height for breathing room
+                .clipShape(RoundedRectangle(cornerRadius: 24))
             
-            HStack {
+            HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 14) { // Increased spacing
                     HStack(spacing: 8) {
-                        Circle()
-                            .fill(Color.homePurple.opacity(0.1))
-                            .frame(width: 40, height: 40)
-                            .overlay(
-                                Image(systemName: "pawprint.fill")
-                                    .foregroundColor(.homePurple)
-                            )
-                        
                         Text("Today's Walk")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.homeTextGray)
@@ -148,7 +112,8 @@ struct ActivityView: View {
                                 .fill(Color.homePurple.opacity(0.2))
                                 .frame(height: 8) // Slightly thicker
                             
-                            let progress = min(CGFloat(store.liveWalkedMinutes) / CGFloat(max(store.walkActivity.goalMinutes, 1)), 1.0)
+                            let rawProgress = CGFloat(store.liveWalkedMinutes) / CGFloat(max(store.walkActivity.goalMinutes, 1))
+                            let progress = min(max(rawProgress, 0.15), 1.0) // Show at least 15% progress visually
                             Capsule()
                                 .fill(Color.homePurple)
                                 .frame(width: geo.size.width * progress, height: 8)
@@ -158,11 +123,15 @@ struct ActivityView: View {
                     .padding(.bottom, 6)
                     
                     Button {
-                        countdownFinished = false
+                        if store.isWalking {
+                            countdownFinished = true
+                        } else {
+                            countdownFinished = false
+                        }
                         showWalkFlow = true
                     } label: {
                         HStack {
-                            Text("Let's go!")
+                            Text(store.isWalking ? "Resume" : "Let's go!")
                             Image(systemName: "arrow.right")
                         }
                         .font(.system(size: 14, weight: .bold))
@@ -177,21 +146,7 @@ struct ActivityView: View {
                 .padding(.leading, 24)
                 .padding(.vertical, 24) // Added vertical padding
                 
-                Spacer()
-            }
-            
-            // Hero Image
-            HStack {
-                Spacer()
-                Image("hero_dog")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 170, height: 200, alignment: .top) // Align to top to save the head, clip the legs
-                    .clipped()
-                    .padding(.top, 10) // Push down slightly from the absolute top boundary for breathing space
-                    .mask(
-                        LinearGradient(gradient: Gradient(colors: [.black, .black, .clear]), startPoint: .leading, endPoint: .trailing)
-                    )
+                Spacer(minLength: 170)
             }
         }
         .padding(.horizontal)
@@ -211,12 +166,9 @@ struct ActivityView: View {
                 Button {
                     showMealsLog = true
                 } label: {
-                    HStack(spacing: 4) {
-                        Text("See full plan")
-                        Image(systemName: "arrow.right")
-                    }
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.homePurple)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.homeTextGray)
                 }
             }
             .padding(.horizontal)
@@ -259,7 +211,7 @@ struct ActivityView: View {
     private var highlightsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Luna's Highlights")
+                Text("\(petStore.activePet?.name ?? "Your pet")'s Highlights")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.homeTextDark)
                 
@@ -300,10 +252,6 @@ struct MealCardView: View {
         Button(action: action) {
             VStack(alignment: .center, spacing: 8) {
                 HStack(alignment: .top) {
-                    Image(systemName: iconName)
-                        .foregroundColor(iconColor)
-                        .font(.system(size: 14))
-                    
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .font(.system(size: 13, weight: .bold))
@@ -314,9 +262,10 @@ struct MealCardView: View {
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.homeTextGray)
                             .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                     }
                     
-                    Spacer()
+                    Spacer(minLength: 4)
                     
                     Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                         .foregroundColor(isCompleted ? .homePurple : .homeTextGray.opacity(0.3))

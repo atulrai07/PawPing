@@ -95,10 +95,6 @@ private extension ProfileView {
                 Text("Profile")
                     .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(.primary)
-                
-                Text("All about you and your pets")
-                    .font(.system(size: 16))
-                    .foregroundStyle(.gray)
             }
             Spacer()
             
@@ -235,39 +231,7 @@ private extension ProfileView {
                 .background(Color.white.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 
-                // Insights Row
-                HStack(spacing: 0) {
-                    insightItem(
-                        icon: "clipboard.fill",
-                        iconColor: Color(hex: "6E54D7") ?? .purple,
-                        title: "Health Records",
-                        value: "\(healthStore.healthRecords.count)",
-                        subtitle: "Records"
-                    )
-                    insightItem(
-                        icon: "shield.fill",
-                        iconColor: .green,
-                        title: "Vaccines",
-                        value: "\(healthStore.summary.doneCount)",
-                        subtitle: "Completed"
-                    )
-                    
-                    let nextVaccineStr = computeNextVaccine()
-                    insightItem(
-                        icon: "cross.case.fill",
-                        iconColor: .orange,
-                        title: "Next Vaccine",
-                        value: nextVaccineStr.value,
-                        subtitle: nextVaccineStr.subtitle
-                    )
-                    insightItem(
-                        icon: "waveform.path.ecg",
-                        iconColor: .blue,
-                        title: "Avg. Walk",
-                        value: "\(activityStore.averageWalkDurationPerDay)",
-                        subtitle: "min/day"
-                    )
-                }
+
             }
             .padding(24)
             .background(
@@ -299,49 +263,7 @@ private extension ProfileView {
         .frame(maxWidth: .infinity)
     }
     
-    private func insightItem(icon: String, iconColor: Color, title: String, value: String, subtitle: String) -> some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundStyle(iconColor)
-                .padding(.bottom, 4)
-            
-            Text(title)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
-                .frame(height: 28, alignment: .bottom)
-            
-            Text(value)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
-                .multilineTextAlignment(.center)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-                .frame(height: 24, alignment: .center)
-                .padding(.top, 4)
-            
-            Text(subtitle)
-                .font(.system(size: 10))
-                .foregroundStyle(.gray)
-                .lineLimit(1)
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    private func computeNextVaccine() -> (value: String, subtitle: String) {
-        let upcoming = healthStore.healthRecords.filter { $0.status == .upcoming || $0.status == .overdue }.sorted { ($0.nextDoseDate ?? Date()) < ($1.nextDoseDate ?? Date()) }
-        
-        if let first = upcoming.first, let nextDate = first.nextDoseDate {
-            let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: nextDate).day ?? 0
-            if daysUntil <= 30 {
-                return ("\(daysUntil)", "Days left")
-            }
-        }
-        return ("Up to Date", "Protected")
-    }
+
 
     var myPetsCard: some View {
         HStack(spacing: 16) {
