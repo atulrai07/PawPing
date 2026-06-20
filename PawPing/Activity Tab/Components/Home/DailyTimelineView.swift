@@ -103,12 +103,9 @@ struct DailyTimelineView: View {
                 Spacer()
                 
                 Button(action: { showFullTimeline = true }) {
-                    HStack(spacing: 4) {
-                        Text("See full day")
-                        Image(systemName: "chevron.right")
-                    }
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.orange)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(Color(hex: "6E54D7") ?? .orange)
                 }
             }
             .padding(.horizontal)

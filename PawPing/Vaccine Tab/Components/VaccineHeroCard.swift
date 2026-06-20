@@ -33,15 +33,15 @@ struct VaccineHeroCard: View {
         if let overdue = primaryOverdue {
             // Overdue State (Highest Priority)
             heroCardBase(
-                title: "Vaccination Overdue",
+                title: "Overdue",
                 subtitle: "Action Required",
                 recordName: overdue.name,
                 recordDate: overdue.nextDoseDate,
-                iconName: "exclamationmark.triangle.fill",
+                iconName: "syringe.fill",
                 accentColor: .red,
-                bottomMessage: "\(petName) has an overdue vaccine requiring attention.",
-                highlightValue: overdue.timeRemainingText,
-                highlightLabel: "Past due"
+                bottomMessage: "Please schedule this vaccine as soon as possible.",
+                highlightValue: nil,
+                highlightLabel: nil
             )
         } else if let upcoming = nearestUpcoming {
             // Upcoming Vaccine State (Within 30 days)

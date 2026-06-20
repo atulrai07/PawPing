@@ -220,7 +220,7 @@ struct DynamicHeroCardView: View {
                     Image(imageName)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: geo.size.width * 0.75, height: 260, alignment: .bottomTrailing)
+                        .frame(width: geo.size.width * 0.75, height: geo.size.height, alignment: .bottomTrailing)
                         .clipped()
                         .mask(
                             LinearGradient(
@@ -259,7 +259,7 @@ struct DynamicHeroCardView: View {
                     
                     Text(subtitle)
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(Color.gray.opacity(0.9))
+                        .foregroundColor((Color(hex: "1C1B1F") ?? .black).opacity(0.75))
                         .lineLimit(2)
                         .lineSpacing(4)
                         .padding(.bottom, 6)

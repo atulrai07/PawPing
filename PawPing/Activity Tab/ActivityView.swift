@@ -35,8 +35,6 @@ struct ActivityView: View {
                         DailyTimelineView()
                         
                         RecentMemoriesView()
-                        
-                        WellnessInsightCardView()
                     }
                     .padding(.top, 16)
                     .padding(.bottom, 80)
