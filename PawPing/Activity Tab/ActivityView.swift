@@ -126,7 +126,7 @@ struct ActivityView: View {
                                 .frame(height: 8) // Slightly thicker
                             
                             let rawProgress = CGFloat(store.liveWalkedMinutes) / CGFloat(max(store.walkActivity.goalMinutes, 1))
-                            let progress = min(max(rawProgress, 0.15), 1.0) // Show at least 15% progress visually
+                            let progress = min(max(rawProgress, 0.0), 1.0)
                             Capsule()
                                 .fill(Color.homePurple)
                                 .frame(width: geo.size.width * progress, height: 8)
@@ -269,7 +269,66 @@ struct ActivityView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Recent Memories Section
+    // MARK: - Recent Memories Helpers & Section
+    
+    fileprivate enum HomeMemoryDisplayType {
+        case collage
+        case cards
+    }
+
+    fileprivate struct HomeGroupedMemory: Identifiable {
+        let id: String
+        let title: String
+        let description: String
+        let dateString: String
+        let imageURLs: [String]
+        let displayType: HomeMemoryDisplayType
+    }
+
+    private var groupedMemories: [HomeGroupedMemory] {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        let grouped = Dictionary(grouping: store.memories) { memory -> Date in
+            calendar.startOfDay(for: memory.createdAt)
+        }
+        
+        let sortedDates = grouped.keys.sorted(by: >)
+        var result: [HomeGroupedMemory] = []
+        
+        for (index, date) in sortedDates.enumerated() {
+            let memoriesForDate = grouped[date] ?? []
+            let urls = memoriesForDate.map { $0.imageUrl }
+            
+            let dateString: String
+            if calendar.isDateInToday(date) {
+                dateString = "Today"
+            } else if calendar.isDateInYesterday(date) {
+                dateString = "Yesterday"
+            } else {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MMM d, yyyy"
+                dateString = formatter.string(from: date)
+            }
+            
+            let displayType: HomeMemoryDisplayType = (index % 2 == 0) ? .collage : .cards
+            let petName = petStore.activePet?.name ?? "Pet"
+            let title = index == 0 ? "Central Park" : "\(petName)'s Adventure"
+            let description = index == 0 ? "Morning walk" : "Fun outdoor play"
+            
+            result.append(HomeGroupedMemory(
+                id: dateString,
+                title: title,
+                description: description,
+                dateString: dateString,
+                imageURLs: urls,
+                displayType: displayType
+            ))
+        }
+        
+        return result
+    }
+
     private var recentMemoriesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -283,14 +342,15 @@ struct ActivityView: View {
                     showMemoriesGallery = true
                 } label: {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.gray)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(Color(hex: "6E54D7") ?? .orange)
                 }
             }
             .padding(.horizontal)
             
             ScrollView(.horizontal, showsIndicators: false) {
-                if store.memories.isEmpty {
+                let items = groupedMemories
+                if items.isEmpty {
                     VStack(spacing: 8) {
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.system(size: 32))
@@ -298,22 +358,15 @@ struct ActivityView: View {
                         Text("No memories yet. Tap the arrow to add photos!")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 32)
                     }
-                    .frame(maxWidth: .infinity)
+                    .frame(width: UIScreen.main.bounds.width - 32)
                     .frame(height: 140)
-                    .padding(.horizontal)
                 } else {
-                    HStack(spacing: 12) {
-                        ForEach(store.memories.prefix(3)) { memory in
-                            if let url = URL(string: memory.imageUrl) {
-                                AsyncImage(url: url) { image in
-                                    image.resizable().scaledToFill()
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                .frame(width: 140, height: 140)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                            }
+                    HStack(spacing: 16) {
+                        ForEach(items) { memory in
+                            HomeMemoryCard(memory: memory)
                         }
                     }
                     .padding(.horizontal)
@@ -321,6 +374,128 @@ struct ActivityView: View {
             }
         }
     }
+}
+
+// MARK: - Redesigned Memory Card View
+struct HomeMemoryCard: View {
+    fileprivate let memory: ActivityView.HomeGroupedMemory
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Left Side: Image/Collage/Card Stack area
+            Group {
+                if memory.imageURLs.isEmpty {
+                    VStack(spacing: 6) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 24))
+                            .foregroundColor(.gray.opacity(0.8))
+                        Text("No pic")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.gray.opacity(0.8))
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .background(Color(hex: "F2F2F7") ?? Color(.systemGray6))
+                } else if memory.displayType == .collage && memory.imageURLs.count >= 3 {
+                    // Collage Layout
+                    HStack(spacing: 2) {
+                        AsyncImage(url: URL(string: memory.imageURLs[0])) { image in
+                            image.resizable().scaledToFill()
+                        } placeholder: {
+                            Color.gray.opacity(0.1)
+                        }
+                        .frame(width: 80, height: 140)
+                        .clipped()
+                        
+                        VStack(spacing: 2) {
+                            AsyncImage(url: URL(string: memory.imageURLs[1])) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Color.gray.opacity(0.1)
+                            }
+                            .frame(width: 58, height: 69)
+                            .clipped()
+                            
+                            AsyncImage(url: URL(string: memory.imageURLs[2])) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Color.gray.opacity(0.1)
+                            }
+                            .frame(width: 58, height: 69)
+                            .clipped()
+                        }
+                    }
+                } else if memory.displayType == .cards && memory.imageURLs.count >= 2 {
+                    // Cards Stack Layout
+                    ZStack {
+                        Color.clear // Container boundaries
+                        
+                        ForEach(0..<min(memory.imageURLs.count, 3), id: \.self) { idx in
+                            AsyncImage(url: URL(string: memory.imageURLs[idx])) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Color.gray.opacity(0.1)
+                            }
+                            .frame(width: 105, height: 105)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
+                            .rotationEffect(.degrees(Double(idx - 1) * 8.0))
+                            .offset(x: CGFloat(idx - 1) * 8, y: CGFloat(idx - 1) * 2)
+                        }
+                    }
+                } else {
+                    // Fallback Single Image Layout
+                    AsyncImage(url: URL(string: memory.imageURLs[0])) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        Color.gray.opacity(0.1)
+                    }
+                    .frame(width: 140, height: 140)
+                    .clipped()
+                }
+            }
+            .frame(width: 140, height: 140)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            
+            // Right Side: Info Details
+            VStack(alignment: .leading, spacing: 6) {
+                Text(memory.dateString)
+                    .font(.system(size: 13))
+                    .foregroundColor(.textSecondary)
+                
+                Text(memory.title)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.textPrimary)
+                    .lineLimit(1)
+                
+                Text(memory.description)
+                    .font(.system(size: 13))
+                    .foregroundColor(.textSecondary)
+                    .lineLimit(1)
+                
+                Spacer(minLength: 0)
+                
+                HStack(spacing: 4) {
+                    Image(systemName: "photo.stack")
+                        .font(.system(size: 14))
+                    Text(memory.imageURLs.count > 0 ? "\(memory.imageURLs.count) photos" : "0 photos")
+                        .font(.system(size: 13, weight: .medium))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .bold))
+                }
+                .foregroundColor(.textPrimary.opacity(0.8))
+                .padding(.top, 4)
+            }
+            .frame(width: 130, alignment: .leading)
+            .padding(.vertical, 14)
+            .padding(.trailing, 14)
+        }
+        .frame(width: 296, height: 140)
+        .background(Color(hex: "F8F9FB") ?? Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+}
+
+extension ActivityView {
 
     // MARK: - Walk Graphs Section
     private var walkGraphsSection: some View {
