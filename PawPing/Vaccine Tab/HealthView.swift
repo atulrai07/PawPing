@@ -64,8 +64,8 @@ struct HealthView: View {
                                         NavigationLink {
                                             FullTimelineView(events: timelineEvents)
                                         } label: {
-                                            Text("See All")
-                                                .font(.system(size: 15, weight: .semibold))
+                                            Image(systemName: "chevron.right")
+                                                .font(.system(size: 16, weight: .bold))
                                                 .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
                                         }
                                         .buttonStyle(.plain)
@@ -97,8 +97,8 @@ struct HealthView: View {
                                             NavigationLink {
                                                 FullTimelineView(events: timelineEvents) // Using existing timeline view for now
                                             } label: {
-                                                Text("See All")
-                                                    .font(.system(size: 15, weight: .semibold))
+                                                Image(systemName: "chevron.right")
+                                                    .font(.system(size: 16, weight: .bold))
                                                     .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
                                             }
                                             .buttonStyle(.plain)

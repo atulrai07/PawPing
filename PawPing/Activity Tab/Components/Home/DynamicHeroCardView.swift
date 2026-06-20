@@ -24,7 +24,7 @@ struct DynamicHeroCardView: View {
             case .walkDueSoon:
                 heroCard(
                     title: "Time for a Walk",
-                    subtitle: "\(petStore.activePet?.name ?? "Your pet") needs \(activityStore.walkActivity.goalMinutes) min of activity today.",
+                    subtitle: "\(activityStore.walkActivity.goalMinutes) min activity goal",
                     statusText: "Due now",
                     statusIcon: "clock",
                     statusColor: Color(hex: "E06722") ?? .orange,
@@ -220,7 +220,7 @@ struct DynamicHeroCardView: View {
                     Image(imageName)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: geo.size.width * 0.75, height: geo.size.height, alignment: .bottomTrailing)
+                        .frame(width: geo.size.width * 0.55, height: geo.size.height, alignment: .bottomTrailing)
                         .clipped()
                         .mask(
                             LinearGradient(
@@ -289,6 +289,7 @@ struct DynamicHeroCardView: View {
                         .clipShape(Capsule())
                     }
                 }
+                .frame(width: 170, alignment: .leading)
                 .padding(.leading, 24)
                 .padding(.vertical, 32)
                 
