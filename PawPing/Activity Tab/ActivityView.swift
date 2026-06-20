@@ -287,7 +287,6 @@ struct ActivityView: View {
 
     private var groupedMemories: [HomeGroupedMemory] {
         let calendar = Calendar.current
-        let now = Date()
         
         let grouped = Dictionary(grouping: store.memories) { memory -> Date in
             calendar.startOfDay(for: memory.createdAt)
@@ -348,30 +347,33 @@ struct ActivityView: View {
             }
             .padding(.horizontal)
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                let items = groupedMemories
-                if items.isEmpty {
-                    VStack(spacing: 8) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.system(size: 32))
-                            .foregroundColor(.gray.opacity(0.5))
-                        Text("No memories yet. Tap the arrow to add photos!")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.gray)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
-                    }
-                    .frame(width: UIScreen.main.bounds.width - 32)
-                    .frame(height: 140)
-                } else {
-                    HStack(spacing: 16) {
-                        ForEach(items) { memory in
-                            HomeMemoryCard(memory: memory)
+            GeometryReader { outerGeo in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    let items = groupedMemories
+                    if items.isEmpty {
+                        VStack(spacing: 8) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.system(size: 32))
+                                .foregroundColor(.gray.opacity(0.5))
+                            Text("No memories yet. Tap the arrow to add photos!")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 32)
                         }
+                        .frame(width: max(outerGeo.size.width - 32, 0))
+                        .frame(height: 140)
+                    } else {
+                        HStack(spacing: 16) {
+                            ForEach(items) { memory in
+                                HomeMemoryCard(memory: memory)
+                            }
+                        }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
             }
+            .frame(height: 140)
         }
     }
 }
