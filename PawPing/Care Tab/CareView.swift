@@ -196,52 +196,6 @@ struct CareView: View {
         .frame(height: 200)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.05), radius: 15, x: 0, y: 8)
-        .overlay(alignment: .bottom) {
-            HStack {
-                // Near Location Indicator
-                HStack(spacing: 6) {
-                    Image(systemName: "location.fill")
-                        .foregroundColor(Color(hex: "6E54D7") ?? .purple)
-                        .font(.system(size: 14))
-                    Text("Near \(store.currentAreaName ?? "You")")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.gray)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.white)
-                .clipShape(Capsule())
-                .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                
-                Spacer()
-                
-                // View on Map Action
-                Button {
-                    if let userCoord = store.lastLocation?.coordinate {
-                        withAnimation {
-                            position = .region(MKCoordinateRegion(
-                                center: userCoord,
-                                latitudinalMeters: 10000,
-                                longitudinalMeters: 10000
-                            ))
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("View on Map")
-                            .font(.system(size: 14, weight: .medium))
-                        Image(systemName: "arrow.up.right")
-                    }
-                    .foregroundColor(Color(hex: "6E54D7") ?? .purple)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color.white)
-                    .clipShape(Capsule())
-                    .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                }
-            }
-            .padding(16)
-        }
     }
 
     private var cardsList: some View {

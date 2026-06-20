@@ -84,9 +84,20 @@ class CareStore: NSObject, CLLocationManagerDelegate {
         }
         lastLocation = location
         
-        CLGeocoder().reverseGeocodeLocation(location) { [weak self] placemarks, _ in
-            if let placemark = placemarks?.first {
-                self?.currentAreaName = placemark.subLocality ?? placemark.locality ?? "You"
+        if let request = MKReverseGeocodingRequest(location: location) {
+            Task { [weak self] in
+                do {
+                    let mapItems = try await request.mapItems
+                    if let firstItem = mapItems.first {
+                        if let reps = firstItem.addressRepresentations {
+                            self?.currentAreaName = reps.cityName ?? "You"
+                        } else {
+                            self?.currentAreaName = "You"
+                        }
+                    }
+                } catch {
+                    print("Reverse geocoding failed: \(error)")
+                }
             }
         }
         

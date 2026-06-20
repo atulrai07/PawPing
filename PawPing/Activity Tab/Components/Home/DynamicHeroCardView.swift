@@ -310,8 +310,6 @@ struct CustomRightCornerShape: Shape {
     
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let tr = CGPoint(x: rect.maxX, y: rect.minY)
-        let br = CGPoint(x: rect.maxX, y: rect.maxY)
         let bl = CGPoint(x: rect.minX, y: rect.maxY)
         let tl = CGPoint(x: rect.minX, y: rect.minY)
         

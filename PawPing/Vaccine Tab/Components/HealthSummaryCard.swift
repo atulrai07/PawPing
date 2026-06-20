@@ -38,7 +38,7 @@ struct HealthSummaryCard: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
                     
-                    Text("Great job! You're keeping\n\(petName) healthy and safe.")
+                    Text("Great job! You're keeping them\nhealthy and safe.")
                         .font(.system(size: 13))
                         .foregroundStyle(.gray)
                         .lineSpacing(2)
