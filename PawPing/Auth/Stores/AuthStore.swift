@@ -43,14 +43,90 @@ class AuthStore {
         await updateState(with: response.user)
     }
     
-    func signup(name: String, email: String, password: String) async throws {
+    func signup(name: String, email: String, password: String) async throws -> Bool {
         // We pass the name to user_metadata so our SQL trigger can pick it up
         let response = try await client.auth.signUp(
             email: email,
             password: password,
             data: ["full_name": .string(name)]
         )
-        await updateState(with: response.user)
+        if response.session != nil {
+            await updateState(with: response.user)
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    func sendOTP(email: String, purpose: String) async throws {
+        struct OTPRequest: Encodable {
+            let email: String
+            let purpose: String
+        }
+        let payload = OTPRequest(email: email, purpose: purpose)
+        do {
+            _ = try await client.functions.invoke(
+                "send-otp",
+                options: FunctionInvokeOptions(body: payload)
+            )
+        } catch {
+            throw handleFunctionsError(error)
+        }
+    }
+    
+    func verifyOTP(email: String, code: String, purpose: String) async throws {
+        struct OTPVerify: Encodable {
+            let email: String
+            let code: String
+            let purpose: String
+        }
+        let payload = OTPVerify(email: email, code: code, purpose: purpose)
+        do {
+            _ = try await client.functions.invoke(
+                "verify-otp",
+                options: FunctionInvokeOptions(body: payload)
+            )
+        } catch {
+            throw handleFunctionsError(error)
+        }
+    }
+    
+    func resetPassword(email: String, code: String, newPassword: String) async throws {
+        struct ResetPasswordPayload: Encodable {
+            let email: String
+            let code: String
+            let new_password: String
+        }
+        let payload = ResetPasswordPayload(email: email, code: code, new_password: newPassword)
+        do {
+            _ = try await client.functions.invoke(
+                "reset-password",
+                options: FunctionInvokeOptions(body: payload)
+            )
+        } catch {
+            throw handleFunctionsError(error)
+        }
+    }
+    
+    private func handleFunctionsError(_ error: Error) -> Error {
+        if let functionsError = error as? FunctionsError {
+            switch functionsError {
+            case .httpError(let code, let data):
+                struct ServerError: Decodable {
+                    let error: String
+                }
+                if let decoded = try? JSONDecoder().decode(ServerError.self, from: data) {
+                    return NSError(
+                        domain: "AuthStore",
+                        code: code,
+                        userInfo: [NSLocalizedDescriptionKey: decoded.error]
+                    )
+                }
+            default:
+                break
+            }
+        }
+        return error
     }
     
     func logout() async {

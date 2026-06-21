@@ -158,7 +158,13 @@ struct HealthView: View {
     // MARK: - Components
 
     private func activeMedicationsCard() -> some View {
-        HStack(spacing: 16) {
+        let activeCount = if let petId = petStore.activePetId {
+            medicationStore.activeMedicationsCount(for: petId)
+        } else {
+            0
+        }
+        
+        return HStack(spacing: 16) {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.orange.opacity(0.15))
                 .frame(width: 54, height: 54)
@@ -173,7 +179,7 @@ struct HealthView: View {
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Color.textPrimary)
                 
-                Text("\(medicationStore.activeMedicationsCount) Active")
+                Text("\(activeCount) Active")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.gray)
             }

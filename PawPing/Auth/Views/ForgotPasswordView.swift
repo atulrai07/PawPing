@@ -98,7 +98,7 @@ struct ForgotPasswordView: View {
         
         Task {
             do {
-                try await SupabaseConfig.client.auth.resetPasswordForEmail(email)
+                try await authStore.sendOTP(email: email, purpose: "reset")
                 path.append(AuthRoute.otp(email: email, isReset: true))
             } catch {
                 errorMessage = error.localizedDescription
