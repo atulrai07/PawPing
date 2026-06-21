@@ -31,7 +31,7 @@ struct HealthView: View {
     var doneRecords:     [HealthRecord] { store.healthRecords.filter { $0.status == .done     } }
     
     var timelineEvents: [TimelineEvent] {
-        guard let petId = petStore.activePetId else { return [] }
+        guard petStore.activePetId != nil else { return [] }
         
         let healthEvents = doneRecords.map { TimelineEvent(from: $0) }
         
