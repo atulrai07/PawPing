@@ -75,7 +75,7 @@ struct ActivityView: View {
                     }
                     .sheet(isPresented: $showMealLogSheet) {
                         MealLoggingSheet(store: store, mealType: selectedMealType, logDate: Date(), isReadOnly: false)
-                            .presentationDetents([.large])
+                            .presentationDetents([.height(570), .large])
                     }
                 }
             }
@@ -381,6 +381,7 @@ struct ActivityView: View {
 // MARK: - Redesigned Memory Card View
 struct HomeMemoryCard: View {
     fileprivate let memory: ActivityView.HomeGroupedMemory
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         HStack(spacing: 12) {
@@ -396,7 +397,7 @@ struct HomeMemoryCard: View {
                             .foregroundColor(.gray.opacity(0.8))
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    .background(Color(hex: "F2F2F7") ?? Color(.systemGray6))
+                    .background(colorScheme == .dark ? Color(white: 0.15) : (Color(hex: "F2F2F7") ?? Color(.systemGray6)))
                 } else if memory.displayType == .collage && memory.imageURLs.count >= 3 {
                     // Collage Layout
                     HStack(spacing: 2) {
@@ -492,20 +493,171 @@ struct HomeMemoryCard: View {
             .padding(.trailing, 14)
         }
         .frame(width: 296, height: 140)
-        .background(Color(hex: "F8F9FB") ?? Color(.systemGray6))
+        .background(colorScheme == .dark ? Color(white: 0.12) : (Color(hex: "F8F9FB") ?? Color(.systemGray6)))
         .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 }
 
 extension ActivityView {
 
-    // MARK: - Walk Graphs Section
+    // MARK: - Walk Summary Card
     private var walkGraphsSection: some View {
         NavigationLink(destination: DistanceSummaryView(store: store)) {
-            WalkTimeGraphView(model: store.timeWalkedGraph)
+            WalkSummaryCard(store: store)
                 .padding(.top, 8)
+                .padding(.horizontal)
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Walk Summary Card View
+struct WalkSummaryCard: View {
+    var store: ActivityStore
+    @Environment(\.colorScheme) private var colorScheme
+
+    // Total distance this week
+    private var weeklyDistanceKm: Double {
+        store.distanceSummary.totalWeekDistance
+    }
+
+    // Number of walks this week (activities with distance > 0)
+    private var weeklyWalksCount: Int {
+        let calendar = Calendar.current
+        var comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        comps.weekday = 2
+        guard let monday = calendar.date(from: comps) else { return 0 }
+        let sunday = calendar.date(byAdding: .day, value: 6, to: monday) ?? Date()
+        return store.activities.filter { $0.date >= monday && $0.date <= sunday }.count
+    }
+
+    // Last week's total distance for % comparison
+    private var lastWeekDistanceKm: Double {
+        let calendar = Calendar.current
+        var comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        comps.weekday = 2
+        guard let thisMonday = calendar.date(from: comps),
+              let lastMonday = calendar.date(byAdding: .weekOfYear, value: -1, to: thisMonday),
+              let lastSunday = calendar.date(byAdding: .day, value: 6, to: lastMonday)
+        else { return 0 }
+        return store.activities
+            .filter { $0.date >= lastMonday && $0.date <= lastSunday }
+            .reduce(0) { $0 + $1.distanceInKm }
+    }
+
+    private var vsLastWeekPercent: Int {
+        guard lastWeekDistanceKm > 0 else { return 0 }
+        return Int(((weeklyDistanceKm - lastWeekDistanceKm) / lastWeekDistanceKm) * 100)
+    }
+
+    var body: some View {
+        let isDark = colorScheme == .dark
+        ZStack(alignment: .trailing) {
+            // Card background — same style as Emergency Guide & home cards
+            RoundedRectangle(cornerRadius: 24)
+                .fill(isDark ? Color(white: 0.13) : Color.cardIvory)
+                .shadow(color: .black.opacity(isDark ? 0.18 : 0.05), radius: 10, x: 0, y: 4)
+
+            // Dog illustration — right side, clipped by card
+            Image("walk_dog_illustration")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 145, height: 145)
+                .offset(x: 8, y: 10)
+                .clipped()
+
+            // Content
+            VStack(alignment: .leading, spacing: 14) {
+                // Header
+                HStack(spacing: 10) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.homePurple.opacity(isDark ? 0.25 : 0.12))
+                            .frame(width: 40, height: 40)
+                        Image(systemName: "figure.walk")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.homePurple)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Walk Summary")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.textPrimary)
+                        Text("This Week")
+                            .font(.system(size: 12))
+                            .foregroundColor(.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.textSecondary)
+                }
+
+                // Stats
+                HStack(alignment: .bottom, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text(String(format: "%.1f", weeklyDistanceKm))
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.homePurple)
+                            Text("km")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.homePurple)
+                                .padding(.bottom, 3)
+                        }
+                        Text("Total Distance")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.textSecondary)
+                    }
+
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 1.5, height: 38)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 6)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text("\(weeklyWalksCount)")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.homePurple)
+                            Text("walks")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.homePurple)
+                                .padding(.bottom, 3)
+                        }
+                        Text("Completed")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.textSecondary)
+                    }
+
+                    Spacer(minLength: 120) // reserve space for dog
+                }
+
+                // vs last week badge
+                let pct = vsLastWeekPercent
+                HStack(spacing: 5) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(.white)
+                        .frame(width: 22, height: 22)
+                        .background(Color.homePurple)
+                        .clipShape(Circle())
+                    Text(pct >= 0 ? "+\(pct)%" : "\(pct)%")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(pct >= 0 ? .homePurple : .red)
+                    Text("vs last week")
+                        .font(.system(size: 12))
+                        .foregroundColor(.textSecondary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(isDark ? Color(white: 0.2) : Color.white.opacity(0.8))
+                .clipShape(Capsule())
+            }
+            .padding(18)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 190)
     }
 }
 

@@ -78,6 +78,7 @@ private struct StickyNavHeader: View {
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(Color("secondaryText"))
                         }
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .popover(isPresented: $showPetSwitcher) {

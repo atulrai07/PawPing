@@ -65,13 +65,12 @@ struct MealLogView: View {
         displayedMeals.filter { $0.isTaken }.count
     }
 
-    
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 24) {
-                
                 // Date Selector
                 dateSelector
+                    .padding(.top, 16)
                 
                 // Diet Card
                 if isToday {
@@ -83,6 +82,7 @@ struct MealLogView: View {
                 dailySummary
                     .padding(.horizontal)
                 
+                // Meals List
                 VStack(spacing: 14) {
                     ForEach(displayedMeals, id: \.id) { meal in
                         Button {
@@ -101,40 +101,32 @@ struct MealLogView: View {
                 insightsSection
                     .padding(.horizontal)
                 
+                Spacer(minLength: 40)
             }
-            .padding(.top, 8)
-            .navigationTitle("Meals")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.backward")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.primary)
-                    }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showDatePicker = true
-                    } label: {
-                        Image(systemName: "calendar")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(Color("baseColor"))
-                    }
+        }
+        .background(
+            LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+        )
+        .navigationTitle("Meals")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showDatePicker = true
+                } label: {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Color.homePurple)
                 }
             }
         }
-        .background(Color("baseBackground"))
-        .navigationBarBackButtonHidden(true)
         .onAppear {
             selectedDate = Calendar.current.startOfDay(for: Date())
         }
         .sheet(isPresented: $showMealSheet) {
             MealLoggingSheet(store: store, mealType: selectedMealType, logDate: selectedDate, isReadOnly: !isToday)
-                .presentationDetents([.large])
+                .presentationDetents([.height(570), .large])
         }
         .sheet(isPresented: $showDatePicker) {
             NavigationStack {
@@ -176,7 +168,7 @@ struct MealLogView: View {
         }
     }
     
-    // MARK: - Date Selector (preserved from original)
+    // MARK: - Date Selector (preserved & redesigned)
 
     private var dateSelector: some View {
         HStack(spacing: 0) {
@@ -190,15 +182,15 @@ struct MealLogView: View {
                 
                 VStack(spacing: 10) {
                     Text(weekDays[index])
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(isFuture ? Color("secondaryText").opacity(0.3) : (index <= selectedDateIndex ? Color.primary : Color("secondaryText")))
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(isFuture ? Color.textSecondary.opacity(0.3) : Color.textSecondary)
                     
                     Circle()
                         .fill(backgroundForDateNode(index: index))
-                        .frame(width: 46, height: 46)
+                        .frame(width: 38, height: 38)
                         .overlay(
                             Text("\(calendar.component(.day, from: date))")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(foregroundColorForDateNode(index: index))
                         )
                 }
@@ -218,9 +210,7 @@ struct MealLogView: View {
     
     private func backgroundForDateNode(index: Int) -> Color {
         if index == selectedDateIndex {
-            return Color("baseColor")
-        } else if index < selectedDateIndex {
-            return Color("baseColor").opacity(0.15)
+            return Color.homePurple
         } else {
             return Color.clear
         }
@@ -233,14 +223,14 @@ struct MealLogView: View {
         
         if index == selectedDateIndex {
             return .white
-        } else if index < selectedDateIndex {
-            return Color("baseColor")
         } else {
-            return isFuture ? Color("secondaryText").opacity(0.3) : Color("secondaryText")
+            return isFuture ? Color.textSecondary.opacity(0.3) : Color.textPrimary
         }
     }
 
-    // MARK: - Diet Section
+    // MARK: - Diet Section (Redesigned Start Diet Plan Card)
+
+    @Environment(\.colorScheme) private var colorScheme
 
     private var dietSection: some View {
         Group {
@@ -263,42 +253,71 @@ struct MealLogView: View {
                 }
             } else {
                 // Start diet plan card
+                let isDark = colorScheme == .dark
                 Button {
                     showDietSetup = true
                 } label: {
-                    HStack(spacing: 14) {
+                    HStack(spacing: 12) {
+                        // Left Icon
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.green.opacity(0.15))
+                            .fill(Color.homeGreen.opacity(isDark ? 0.25 : 0.15))
                             .frame(width: 50, height: 50)
                             .overlay(
                                 Image(systemName: "chart.line.uptrend.xyaxis")
                                     .font(.system(size: 22))
-                                    .foregroundStyle(.green)
+                                    .foregroundStyle(Color.homeGreen)
                             )
-
+                        
+                        // Text
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Start Diet Plan")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.primary)
+                                .font(.system(size: 17, weight: .bold))
+                                .foregroundStyle(Color.textPrimary)
                             Text("Set calorie targets based on your pet's needs")
                                 .font(.system(size: 12))
-                                .foregroundStyle(Color("secondaryText"))
+                                .foregroundStyle(Color.textSecondary)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-
+                        
                         Spacer()
-
-                        Circle()
-                            .fill(Color("baseColor").opacity(0.2))
-                            .frame(width: 28, height: 28)
-                            .overlay(
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(Color("baseColor"))
-                                    .font(.system(size: 12, weight: .bold))
-                            )
+                        
+                        // Image and chevron button
+                        ZStack(alignment: .trailing) {
+                            Image("diet_plan_illustration")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 90)
+                                .offset(x: 10, y: 5)
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(Color.homePurple)
+                                .frame(width: 28, height: 28)
+                                .background(isDark ? Color(white: 0.18) : Color.white)
+                                .clipShape(Circle())
+                                .shadow(color: .black.opacity(isDark ? 0.3 : 0.1), radius: 4, x: 0, y: 2)
+                                .offset(x: 15)
+                        }
+                        .frame(width: 110, height: 80)
                     }
-                    .padding(14)
-                    .background(Color("cardBackground"))
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .background(
+                        isDark
+                        ? LinearGradient(
+                            colors: [Color.homeGreen.opacity(0.18), Color.homeGreen.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                          )
+                        : LinearGradient(
+                            colors: [Color(hex: "EAF9F0") ?? .green.opacity(0.12), Color(hex: "F6FDF9") ?? .green.opacity(0.04)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                          )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .shadow(color: .black.opacity(isDark ? 0.15 : 0.03), radius: 8, x: 0, y: 4)
                 }
                 .buttonStyle(.plain)
             }
@@ -310,59 +329,95 @@ struct MealLogView: View {
     private var dailySummary: some View {
         HStack(spacing: 0) {
             // Total calories
-            VStack(spacing: 4) {
-                Image(systemName: "flame.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(.orange)
-                Text("\(Int(totalCalories))")
-                    .font(.system(size: 22, weight: .bold))
-                    .contentTransition(.numericText())
-                Text("kcal")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color("secondaryText"))
+            HStack(spacing: 12) {
+                Spacer()
+                
+                ZStack {
+                    Circle()
+                        .fill(Color.orange.opacity(0.15))
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.orange)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(Int(totalCalories))")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundStyle(Color.textPrimary)
+                        .contentTransition(.numericText())
+                    Text("kcal")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.textSecondary)
+                }
+                
+                Spacer()
             }
             .frame(maxWidth: .infinity)
+            .background(alignment: .leading) {
+                Image(systemName: "pawprint.fill")
+                    .font(.system(size: 44))
+                    .foregroundStyle(Color.orange)
+                    .opacity(0.06)
+                    .rotationEffect(.degrees(-15))
+                    .offset(x: 16, y: -8)
+            }
 
+            // Middle Separator
             Rectangle()
-                .fill(Color("secondaryCardBackground"))
-                .frame(width: 1, height: 40)
+                .fill(Color.gray.opacity(0.15))
+                .frame(width: 1.5, height: 50)
 
             // Meals logged
-            VStack(spacing: 4) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(Color("baseColor"))
-                Text("\(mealsLoggedCount)/3")
-                    .font(.system(size: 22, weight: .bold))
-                Text("logged")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color("secondaryText"))
+            HStack(spacing: 12) {
+                Spacer()
+                
+                ZStack {
+                    Circle()
+                        .fill(Color.homePurple)
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(mealsLoggedCount)/3")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundStyle(Color.textPrimary)
+                    Text("logged")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.textSecondary)
+                }
+                
+                Spacer()
             }
             .frame(maxWidth: .infinity)
-
-            // Target (if diet active)
-            if mealDietStore.dietPlan.isActive {
-                Rectangle()
-                    .fill(Color("secondaryCardBackground"))
-                    .frame(width: 1, height: 40)
-
-                VStack(spacing: 4) {
-                    Image(systemName: "target")
-                        .font(.system(size: 16))
-                        .foregroundStyle(.green)
-                    Text("\(Int(mealDietStore.dietPlan.dailyCalorieTarget - totalCalories))")
-                        .font(.system(size: 22, weight: .bold))
-                        .contentTransition(.numericText())
-                    Text("remaining")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color("secondaryText"))
-                }
-                .frame(maxWidth: .infinity)
+            .background(alignment: .trailing) {
+                Image(systemName: "pawprint.fill")
+                    .font(.system(size: 44))
+                    .foregroundStyle(Color.homePurple)
+                    .opacity(0.06)
+                    .rotationEffect(.degrees(15))
+                    .offset(x: -16, y: -8)
             }
         }
-        .padding(.vertical, 16)
-        .background(Color("cardBackground"))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(.vertical, 20)
+        .background(
+            colorScheme == .dark
+            ? LinearGradient(
+                colors: [Color.orange.opacity(0.12), Color.homePurple.opacity(0.12)],
+                startPoint: .leading,
+                endPoint: .trailing
+              )
+            : LinearGradient(
+                colors: [Color(hex: "FFF7F0") ?? .orange.opacity(0.04), Color(hex: "F3F2FF") ?? .purple.opacity(0.04)],
+                startPoint: .leading,
+                endPoint: .trailing
+              )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .shadow(color: .black.opacity(colorScheme == .dark ? 0.2 : 0.03), radius: 8, x: 0, y: 4)
     }
 
     // MARK: - Meal Card
@@ -370,71 +425,129 @@ struct MealLogView: View {
     private func mealCard(meal: Meal) -> some View {
         HStack(spacing: 14) {
             // Icon
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color("baseColor"))
+            RoundedRectangle(cornerRadius: 16)
+                .fill(mealIconBgColor(meal: meal))
                 .frame(width: 52, height: 52)
                 .overlay(
                     Image(systemName: meal.icon)
-                        .font(.system(size: 20))
-                        .foregroundStyle(.white)
+                        .font(.system(size: 22))
+                        .foregroundStyle(mealIconColor(meal: meal))
                 )
 
             // Info
             VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(meal.mealType.rawValue)
-                        .font(.system(size: 17, weight: .semibold))
+                Text(meal.mealType.rawValue)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(Color.textPrimary)
 
-                    Spacer()
-
-                    // Status badge
-                    Text(meal.isTaken ? "Logged" : "Not Logged")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(meal.isTaken ? .green : Color("secondaryText").opacity(0.6))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(
-                            Capsule()
-                                .fill(meal.isTaken ? Color.green.opacity(0.12) : Color("secondaryCardBackground"))
-                        )
-                }
-
-                HStack(spacing: 12) {
-                    // Food name
-                    if let food = meal.foodType {
-                        Text(food.displayName)
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color("secondaryText"))
-                            .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-                    } else {
-                        Text(isToday ? "Tap to log" : "Not logged")
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color("secondaryText").opacity(0.5))
-                            .italic()
-                    }
-
-                    Spacer()
-
-                    // Time
-                    HStack(spacing: 2) {
-                        Text(meal.time)
-                            .font(.system(size: 12, weight: .medium))
-                        Text(meal.meridian)
-                            .font(.system(size: 9, weight: .medium))
-                    }
-                    .foregroundStyle(Color("secondaryText"))
-
-                    // Calories badge
-                    if meal.isTaken && meal.calories > 0 {
-                        CalorieBadgeView(calories: meal.calories, style: .compact)
-                    }
+                // Food name
+                if let food = meal.foodType {
+                    Text(food.displayName)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.textSecondary)
+                        .lineLimit(1)
+                } else {
+                    Text("Tap to log")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.textSecondary.opacity(0.7))
                 }
             }
+            
+            Spacer()
+            
+            // Status and Time and Image
+            HStack(spacing: 8) {
+                VStack(alignment: .trailing, spacing: 4) {
+                    // Status badge
+                    Text(meal.isTaken ? "Logged" : "Not Logged")
+                        .font(.system(size: 11, weight: .bold))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .foregroundStyle(meal.isTaken ? Color.homeGreen : mealBadgeTextColor(meal: meal))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(meal.isTaken ? Color.homeGreen.opacity(0.12) : mealBadgeBgColor(meal: meal))
+                        )
+
+                    // Time / Calories
+                    if meal.isTaken && meal.calories > 0 {
+                        Text("\(Int(meal.calories)) kcal")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(Color.textPrimary)
+                    } else {
+                        Text("\(meal.time) \(meal.meridian)")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color.textSecondary)
+                    }
+                }
+                
+                // 3D Bowl Image
+                Image(mealImageName(meal: meal))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 52, height: 52)
+            }
         }
-        .padding(12)
-        .background(Color("cardBackground"))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(colorScheme == .dark ? Color(white: 0.12) : Color.cardIvory)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .shadow(color: .black.opacity(colorScheme == .dark ? 0.2 : 0.03), radius: 8, x: 0, y: 4)
+    }
+    
+    // MARK: - Meal Helpers
+    
+    private func mealIconBgColor(meal: Meal) -> Color {
+        switch meal.mealType {
+        case .breakfast:
+            return Color.homeYellow.opacity(0.15)
+        case .lunch:
+            return Color.orange.opacity(0.15)
+        case .dinner:
+            return Color.homePurple.opacity(0.15)
+        }
+    }
+    
+    private func mealIconColor(meal: Meal) -> Color {
+        switch meal.mealType {
+        case .breakfast:
+            return Color.homeYellow
+        case .lunch:
+            return Color.orange
+        case .dinner:
+            return Color.homePurple
+        }
+    }
+    
+    private func mealBadgeTextColor(meal: Meal) -> Color {
+        switch meal.mealType {
+        case .breakfast, .lunch:
+            return .orange
+        case .dinner:
+            return Color.homePurple
+        }
+    }
+    
+    private func mealBadgeBgColor(meal: Meal) -> Color {
+        switch meal.mealType {
+        case .breakfast, .lunch:
+            return Color.orange.opacity(0.1)
+        case .dinner:
+            return Color.homePurple.opacity(0.1)
+        }
+    }
+    
+    private func mealImageName(meal: Meal) -> String {
+        switch meal.mealType {
+        case .breakfast:
+            return "bowl_pink"
+        case .lunch:
+            return "bowl_yellow"
+        case .dinner:
+            return "bowl_blue"
+        }
     }
 
     /// Visual guidance: green for recommended, amber for over-allocation
