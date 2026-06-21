@@ -83,7 +83,7 @@ struct FullTimelineView: View {
                     HealthTimelineView(events: filteredEvents, limit: nil)
                 }
                 .padding(16)
-                .background(Color.white)
+                .background(Color.cardIvory)
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
                 .overlay(

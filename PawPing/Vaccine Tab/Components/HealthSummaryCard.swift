@@ -28,7 +28,7 @@ struct HealthSummaryCard: View {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(hex: "F8F6FF") ?? .purple.opacity(0.05))
+                .fill(Color.dynamicColor(lightHex: "F8F6FF", darkHex: "2C2244"))
                 .overlay(
                     ZStack(alignment: .topTrailing) {
                         Color.clear

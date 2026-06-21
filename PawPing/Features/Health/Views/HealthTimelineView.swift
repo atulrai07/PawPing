@@ -95,7 +95,7 @@ struct TimelineRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.title)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                    .foregroundStyle(Color.textPrimary)
                 
                 Text(event.subtitle)
                     .font(.system(size: 13))

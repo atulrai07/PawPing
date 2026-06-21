@@ -79,7 +79,7 @@ struct HealthView: View {
                                 HStack {
                                     Text("Health Timeline")
                                         .font(.system(size: 18, weight: .bold))
-                                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                                        .foregroundStyle(Color.textPrimary)
                                     
                                     Spacer()
                                     
@@ -101,7 +101,7 @@ struct HealthView: View {
                                     HealthTimelineView(events: timelineEvents, limit: 5)
                                 }
                                 .padding(16)
-                                .background(Color.white)
+                                .background(Color.cardIvory)
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
                                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
                                 .overlay(
@@ -115,7 +115,7 @@ struct HealthView: View {
                         }
                         .padding(.top, 16)
                     }
-                    .background(Color.white)
+                    .background(Color.clear)
                     .task(id: petId) {
                         await store.fetchVaccines(for: petId)
                         await medicationStore.fetchMedications(for: petId)
@@ -136,7 +136,7 @@ struct HealthView: View {
                         showAddRecord = true
                     }
                 },
-                backgroundColor: .white
+                backgroundColor: .clear
             )
             .sheet(isPresented: $showAddRecord) {
                 if let petId = petStore.activePetId {
@@ -171,7 +171,7 @@ struct HealthView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Active Medications")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                    .foregroundStyle(Color.textPrimary)
                 
                 Text("\(medicationStore.activeMedicationsCount) Active")
                     .font(.system(size: 13, weight: .medium))
@@ -185,7 +185,7 @@ struct HealthView: View {
                 .font(.system(size: 14, weight: .semibold))
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color.cardIvory)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
