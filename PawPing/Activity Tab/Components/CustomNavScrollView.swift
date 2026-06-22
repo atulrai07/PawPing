@@ -78,6 +78,7 @@ private struct StickyNavHeader: View {
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(Color("secondaryText"))
                         }
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .popover(isPresented: $showPetSwitcher) {
@@ -263,7 +264,10 @@ private struct CustomNavigationScrollModifier: ViewModifier {
             }
         }
         .coordinateSpace(.named("_customNavScroll"))
-        .background(backgroundColor)
+        .background(
+            LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+        )
         .toolbar(.hidden, for: .navigationBar)
         .overlay(alignment: .top) {
             StickyNavHeader(

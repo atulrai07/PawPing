@@ -2,6 +2,8 @@
 //  ResetPasswordView.swift
 //  PawPing
 //
+//  Created by Antigravity on 2026-06-21.
+//
 
 import SwiftUI
 import Supabase
@@ -9,6 +11,7 @@ import Supabase
 struct ResetPasswordView: View {
     @Binding var path: NavigationPath
     let email: String
+    let code: String
     
     @Environment(AuthStore.self) var authStore
     
@@ -117,11 +120,11 @@ struct ResetPasswordView: View {
         
         Task {
             do {
-                try await SupabaseConfig.client.auth.update(user: .init(password: password))
+                try await authStore.resetPassword(email: email, code: code, newPassword: password)
                 // Pop back to root (Login)
                 path.removeLast(path.count)
             } catch {
-                errorMessage = "Failed to reset password."
+                errorMessage = error.localizedDescription
             }
             isLoading = false
         }
@@ -130,6 +133,6 @@ struct ResetPasswordView: View {
 
 #Preview {
     @Previewable @State var path = NavigationPath()
-    ResetPasswordView(path: $path, email: "test@example.com")
+    ResetPasswordView(path: $path, email: "test@example.com", code: "123456")
         .environment(AuthStore())
 }

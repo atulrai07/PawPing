@@ -24,8 +24,8 @@ class MedicationStore {
         medications.filter { $0.petId == petId }
     }
     
-    var activeMedicationsCount: Int {
-        medications.filter { $0.status == .active }.count
+    func activeMedicationsCount(for petId: UUID) -> Int {
+        medications.filter { $0.petId == petId && $0.status == .active }.count
     }
     
     // MARK: - Supabase Fetching

@@ -9,8 +9,8 @@ enum AuthRoute: Hashable {
     case login
     case signup
     case forgotPassword
-    case otp(email: String, isReset: Bool)
-    case resetPassword(email: String)
+    case otp(email: String, name: String = "", password: String = "", isReset: Bool)
+    case resetPassword(email: String, code: String)
 }
 
 struct AuthFlowView: View {
@@ -27,10 +27,10 @@ struct AuthFlowView: View {
                         SignupView(path: $navigationPath)
                     case .forgotPassword:
                         ForgotPasswordView(path: $navigationPath)
-                    case .otp(let email, let isReset):
-                        OTPVerificationView(path: $navigationPath, email: email, isReset: isReset)
-                    case .resetPassword(let email):
-                        ResetPasswordView(path: $navigationPath, email: email)
+                    case .otp(let email, let name, let password, let isReset):
+                        OTPVerificationView(path: $navigationPath, email: email, name: name, password: password, isReset: isReset)
+                    case .resetPassword(let email, let code):
+                        ResetPasswordView(path: $navigationPath, email: email, code: code)
                     }
                 }
         }

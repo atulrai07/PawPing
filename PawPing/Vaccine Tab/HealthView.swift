@@ -18,17 +18,24 @@ struct HealthView: View {
 
     // MARK: Derived collections
 
-    var upcomingRecords: [HealthRecord] { store.healthRecords.filter { $0.status == .upcoming } }
+    var upcomingRecords: [HealthRecord] { 
+        store.healthRecords.filter { record in
+            if record.status == .upcoming, let nextDose = record.nextDoseDate {
+                let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: nextDose).day ?? 0
+                return daysUntil <= 30
+            }
+            return false
+        } 
+    }
     var overdueRecords:  [HealthRecord] { store.healthRecords.filter { $0.status == .overdue  } }
     var doneRecords:     [HealthRecord] { store.healthRecords.filter { $0.status == .done     } }
     
     var timelineEvents: [TimelineEvent] {
-        guard let petId = petStore.activePetId else { return [] }
+        guard petStore.activePetId != nil else { return [] }
         
-        let healthEvents = store.records(for: petId).map { TimelineEvent(from: $0) }
-        let medEvents = medicationStore.medications(for: petId).map { TimelineEvent(from: $0) }
+        let healthEvents = doneRecords.map { TimelineEvent(from: $0) }
         
-        return (healthEvents + medEvents).sorted { $0.eventDate > $1.eventDate }
+        return healthEvents.sorted { $0.eventDate > $1.eventDate }
     }
 
     var body: some View {
@@ -39,94 +46,76 @@ struct HealthView: View {
                         VStack(spacing: 32) {
                             
                             // 1. Protection Summary Card
-                            HealthSummaryCard(summary: store.summary, petName: petName)
+                            HealthSummaryCard(summary: store.summary)
                                 .padding(.horizontal, 20)
 
-                            // 2. Dynamic Hero Card OR Empty State
-                            if store.healthRecords.isEmpty {
-                                emptyOnboardingState(petName: petName)
-                                    .padding(.horizontal, 20)
-                            } else {
-                                VaccineHeroCard(petName: petName, overdueRecords: overdueRecords, upcomingRecords: upcomingRecords)
-                                    .padding(.horizontal, 20)
-                            }
-                            
-                            // 3. Vaccine Journey Timeline
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Vaccine Journey")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
-                                    
-                                    Spacer()
-                                    
-                                    if timelineEvents.count > 4 {
-                                        NavigationLink {
-                                            FullTimelineView(events: timelineEvents)
-                                        } label: {
-                                            Text("See All")
-                                                .font(.system(size: 15, weight: .semibold))
-                                                .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                                .padding(.horizontal, 20)
-
-                                HealthTimelineView(events: timelineEvents, limit: nil)
-                            }
-
-                            // 4. Active Medications Card
+                            // 2. Active Medications Card
                             NavigationLink(destination: MedicationListView()) {
                                 activeMedicationsCard()
                             }
                             .buttonStyle(.plain)
                             .padding(.horizontal, 20)
 
-                            // 5. Vaccine History Section
-                            if !doneRecords.isEmpty {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    HStack {
-                                        Text("Vaccine History")
-                                            .font(.system(size: 18, weight: .bold))
-                                            .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
-                                        
-                                        Spacer()
-                                        
-                                        if doneRecords.count > 3 {
-                                            NavigationLink {
-                                                FullTimelineView(events: timelineEvents) // Using existing timeline view for now
-                                            } label: {
-                                                Text("See All")
-                                                    .font(.system(size: 15, weight: .semibold))
-                                                    .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
-                                            }
-                                            .buttonStyle(.plain)
-                                        }
-                                    }
+                            // 3. Dynamic Hero Card OR Empty State
+                            if store.healthRecords.isEmpty {
+                                emptyOnboardingState(petName: petName)
                                     .padding(.horizontal, 20)
-                                    
-                                    VStack(spacing: 12) {
-                                        ForEach(Array(doneRecords.sorted { $0.dateGiven > $1.dateGiven }.prefix(3))) { record in
-                                            NavigationLink(destination: HealthRecordDetailView(record: record)) {
-                                                historyRow(record: record)
-                                            }
-                                            .buttonStyle(.plain)
-                                        }
+                            } else {
+                                Button {
+                                    if let overdue = overdueRecords.sorted(by: { ($0.nextDoseDate ?? Date.distantFuture) < ($1.nextDoseDate ?? Date.distantFuture) }).first {
+                                        recordToComplete = overdue
+                                    } else if let upcoming = upcomingRecords.sorted(by: { ($0.nextDoseDate ?? Date.distantFuture) < ($1.nextDoseDate ?? Date.distantFuture) }).first {
+                                        recordToComplete = upcoming
                                     }
-                                    .padding(.horizontal, 20)
+                                } label: {
+                                    VaccineHeroCard(petName: petName, overdueRecords: overdueRecords, upcomingRecords: upcomingRecords)
                                 }
-                            } else if !store.healthRecords.isEmpty {
-                                // Educational Empty State for History
-                                emptyHistoryState()
-                                    .padding(.horizontal, 20)
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 20)
+                            }
+                            
+                            // 4. Health Timeline
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Health Timeline")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundStyle(Color.textPrimary)
+                                    
+                                    Spacer()
+                                    
+                                    NavigationLink {
+                                        FullTimelineView(events: timelineEvents)
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Text("See All")
+                                            Image(systemName: "chevron.right")
+                                        }
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                .padding(.horizontal, 20)
+
+                                VStack(spacing: 0) {
+                                    HealthTimelineView(events: timelineEvents, limit: 5)
+                                }
+                                .padding(16)
+                                .background(Color.cardIvory)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+                                )
+                                .padding(.horizontal, 20)
                             }
 
                             Spacer(minLength: 80)
                         }
                         .padding(.top, 16)
                     }
-                    .background(Color.white)
+                    .background(Color.clear)
                     .task(id: petId) {
                         await store.fetchVaccines(for: petId)
                         await medicationStore.fetchMedications(for: petId)
@@ -147,7 +136,7 @@ struct HealthView: View {
                         showAddRecord = true
                     }
                 },
-                backgroundColor: .white
+                backgroundColor: .clear
             )
             .sheet(isPresented: $showAddRecord) {
                 if let petId = petStore.activePetId {
@@ -169,24 +158,29 @@ struct HealthView: View {
     // MARK: - Components
 
     private func activeMedicationsCard() -> some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 44, height: 44)
-                
-                Image(systemName: "pills.fill")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
-            }
+        let activeCount = if let petId = petStore.activePetId {
+            medicationStore.activeMedicationsCount(for: petId)
+        } else {
+            0
+        }
+        
+        return HStack(spacing: 16) {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.orange.opacity(0.15))
+                .frame(width: 54, height: 54)
+                .overlay(
+                    Image(systemName: "pills.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.orange)
+                )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Active Medications")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                    .foregroundStyle(Color.textPrimary)
                 
-                Text("\(medicationStore.activeMedicationsCount) Active")
-                    .font(.system(size: 13))
+                Text("\(activeCount) Active")
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.gray)
             }
             
@@ -196,17 +190,10 @@ struct HealthView: View {
                 .foregroundStyle(.gray)
                 .font(.system(size: 14, weight: .semibold))
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-        )
+        .padding(16)
+        .background(Color.cardIvory)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 
     private func historyRow(record: HealthRecord) -> some View {
@@ -322,6 +309,8 @@ struct HealthView: View {
         )
     }
 }
+
+
 
 #Preview {
     HealthView()

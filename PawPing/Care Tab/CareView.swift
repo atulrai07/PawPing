@@ -49,7 +49,7 @@ struct CareView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 searchBarSection
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 16)
                     .padding(.bottom, 24)
                     .padding(.top, 16)
                 
@@ -64,7 +64,7 @@ struct CareView: View {
                     .padding(.horizontal, 24)
             }
             .padding(.bottom, 80)
-            .background(Color.white.ignoresSafeArea())
+            // Background handled by CustomNavScrollView
             .customNavigationScroll(
                 title: "Find",
                 petStore: petStore,
@@ -72,7 +72,7 @@ struct CareView: View {
                     await petStore.fetchPets()
                     store.requestLocationAndFetch()
                 },
-                backgroundColor: .white
+                backgroundColor: .clear
             )
             .sheet(item: $selectedLocation) { location in
                 VetClinicDetails(item: location)
@@ -96,27 +96,26 @@ struct CareView: View {
 
     // MARK: - Subviews
 
-    // Removed headerSection because we are using customNavigationScroll
-
     private var searchBarSection: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
-                .font(.system(size: 22))
+                .foregroundColor(Color(UIColor.systemGray2))
             
-            TextField("Search clinics, services, doctors...", text: $searchText)
-                .font(.system(size: 18))
-                .foregroundColor(.black)
+            TextField("Search clinics, services...", text: $searchText)
+                .font(.system(size: 17))
+                .foregroundColor(.primary)
+            
+            if !searchText.isEmpty {
+                Button(action: { searchText = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(Color(UIColor.systemGray2))
+                }
+            }
         }
-        .padding(.horizontal, 20)
-        .frame(height: 60)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 30))
-        .overlay(
-            RoundedRectangle(cornerRadius: 30)
-                .stroke(Color(hex: "E6E0F8") ?? .purple.opacity(0.3), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
+        .background(Color(UIColor.systemGray6))
+        .cornerRadius(10)
     }
 
     private var categorySelectorSection: some View {
@@ -137,10 +136,10 @@ struct CareView: View {
                             
                             Text(category.rawValue)
                                 .font(.system(size: 13, weight: .bold))
-                                .foregroundColor(isSelected ? Color(hex: "6E54D7") ?? .purple : .init(white: 0.2))
+                                .foregroundColor(isSelected ? Color(hex: "6E54D7") ?? .purple : .textSecondary)
                         }
                         .frame(width: 80, height: 90)
-                        .background(isSelected ? (Color(hex: "F3F0FF") ?? .purple.opacity(0.1)) : Color.white)
+                        .background(isSelected ? Color.heroLavenderStart : Color.cardIvory)
                         .clipShape(RoundedRectangle(cornerRadius: 24))
                         .overlay(
                             RoundedRectangle(cornerRadius: 24)
@@ -167,7 +166,7 @@ struct CareView: View {
                     Circle()
                         .fill(Color(hex: "6E54D7") ?? .purple)
                         .frame(width: 16, height: 16)
-                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                        .overlay(Circle().stroke(Color.cardIvory, lineWidth: 2))
                 }
             }
 
@@ -209,36 +208,11 @@ struct CareView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(Color.white)
+                .background(Color.cardIvory)
                 .clipShape(Capsule())
                 .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
                 Spacer()
-                
-                // View on Map Action
-                Button {
-                    if let userCoord = store.lastLocation?.coordinate {
-                        withAnimation {
-                            position = .region(MKCoordinateRegion(
-                                center: userCoord,
-                                latitudinalMeters: 10000,
-                                longitudinalMeters: 10000
-                            ))
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("View on Map")
-                            .font(.system(size: 14, weight: .medium))
-                        Image(systemName: "arrow.up.right")
-                    }
-                    .foregroundColor(Color(hex: "6E54D7") ?? .purple)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color.white)
-                    .clipShape(Capsule())
-                    .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                }
             }
             .padding(16)
         }
@@ -249,7 +223,7 @@ struct CareView: View {
             HStack {
                 Text(selectedCareType == .all ? "Nearby Pet Services" : "Top \(selectedCareType.rawValue) Near You")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.black)
+                    .foregroundColor(.textPrimary)
                 
                 Spacer()
             }

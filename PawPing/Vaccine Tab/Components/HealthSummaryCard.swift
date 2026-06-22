@@ -10,76 +10,39 @@ import SwiftUI
 
 struct HealthSummaryCard: View {
     let summary: HealthSummary
-    let petName: String
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Top Content
-            HStack(alignment: .center, spacing: 12) {
-                // Large Shield
-                ZStack {
-                    Image(systemName: "shield.fill")
-                        .font(.system(size: 50))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [Color(hex: "8A72F6") ?? .purple, Color(hex: "6E54D7") ?? .purple],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                    
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(.white)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(petName) is Protected")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
-                    
-                    Text("Great job! You're keeping\n\(petName) healthy and safe.")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.gray)
-                        .lineSpacing(2)
-                }
-                
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 16)
+        HStack(spacing: 0) {
+            summaryColumn(title: "Completed", count: summary.doneCount, color: .green)
             
-            // Bottom Metrics
-            HStack(spacing: 0) {
-                summaryColumn(title: "Completed", count: summary.doneCount, color: .green)
-                
-                Divider()
-                    .frame(height: 24)
-                
-                summaryColumn(title: "Upcoming", count: summary.upcomingCount, color: Color(hex: "6E54D7") ?? .purple)
-                
-                Divider()
-                    .frame(height: 24)
-                
-                summaryColumn(title: "Overdue", count: summary.overdueCount, color: .red)
-            }
-            .padding(.bottom, 16)
+            Divider()
+                .frame(height: 24)
+            
+            summaryColumn(title: "Upcoming", count: summary.upcomingCount, color: Color(hex: "6E54D7") ?? .purple)
+            
+            Divider()
+                .frame(height: 24)
+            
+            summaryColumn(title: "Overdue", count: summary.overdueCount, color: .red)
         }
+        .padding(.vertical, 16)
         .background(
-            ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(hex: "F8F6FF") ?? .purple.opacity(0.05))
-                
-                // Decorative Paw Print
-                Image(systemName: "pawprint.fill")
-                    .font(.system(size: 90))
-                    .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
-                    .opacity(0.06)
-                    .rotationEffect(.degrees(15))
-                    .offset(x: 20, y: -10)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.dynamicColor(lightHex: "F8F6FF", darkHex: "2C2244"))
+                .overlay(
+                    ZStack(alignment: .topTrailing) {
+                        Color.clear
+                        
+                        // Decorative Paw Print
+                        Image(systemName: "pawprint.fill")
+                            .font(.system(size: 90))
+                            .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                            .opacity(0.06)
+                            .rotationEffect(.degrees(15))
+                            .offset(x: 20, y: -10)
+                    }
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 20))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20)
@@ -103,6 +66,6 @@ struct HealthSummaryCard: View {
 }
 
 #Preview {
-    HealthSummaryCard(summary: HealthSummary.sample, petName: "Luna")
+    HealthSummaryCard(summary: HealthSummary.sample)
         .padding()
 }

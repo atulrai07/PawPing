@@ -54,7 +54,7 @@ struct SimpleCareCardView: View {
                 // Title
                 Text(item.name)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(Color.textPrimary)
                     .lineLimit(1)
                 
                 // Tags Row
@@ -120,7 +120,7 @@ struct SimpleCareCardView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white)
+                .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         )
         .overlay(

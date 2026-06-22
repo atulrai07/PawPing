@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ActivityView: View {
     @Environment(ActivityStore.self) var store
@@ -21,6 +22,10 @@ struct ActivityView: View {
     @State private var showDistanceSummary = false
     @State private var showDietChat = false
     @State private var showEmergencyGuide = false
+    @State private var showMemoriesGallery = false
+    
+    @State private var showMealLogSheet = false
+    @State private var selectedMealType: MealType = .breakfast
 
     var body: some View {
         NavigationStack {
@@ -36,12 +41,13 @@ struct ActivityView: View {
                     VStack(spacing: 24) {
                         heroSection
                         mealsSection
-                        quickActionsSection
-                        highlightsSection
+                        emergencyActionSection
+                        recentMemoriesSection
+                        walkGraphsSection
                     }
                     .padding(.top, 16)
                     .padding(.bottom, 80)
-                    .background(Color.white)
+                    .background(.clear)
                     .customNavigationScroll(
                         title: "Home",
                         petStore: petStore,
@@ -53,7 +59,7 @@ struct ActivityView: View {
                                 await medicationStore.fetchMedications(for: activeId)
                             }
                         },
-                        backgroundColor: .white
+                        backgroundColor: .clear
                     )
                     .navigationDestination(isPresented: $showMealsLog) {
                         MealLogView(store: store)
@@ -63,6 +69,13 @@ struct ActivityView: View {
                     }
                     .navigationDestination(isPresented: $showEmergencyGuide) {
                         EmergencyGuideView()
+                    }
+                    .navigationDestination(isPresented: $showMemoriesGallery) {
+                        MemoriesGalleryView()
+                    }
+                    .sheet(isPresented: $showMealLogSheet) {
+                        MealLoggingSheet(store: store, mealType: selectedMealType, logDate: Date(), isReadOnly: false)
+                            .presentationDetents([.height(570), .large])
                     }
                 }
             }
@@ -92,7 +105,7 @@ struct ActivityView: View {
                     HStack(spacing: 8) {
                         Text("Today's Walk")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                     }
                     
                     HStack(alignment: .lastTextBaseline, spacing: 4) {
@@ -102,7 +115,7 @@ struct ActivityView: View {
                         
                         Text("/\(store.walkActivity.goalMinutes) min")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                     }
                     
                     // Progress Bar
@@ -113,7 +126,7 @@ struct ActivityView: View {
                                 .frame(height: 8) // Slightly thicker
                             
                             let rawProgress = CGFloat(store.liveWalkedMinutes) / CGFloat(max(store.walkActivity.goalMinutes, 1))
-                            let progress = min(max(rawProgress, 0.15), 1.0) // Show at least 15% progress visually
+                            let progress = min(max(rawProgress, 0.0), 1.0)
                             Capsule()
                                 .fill(Color.homePurple)
                                 .frame(width: geo.size.width * progress, height: 8)
@@ -155,11 +168,16 @@ struct ActivityView: View {
 
     // MARK: - Meals Section
     private var mealsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        let todayMeals = store.getMeals(for: Date())
+        let b = todayMeals.first(where: { $0.mealType == .breakfast })
+        let l = todayMeals.first(where: { $0.mealType == .lunch })
+        let d = todayMeals.first(where: { $0.mealType == .dinner })
+        
+        return VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Meals")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                 
                 Spacer()
                 
@@ -168,72 +186,478 @@ struct ActivityView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                 }
             }
             .padding(.horizontal)
             
             HStack(spacing: 12) {
-                MealCardView(title: "Breakfast", time: "8:00 AM", iconName: "sun.max.fill", iconColor: .homeYellow, imageName: "bowl_pink", isCompleted: true) {
-                    showMealsLog = true
+                MealCardView(
+                    title: "Breakfast", 
+                    time: b?.isTaken == true ? "\(b!.time) \(b!.meridian)" : "8:00 AM", 
+                    iconName: "sun.max.fill", 
+                    iconColor: .homeYellow, 
+                    imageName: "bowl_pink", 
+                    isCompleted: b?.isTaken ?? false
+                ) {
+                    selectedMealType = .breakfast
+                    showMealLogSheet = true
                 }
-                MealCardView(title: "Lunch", time: "12:30 PM", iconName: "sun.min.fill", iconColor: .orange, imageName: "bowl_yellow", isCompleted: false) {
-                    showMealsLog = true
+                MealCardView(
+                    title: "Lunch", 
+                    time: l?.isTaken == true ? "\(l!.time) \(l!.meridian)" : "12:30 PM", 
+                    iconName: "sun.min.fill", 
+                    iconColor: .orange, 
+                    imageName: "bowl_yellow", 
+                    isCompleted: l?.isTaken ?? false
+                ) {
+                    selectedMealType = .lunch
+                    showMealLogSheet = true
                 }
-                MealCardView(title: "Dinner", time: "8:30 PM", iconName: "moon.fill", iconColor: .homePurple, imageName: "bowl_blue", isCompleted: false) {
-                    showMealsLog = true
+                MealCardView(
+                    title: "Dinner", 
+                    time: d?.isTaken == true ? "\(d!.time) \(d!.meridian)" : "8:30 PM", 
+                    iconName: "moon.fill", 
+                    iconColor: .homePurple, 
+                    imageName: "bowl_blue", 
+                    isCompleted: d?.isTaken ?? false
+                ) {
+                    selectedMealType = .dinner
+                    showMealLogSheet = true
                 }
             }
             .padding(.horizontal)
         }
     }
 
-    // MARK: - Quick Actions Section
-    private var quickActionsSection: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-            QuickActionView(title: "Health", subtitle: "Checkups & stats", iconName: "heart.text.square.fill", iconColor: .red) {
-                // Navigate to Health
-            }
-            QuickActionView(title: "Reminders", subtitle: "Medications & more", iconName: "calendar.badge.clock", iconColor: .homePurple) {
-                // Navigate to Reminders
-            }
-            QuickActionView(title: "Safety", subtitle: "Emergency help", iconName: "shield.fill", iconColor: .orange) {
-                showEmergencyGuide = true
-            }
-            QuickActionView(title: "Diary", subtitle: "Notes & moments", iconName: "book.closed.fill", iconColor: .teal) {
-                // Navigate to Diary
-            }
-        }
-        .padding(.horizontal)
-    }
-
-    // MARK: - Highlights Section
-    private var highlightsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("\(petStore.activePet?.name ?? "Your pet")'s Highlights")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+    // MARK: - Emergency Action Plan Section
+    private var emergencyActionSection: some View {
+        Button {
+            showEmergencyGuide = true
+        } label: {
+            HStack(spacing: 16) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.orange.opacity(0.15))
+                    .frame(width: 54, height: 54)
+                    .overlay(
+                        Image(systemName: "cross.case.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.orange)
+                    )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Emergency Guide")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.textPrimary)
+                    Text("Tap for immediate medical guidance")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.textSecondary)
+                }
                 
                 Spacer()
                 
-                HStack(spacing: 4) {
-                    Text("This week")
-                    Image(systemName: "chevron.down")
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            }
+            .padding(16)
+            .background(Color.cardIvory)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+            .padding(.horizontal)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Recent Memories Helpers & Section
+    
+    fileprivate enum HomeMemoryDisplayType {
+        case collage
+        case cards
+    }
+
+    fileprivate struct HomeGroupedMemory: Identifiable {
+        let id: String
+        let title: String
+        let description: String
+        let dateString: String
+        let imageURLs: [String]
+        let displayType: HomeMemoryDisplayType
+    }
+
+    private var groupedMemories: [HomeGroupedMemory] {
+        let calendar = Calendar.current
+        
+        let grouped = Dictionary(grouping: store.memories) { memory -> Date in
+            calendar.startOfDay(for: memory.createdAt)
+        }
+        
+        let sortedDates = grouped.keys.sorted(by: >)
+        var result: [HomeGroupedMemory] = []
+        
+        for (index, date) in sortedDates.enumerated() {
+            let memoriesForDate = grouped[date] ?? []
+            let urls = memoriesForDate.map { $0.imageUrl }
+            
+            let dateString: String
+            if calendar.isDateInToday(date) {
+                dateString = "Today"
+            } else if calendar.isDateInYesterday(date) {
+                dateString = "Yesterday"
+            } else {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MMM d, yyyy"
+                dateString = formatter.string(from: date)
+            }
+            
+            let displayType: HomeMemoryDisplayType = (index % 2 == 0) ? .collage : .cards
+            let petName = petStore.activePet?.name ?? "Pet"
+            let title = index == 0 ? "Central Park" : "\(petName)'s Adventure"
+            let description = index == 0 ? "Morning walk" : "Fun outdoor play"
+            
+            result.append(HomeGroupedMemory(
+                id: dateString,
+                title: title,
+                description: description,
+                dateString: dateString,
+                imageURLs: urls,
+                displayType: displayType
+            ))
+        }
+        
+        return result
+    }
+
+    private var recentMemoriesSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Recent Memories")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.textPrimary)
+                
+                Spacer()
+                
+                Button {
+                    showMemoriesGallery = true
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(Color(hex: "6E54D7") ?? .orange)
                 }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.homeTextGray)
             }
             .padding(.horizontal)
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                StatCardView(title: "Avg. Walk", value: "28", unit: "min", subtitle: "", iconName: "flame.fill", iconColor: .homeGreen, graphType: .line(Color.homeGreen))
-                StatCardView(title: "Weight", value: "24.5", unit: "kg", subtitle: "", iconName: "scalemass.fill", iconColor: .homePurple, graphType: .line(Color.homePurple))
-                StatCardView(title: "Hydration", value: "Great", unit: "", subtitle: "Keep it up!", iconName: "drop.fill", iconColor: .homeBlue, graphType: .bar(Color.homeBlue))
-                StatCardView(title: "Mood", value: "Happy", unit: "", subtitle: "Very active", iconName: "face.smiling.fill", iconColor: .homeYellow, graphType: .bar(Color.homeYellow))
+            GeometryReader { outerGeo in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    let items = groupedMemories
+                    if items.isEmpty {
+                        VStack(spacing: 8) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.system(size: 32))
+                                .foregroundColor(.gray.opacity(0.5))
+                            Text("No memories yet. Tap the arrow to add photos!")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 32)
+                        }
+                        .frame(width: max(outerGeo.size.width - 32, 0))
+                        .frame(height: 140)
+                    } else {
+                        HStack(spacing: 16) {
+                            ForEach(items) { memory in
+                                HomeMemoryCard(memory: memory)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
             }
-            .padding(.horizontal)
+            .frame(height: 140)
         }
+    }
+}
+
+// MARK: - Redesigned Memory Card View
+struct HomeMemoryCard: View {
+    fileprivate let memory: ActivityView.HomeGroupedMemory
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Left Side: Image/Collage/Card Stack area
+            Group {
+                if memory.imageURLs.isEmpty {
+                    VStack(spacing: 6) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 24))
+                            .foregroundColor(.gray.opacity(0.8))
+                        Text("No pic")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.gray.opacity(0.8))
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .background(colorScheme == .dark ? Color(white: 0.15) : (Color(hex: "F2F2F7") ?? Color(.systemGray6)))
+                } else if memory.displayType == .collage && memory.imageURLs.count >= 3 {
+                    // Collage Layout
+                    HStack(spacing: 2) {
+                        AsyncImage(url: URL(string: memory.imageURLs[0])) { image in
+                            image.resizable().scaledToFill()
+                        } placeholder: {
+                            Color.gray.opacity(0.1)
+                        }
+                        .frame(width: 80, height: 140)
+                        .clipped()
+                        
+                        VStack(spacing: 2) {
+                            AsyncImage(url: URL(string: memory.imageURLs[1])) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Color.gray.opacity(0.1)
+                            }
+                            .frame(width: 58, height: 69)
+                            .clipped()
+                            
+                            AsyncImage(url: URL(string: memory.imageURLs[2])) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Color.gray.opacity(0.1)
+                            }
+                            .frame(width: 58, height: 69)
+                            .clipped()
+                        }
+                    }
+                } else if memory.displayType == .cards && memory.imageURLs.count >= 2 {
+                    // Cards Stack Layout
+                    ZStack {
+                        Color.clear // Container boundaries
+                        
+                        ForEach(0..<min(memory.imageURLs.count, 3), id: \.self) { idx in
+                            AsyncImage(url: URL(string: memory.imageURLs[idx])) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Color.gray.opacity(0.1)
+                            }
+                            .frame(width: 105, height: 105)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
+                            .rotationEffect(.degrees(Double(idx - 1) * 8.0))
+                            .offset(x: CGFloat(idx - 1) * 8, y: CGFloat(idx - 1) * 2)
+                        }
+                    }
+                } else {
+                    // Fallback Single Image Layout
+                    AsyncImage(url: URL(string: memory.imageURLs[0])) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        Color.gray.opacity(0.1)
+                    }
+                    .frame(width: 140, height: 140)
+                    .clipped()
+                }
+            }
+            .frame(width: 140, height: 140)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            
+            // Right Side: Info Details
+            VStack(alignment: .leading, spacing: 6) {
+                Text(memory.dateString)
+                    .font(.system(size: 13))
+                    .foregroundColor(.textSecondary)
+                
+                Text(memory.title)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.textPrimary)
+                    .lineLimit(1)
+                
+                Text(memory.description)
+                    .font(.system(size: 13))
+                    .foregroundColor(.textSecondary)
+                    .lineLimit(1)
+                
+                Spacer(minLength: 0)
+                
+                HStack(spacing: 4) {
+                    Image(systemName: "photo.stack")
+                        .font(.system(size: 14))
+                    Text(memory.imageURLs.count > 0 ? "\(memory.imageURLs.count) photos" : "0 photos")
+                        .font(.system(size: 13, weight: .medium))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .bold))
+                }
+                .foregroundColor(.textPrimary.opacity(0.8))
+                .padding(.top, 4)
+            }
+            .frame(width: 130, alignment: .leading)
+            .padding(.vertical, 14)
+            .padding(.trailing, 14)
+        }
+        .frame(width: 296, height: 140)
+        .background(colorScheme == .dark ? Color(white: 0.12) : (Color(hex: "F8F9FB") ?? Color(.systemGray6)))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+}
+
+extension ActivityView {
+
+    // MARK: - Walk Summary Card
+    private var walkGraphsSection: some View {
+        NavigationLink(destination: DistanceSummaryView(store: store)) {
+            WalkSummaryCard(store: store)
+                .padding(.top, 8)
+                .padding(.horizontal)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Walk Summary Card View
+struct WalkSummaryCard: View {
+    var store: ActivityStore
+    @Environment(\.colorScheme) private var colorScheme
+
+    // Total distance this week
+    private var weeklyDistanceKm: Double {
+        store.distanceSummary.totalWeekDistance
+    }
+
+    // Number of walks this week (activities with distance > 0)
+    private var weeklyWalksCount: Int {
+        let calendar = Calendar.current
+        var comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        comps.weekday = 2
+        guard let monday = calendar.date(from: comps) else { return 0 }
+        let sunday = calendar.date(byAdding: .day, value: 6, to: monday) ?? Date()
+        return store.activities.filter { $0.date >= monday && $0.date <= sunday }.count
+    }
+
+    // Last week's total distance for % comparison
+    private var lastWeekDistanceKm: Double {
+        let calendar = Calendar.current
+        var comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        comps.weekday = 2
+        guard let thisMonday = calendar.date(from: comps),
+              let lastMonday = calendar.date(byAdding: .weekOfYear, value: -1, to: thisMonday),
+              let lastSunday = calendar.date(byAdding: .day, value: 6, to: lastMonday)
+        else { return 0 }
+        return store.activities
+            .filter { $0.date >= lastMonday && $0.date <= lastSunday }
+            .reduce(0) { $0 + $1.distanceInKm }
+    }
+
+    private var vsLastWeekPercent: Int {
+        guard lastWeekDistanceKm > 0 else { return 0 }
+        return Int(((weeklyDistanceKm - lastWeekDistanceKm) / lastWeekDistanceKm) * 100)
+    }
+
+    var body: some View {
+        let isDark = colorScheme == .dark
+        ZStack(alignment: .trailing) {
+            // Card background — same style as Emergency Guide & home cards
+            RoundedRectangle(cornerRadius: 24)
+                .fill(isDark ? Color(white: 0.13) : Color.cardIvory)
+                .shadow(color: .black.opacity(isDark ? 0.18 : 0.05), radius: 10, x: 0, y: 4)
+
+            // Dog illustration — right side, clipped by card
+            Image("walk_dog_illustration")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 145, height: 145)
+                .offset(x: 8, y: 10)
+                .clipped()
+
+            // Content
+            VStack(alignment: .leading, spacing: 14) {
+                // Header
+                HStack(spacing: 10) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.homePurple.opacity(isDark ? 0.25 : 0.12))
+                            .frame(width: 40, height: 40)
+                        Image(systemName: "figure.walk")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.homePurple)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Walk Summary")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.textPrimary)
+                        Text("This Week")
+                            .font(.system(size: 12))
+                            .foregroundColor(.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.textSecondary)
+                }
+
+                // Stats
+                HStack(alignment: .bottom, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text(String(format: "%.1f", weeklyDistanceKm))
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.homePurple)
+                            Text("km")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.homePurple)
+                                .padding(.bottom, 3)
+                        }
+                        Text("Total Distance")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.textSecondary)
+                    }
+
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 1.5, height: 38)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 6)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text("\(weeklyWalksCount)")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.homePurple)
+                            Text("walks")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.homePurple)
+                                .padding(.bottom, 3)
+                        }
+                        Text("Completed")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.textSecondary)
+                    }
+
+                    Spacer(minLength: 120) // reserve space for dog
+                }
+
+                // vs last week badge
+                let pct = vsLastWeekPercent
+                HStack(spacing: 5) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(.white)
+                        .frame(width: 22, height: 22)
+                        .background(Color.homePurple)
+                        .clipShape(Circle())
+                    Text(pct >= 0 ? "+\(pct)%" : "\(pct)%")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(pct >= 0 ? .homePurple : .red)
+                    Text("vs last week")
+                        .font(.system(size: 12))
+                        .foregroundColor(.textSecondary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(isDark ? Color(white: 0.2) : Color.white.opacity(0.8))
+                .clipShape(Capsule())
+            }
+            .padding(18)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 190)
     }
 }
 
@@ -255,12 +679,12 @@ struct MealCardView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.homeTextDark)
+                            .foregroundColor(.textPrimary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                         Text(time)
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.homeTextGray)
+                            .foregroundColor(.textSecondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }
@@ -268,7 +692,7 @@ struct MealCardView: View {
                     Spacer(minLength: 4)
                     
                     Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(isCompleted ? .homePurple : .homeTextGray.opacity(0.3))
+                        .foregroundColor(isCompleted ? .homePurple : .textSecondary.opacity(0.3))
                         .font(.system(size: 18))
                 }
                 
@@ -279,7 +703,7 @@ struct MealCardView: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity)
-            .background(Color.white)
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 3)
         }
@@ -309,12 +733,12 @@ struct QuickActionView: View {
                 VStack(spacing: 2) {
                     Text(title)
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.homeTextDark)
+                        .foregroundColor(.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Text(subtitle)
                         .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -323,7 +747,7 @@ struct QuickActionView: View {
             .padding(.vertical, 10)
             .padding(.horizontal, 4)
             .frame(maxWidth: .infinity)
-            .background(Color.white)
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
         }
@@ -353,7 +777,7 @@ struct StatCardView: View {
                     .font(.system(size: 10))
                 Text(title)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -361,13 +785,13 @@ struct StatCardView: View {
             HStack(alignment: .lastTextBaseline, spacing: 2) {
                 Text(value)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.homeTextDark)
+                    .foregroundColor(.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 if !unit.isEmpty {
                     Text(unit)
                         .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.homeTextGray)
+                        .foregroundColor(.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -375,7 +799,7 @@ struct StatCardView: View {
             if !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.system(size: 9, weight: .medium))
-                    .foregroundColor(.homeTextGray)
+                    .foregroundColor(.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -417,9 +841,218 @@ struct StatCardView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: 110)
-        .background(Color.white)
+        .background(Color.cardIvory)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+}
+
+// MARK: - Memories Gallery View
+struct MemoriesGalleryView: View {
+    @Environment(ActivityStore.self) var store
+    @Environment(PetStore.self) var petStore
+    
+    enum ImagePickerSource: String, Identifiable {
+        case camera, library
+        var id: String { rawValue }
+        var type: UIImagePickerController.SourceType {
+            self == .camera ? .camera : .photoLibrary
+        }
+    }
+    
+    @State private var activeImageSource: ImagePickerSource? = nil
+    @State private var pickedImage: UIImage? = nil
+    @State private var isUploading = false
+    @State private var selectedMemory: PetMemory? = nil
+    
+    let columns = [GridItem(.flexible()), GridItem(.flexible())]
+    
+    var body: some View {
+        ScrollView {
+            if store.memories.isEmpty && !isUploading {
+                VStack(spacing: 16) {
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.system(size: 40))
+                        .foregroundColor(.gray.opacity(0.5))
+                    Text("No memories yet.\nTap + to add some!")
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(.gray)
+                }
+                .padding(.top, 60)
+            } else {
+                LazyVGrid(columns: columns, spacing: 16) {
+                    if isUploading {
+                        VStack {
+                            ProgressView()
+                            Text("Uploading...")
+                                .font(.caption)
+                                .foregroundStyle(.gray)
+                        }
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 160, maxHeight: 160)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    
+                    ForEach(store.memories) { memory in
+                        if let url = URL(string: memory.imageUrl) {
+                            Button {
+                                selectedMemory = memory
+                            } label: {
+                                AsyncImage(url: url) { image in
+                                    image.resizable().scaledToFill()
+                                } placeholder: {
+                                    Color.gray.opacity(0.2)
+                                }
+                                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 160, maxHeight: 160)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                            }
+                            .buttonStyle(.plain)
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    withAnimation {
+                                        store.deleteMemory(id: memory.id)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding()
+            }
+        }
+        .navigationTitle("All Memories")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button {
+                        activeImageSource = .camera
+                    } label: {
+                        Label("Take Photo", systemImage: "camera")
+                    }
+                    
+                    Button {
+                        activeImageSource = .library
+                    } label: {
+                        Label("Choose from Library", systemImage: "photo.on.rectangle")
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(hex: "6E54D7") ?? .purple)
+                }
+                .disabled(isUploading)
+            }
+        }
+        .fullScreenCover(item: $activeImageSource) { source in
+            ImagePicker(selectedImage: $pickedImage, sourceType: source.type)
+                .ignoresSafeArea()
+        }
+        .fullScreenCover(item: $selectedMemory) { memory in
+            MemoryDetailView(memory: memory) {
+                store.deleteMemory(id: memory.id)
+                selectedMemory = nil
+            }
+        }
+        .onChange(of: pickedImage) { _, newImage in
+            if let newImage {
+                isUploading = true
+                Task {
+                    await store.addMemory(image: newImage, petStore: petStore)
+                    pickedImage = nil
+                    isUploading = false
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Memory Detail View
+
+struct MemoryDetailView: View {
+    @Environment(\.dismiss) var dismiss
+    let memory: PetMemory
+    let onDelete: () -> Void
+    
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            if let url = URL(string: memory.imageUrl) {
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        // Optional pinch-to-zoom could go here, but scaledToFit provides a great standard viewing experience
+                } placeholder: {
+                    ProgressView()
+                        .tint(.white)
+                }
+            }
+            
+            VStack {
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(Circle())
+                    }
+                    
+                    Spacer()
+                    
+                    if let url = URL(string: memory.imageUrl) {
+                        ShareLink(item: url) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(12)
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 16)
+                
+                Spacer()
+                
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Added on")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.7))
+                        Text(memory.createdAt, style: .date)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.red)
+                            .padding(12)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(Circle())
+                    }
+                }
+                .padding()
+                .background(
+                    LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top)
+                )
+            }
+        }
     }
 }
 

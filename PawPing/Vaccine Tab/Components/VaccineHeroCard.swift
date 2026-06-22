@@ -94,7 +94,7 @@ struct VaccineHeroCard: View {
                     
                     Text(recordName)
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                        .foregroundStyle(Color.textPrimary)
                         .lineLimit(1)
                     
                     if let recordDate {
@@ -143,7 +143,7 @@ struct VaccineHeroCard: View {
                     
                     Text(bottomMessage)
                         .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                        .foregroundStyle(Color.textPrimary)
                         .fontWeight(.medium)
                         .lineSpacing(2)
                 }
@@ -152,7 +152,7 @@ struct VaccineHeroCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white)
+                .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
         )
         .overlay(
