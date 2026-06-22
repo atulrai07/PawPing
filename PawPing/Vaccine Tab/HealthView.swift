@@ -86,12 +86,9 @@ struct HealthView: View {
                                     NavigationLink {
                                         FullTimelineView(events: timelineEvents)
                                     } label: {
-                                        HStack(spacing: 4) {
-                                            Text("See All")
-                                            Image(systemName: "chevron.right")
-                                        }
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -110,6 +107,12 @@ struct HealthView: View {
                                 )
                                 .padding(.horizontal, 20)
                             }
+
+                            // 5. Export Health Report
+                            ExportPassportButton {
+                                showReportConfig = true
+                            }
+                            .padding(.horizontal, 20)
 
                             Spacer(minLength: 80)
                         }

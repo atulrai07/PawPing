@@ -14,18 +14,25 @@ struct ExportPassportButton: View {
         Button {
             onExport()
         } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "arrow.down.to.line")
-                    .font(.system(size: 16, weight: .semibold))
+            HStack(spacing: 10) {
+                Image(systemName: "doc.text.below.ecg.fill")
+                    .font(.system(size: 16, weight: .bold))
                 
                 Text("Export Health Report")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 16, weight: .bold))
             }
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(Color("baseColor"))
-            .clipShape(Capsule())
+            .padding(.vertical, 16)
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "6E54D7") ?? .purple, Color(hex: "8F7CEF") ?? .purple],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: (Color(hex: "6E54D7") ?? .purple).opacity(0.3), radius: 8, x: 0, y: 4)
         }
     }
 }

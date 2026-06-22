@@ -282,24 +282,13 @@ struct MealLogView: View {
                         
                         Spacer()
                         
-                        // Image and chevron button
-                        ZStack(alignment: .trailing) {
-                            Image("diet_plan_illustration")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 90)
-                                .offset(x: 10, y: 5)
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(Color.homePurple)
-                                .frame(width: 28, height: 28)
-                                .background(isDark ? Color(white: 0.18) : Color.white)
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(isDark ? 0.3 : 0.1), radius: 4, x: 0, y: 2)
-                                .offset(x: 15)
-                        }
-                        .frame(width: 110, height: 80)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color.homePurple)
+                            .frame(width: 28, height: 28)
+                            .background(isDark ? Color(white: 0.18) : Color.white)
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(isDark ? 0.3 : 0.1), radius: 4, x: 0, y: 2)
                     }
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
@@ -424,14 +413,15 @@ struct MealLogView: View {
 
     private func mealCard(meal: Meal) -> some View {
         HStack(spacing: 14) {
-            // Icon
+            // Icon (Bowl Image instead of sun/moon)
             RoundedRectangle(cornerRadius: 16)
                 .fill(mealIconBgColor(meal: meal))
                 .frame(width: 52, height: 52)
                 .overlay(
-                    Image(systemName: meal.icon)
-                        .font(.system(size: 22))
-                        .foregroundStyle(mealIconColor(meal: meal))
+                    Image(mealImageName(meal: meal))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40, height: 40)
                 )
 
             // Info
@@ -440,9 +430,12 @@ struct MealLogView: View {
                     .font(.system(size: 17, weight: .bold))
                     .foregroundStyle(Color.textPrimary)
 
-                // Food name
+                // Food name + calories separated by centered dot
                 if let food = meal.foodType {
-                    Text(food.displayName)
+                    let foodText = meal.isTaken && meal.calories > 0
+                        ? "\(food.displayName) • \(Int(meal.calories)) kcal"
+                        : food.displayName
+                    Text(foodText)
                         .font(.system(size: 13))
                         .foregroundStyle(Color.textSecondary)
                         .lineLimit(1)
@@ -455,39 +448,25 @@ struct MealLogView: View {
             
             Spacer()
             
-            // Status and Time and Image
-            HStack(spacing: 8) {
-                VStack(alignment: .trailing, spacing: 4) {
-                    // Status badge
-                    Text(meal.isTaken ? "Logged" : "Not Logged")
-                        .font(.system(size: 11, weight: .bold))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .foregroundStyle(meal.isTaken ? Color.homeGreen : mealBadgeTextColor(meal: meal))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(meal.isTaken ? Color.homeGreen.opacity(0.12) : mealBadgeBgColor(meal: meal))
-                        )
+            // Status and Time (Bowl image removed from right)
+            VStack(alignment: .trailing, spacing: 4) {
+                // Status badge
+                Text(meal.isTaken ? "Logged" : "Not Logged")
+                    .font(.system(size: 11, weight: .bold))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .foregroundStyle(meal.isTaken ? Color.homeGreen : mealBadgeTextColor(meal: meal))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(meal.isTaken ? Color.homeGreen.opacity(0.12) : mealBadgeBgColor(meal: meal))
+                    )
 
-                    // Time / Calories
-                    if meal.isTaken && meal.calories > 0 {
-                        Text("\(Int(meal.calories)) kcal")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(Color.textPrimary)
-                    } else {
-                        Text("\(meal.time) \(meal.meridian)")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.textSecondary)
-                    }
-                }
-                
-                // 3D Bowl Image
-                Image(mealImageName(meal: meal))
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 52, height: 52)
+                // Time
+                Text("\(meal.time) \(meal.meridian)")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.textSecondary)
             }
         }
         .padding(.vertical, 12)
