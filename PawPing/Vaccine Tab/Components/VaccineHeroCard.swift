@@ -33,16 +33,15 @@ struct VaccineHeroCard: View {
         if let overdue = primaryOverdue {
             // Overdue State (Highest Priority)
             heroCardBase(
-                title: "Pending Vaccine",
+                title: "Vaccination Overdue",
                 subtitle: "Action Required",
                 recordName: overdue.name,
                 recordDate: overdue.nextDoseDate,
                 iconName: "exclamationmark.triangle.fill",
                 accentColor: .red,
-                bottomTitle: "Action Required",
-                bottomBody: "\(petName) has an overdue vaccine requiring attention.",
-                highlightValue: overdue.timeRemainingValue,
-                highlightLabel: overdue.timeRemainingUnit
+                bottomMessage: "\(petName) has an overdue vaccine requiring attention.",
+                highlightValue: overdue.timeRemainingText,
+                highlightLabel: "Past due"
             )
         } else if let upcoming = nearestUpcoming {
             // Upcoming Vaccine State (Within 30 days)
@@ -53,8 +52,7 @@ struct VaccineHeroCard: View {
                 recordDate: upcoming.nextDoseDate,
                 iconName: "syringe.fill",
                 accentColor: Color(hex: "8A72F6") ?? .purple,
-                bottomTitle: "Keep it up!",
-                bottomBody: "We'll remind you before it's due.",
+                bottomMessage: "Keep it up!\nWe'll remind you before\nit's due.",
                 highlightValue: upcoming.timeRemainingValue,
                 highlightLabel: upcoming.timeRemainingUnit
             )
@@ -67,8 +65,7 @@ struct VaccineHeroCard: View {
                 recordDate: nil,
                 iconName: "shield.fill",
                 accentColor: .green,
-                bottomTitle: "Great job!",
-                bottomBody: "keeping \(petName) healthy.",
+                bottomMessage: "Great job keeping \(petName) healthy.",
                 highlightValue: nil,
                 highlightLabel: nil
             )
@@ -83,34 +80,32 @@ struct VaccineHeroCard: View {
         recordDate: Date?,
         iconName: String,
         accentColor: Color,
-        bottomTitle: String,
-        bottomBody: String,
+        bottomMessage: String,
         highlightValue: String?,
         highlightLabel: String?
     ) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             // Top Section
-            HStack(alignment: .center) {
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(accentColor)
                     
                     Text(recordName)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(Color.textPrimary)
                         .lineLimit(1)
                     
                     if let recordDate {
                         HStack(spacing: 6) {
                             Image(systemName: "calendar")
                                 .font(.system(size: 13))
-                                .foregroundStyle(accentColor)
                             Text(recordDate.formatted(.dateTime.day().month(.wide).year()))
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(.gray)
+                                .font(.system(size: 13))
                         }
-                        .padding(.top, 2)
+                        .foregroundStyle(.gray)
+                        .padding(.top, 4)
                     }
                 }
                 
@@ -118,63 +113,50 @@ struct VaccineHeroCard: View {
                 
                 ZStack {
                     Circle()
-                        .fill(accentColor.opacity(0.5))
-                        .frame(width: 56, height: 56)
+                        .fill(accentColor.opacity(0.8))
+                        .frame(width: 48, height: 48)
                     
                     Image(systemName: iconName)
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.system(size: 24))
                         .foregroundStyle(.white)
                         .rotationEffect(.degrees(iconName == "syringe.fill" ? -45 : 0))
                 }
             }
             
             // Bottom Section (Countdown & Message)
-            if highlightValue != nil || !bottomTitle.isEmpty || !bottomBody.isEmpty {
-                Divider()
-                    .foregroundStyle(Color.gray.opacity(0.15))
-                    .padding(.vertical, 2)
-                
+            if highlightValue != nil || !bottomMessage.isEmpty {
                 HStack(spacing: 24) {
                     if let highlightValue, let highlightLabel {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(highlightValue)
-                                .font(.system(size: 28, weight: .bold))
+                                .font(.system(size: 28, weight: .medium))
                                 .foregroundStyle(accentColor)
                             
                             Text(highlightLabel)
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.system(size: 12))
                                 .foregroundStyle(.gray)
                         }
                         
                         Divider()
-                            .frame(height: 38)
-                            .foregroundStyle(Color.gray.opacity(0.15))
+                            .frame(height: 36)
                     }
                     
-                    VStack(alignment: .leading, spacing: 2) {
-                        if !bottomTitle.isEmpty {
-                            Text(bottomTitle)
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(Color(hex: "1C1B1F") ?? .black)
-                        }
-                        if !bottomBody.isEmpty {
-                            Text(bottomBody)
-                                .font(.system(size: 13))
-                                .foregroundStyle(.gray)
-                                .lineSpacing(2)
-                        }
-                    }
+                    Text(bottomMessage)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.textPrimary)
+                        .fontWeight(.medium)
+                        .lineSpacing(2)
                 }
             }
         }
-        .padding(20)
+        .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white)
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 24)
+            RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.gray.opacity(0.1), lineWidth: 1)
         )
     }

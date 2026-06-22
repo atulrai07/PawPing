@@ -79,8 +79,19 @@ struct FullTimelineView: View {
                     .padding(.top, 8)
                 }
                 
-                HealthTimelineView(events: filteredEvents, limit: nil)
-                    .padding()
+                VStack(spacing: 0) {
+                    HealthTimelineView(events: filteredEvents, limit: nil)
+                }
+                .padding(16)
+                .background(Color.cardIvory)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
         }
         .background(Color("baseBackground"))

@@ -194,7 +194,10 @@ struct SignupView: View {
         
         Task {
             do {
-                try await authStore.signup(name: name, email: email, password: password)
+                // Send custom OTP code first
+                try await authStore.sendOTP(email: email, purpose: "signup")
+                // Navigate to OTP view, passing name and password for after verification login
+                path.append(AuthRoute.otp(email: email, name: name, password: password, isReset: false))
             } catch {
                 errorMessage = error.localizedDescription
             }
