@@ -90,9 +90,11 @@ struct HealthReportPreviewView: View {
     private var reportHeader: some View {
         VStack(spacing: 8) {
             Image("Pawping_logo")
+                .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
                 .frame(height: 50)
+                .foregroundStyle(Color("baseColor"))
             
             Text("Health Report")
                 .font(.title2)

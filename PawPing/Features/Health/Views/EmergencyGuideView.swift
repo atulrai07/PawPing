@@ -21,7 +21,10 @@ struct EmergencyGuideView: View {
                 sopList
             }
         }
-        .background(Color("baseBackground"))
+        .background(
+            LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+        )
         .navigationTitle("Emergency Guide")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -96,8 +99,9 @@ struct EmergencyGuideView: View {
                             }
                         }
                     }
-                    .background(Color("cardBackground"))
+                    .background(Color.cardIvory)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
                     .padding(.horizontal)
                 }
             } else {
@@ -127,8 +131,9 @@ struct EmergencyGuideView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(Color("cardBackground"))
+                    .background(Color.cardIvory)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
                     .padding(.horizontal)
                 }
             }
@@ -186,8 +191,9 @@ struct EmergencyGuideView: View {
                     }
                 }
             }
-            .background(Color("cardBackground"))
+            .background(Color.cardIvory)
             .clipShape(RoundedRectangle(cornerRadius: 24))
+            .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
             .padding(.horizontal)
         }
     }

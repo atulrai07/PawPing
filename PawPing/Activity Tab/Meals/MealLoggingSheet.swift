@@ -222,13 +222,12 @@ struct MealLoggingSheet: View {
                 dismiss()
             } label: {
                 Circle()
-                    .fill(Color("cardBackground"))
+                    .fill(Color(.systemGray6))
                     .frame(width: 36, height: 36)
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
                     .overlay(
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(Color(hex: "6E54D7") ?? .purple)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.secondary)
                     )
             }
         }

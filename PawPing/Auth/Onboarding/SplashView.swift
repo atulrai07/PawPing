@@ -5,7 +5,7 @@ struct SplashView: View {
     
     var body: some View {
         ZStack {
-            Color.white
+            Color("baseBackground")
                 .ignoresSafeArea()
             
             // Top Right Corner Watermark
@@ -16,7 +16,8 @@ struct SplashView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 280)
-                        .opacity(0.4) // Subtle watermark style
+                        .colorMultiply(Color("baseColor"))
+                        .opacity(0.8) // Clear watermark style
                         .offset(x: 20, y: -20)
                 }
                 Spacer()
@@ -31,7 +32,8 @@ struct SplashView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 300)
-                        .opacity(0.4) // Subtle watermark style
+                        .colorMultiply(Color("baseColor"))
+                        .opacity(0.8) // Clear watermark style
                         .offset(x: -90, y: 60)
                     Spacer()
                 }
@@ -40,9 +42,11 @@ struct SplashView: View {
             
             // Center Logo
             Image("Pawping_logo")
+                .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 260)
+                .foregroundStyle(Color("baseColor"))
         }
         .task {
             try? await Task.sleep(for: .seconds(1.5))
