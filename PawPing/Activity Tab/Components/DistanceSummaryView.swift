@@ -203,12 +203,6 @@ struct DistanceSummaryView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 100, height: 100)
-                        .background(
-                            Circle()
-                                .fill(Color.homePurple.opacity(isDark ? 0.15 : 0.06))
-                                .frame(width: 110, height: 110)
-                                .blur(radius: 2)
-                        )
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 8)
@@ -298,7 +292,7 @@ struct DistanceSummaryView: View {
                                 .frame(width: 36, height: 36)
                             Image(systemName: "trophy.fill")
                                 .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.yellow)
                         }
                         
                         let bestDay = bestDayOfMonth
@@ -312,10 +306,6 @@ struct DistanceSummaryView: View {
                         }
                         
                         Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
@@ -393,39 +383,27 @@ struct DistanceSummaryView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.textPrimary)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(isDark ? Color(white: 0.16) : .white)
-                            .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
-                    )
-                    .contentShape(Circle())
-                    .onTapGesture {
-                        dismiss()
-                    }
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.primary)
+                }
             }
             ToolbarItem(placement: .principal) {
                 Text("Distance")
                     .font(.system(size: 17, weight: .bold))
-                    .foregroundColor(.textPrimary)
+                    .foregroundColor(.primary)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.textPrimary)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(isDark ? Color(white: 0.16) : .white)
-                            .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
-                    )
-                    .contentShape(Circle())
-                    .onTapGesture {
-                        showCalendar = true
-                    }
+                Button {
+                    showCalendar = true
+                } label: {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.primary)
+                }
             }
         }
         .sheet(isPresented: $showCalendar) {
