@@ -11,81 +11,120 @@ struct VaccineHeroCard: View {
     let petName: String
     let overdueRecords: [HealthRecord]
     let upcomingRecords: [HealthRecord]
+    var onTapRecord: ((HealthRecord) -> Void)? = nil
     
-    // Nearest upcoming vaccine within 30 days
-    private var nearestUpcoming: HealthRecord? {
-        let upcoming = upcomingRecords.sorted { ($0.nextDoseDate ?? Date()) < ($1.nextDoseDate ?? Date()) }
-        if let first = upcoming.first, let nextDate = first.nextDoseDate {
-            let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: nextDate).day ?? 0
-            if daysUntil <= 30 {
-                return first
-            }
-        }
-        return nil
+    struct HeroCardItem: Identifiable {
+        let id: String
+        let title: String
+        let recordName: String
+        let recordDate: Date?
+        let iconName: String
+        let accentColor: Color
+        let bottomMessage: String
+        let associatedRecord: HealthRecord?
     }
     
-    // Highest priority overdue vaccine
-    private var primaryOverdue: HealthRecord? {
-        return overdueRecords.sorted { ($0.nextDoseDate ?? Date()) < ($1.nextDoseDate ?? Date()) }.first
-    }
-    
-    var body: some View {
-        if let overdue = primaryOverdue {
-            // Overdue State (Highest Priority)
-            heroCardBase(
+    private var cardItems: [HeroCardItem] {
+        var items: [HeroCardItem] = []
+        
+        // 1. Overdue records sorted by date
+        let sortedOverdue = overdueRecords.sorted { ($0.nextDoseDate ?? Date()) < ($1.nextDoseDate ?? Date()) }
+        for record in sortedOverdue {
+            items.append(HeroCardItem(
+                id: record.id.uuidString,
                 title: "Overdue",
-                recordName: overdue.name,
-                recordDate: overdue.nextDoseDate,
+                recordName: record.name,
+                recordDate: record.nextDoseDate,
                 iconName: "syringe.fill",
                 accentColor: .red,
-                bottomMessage: "Please schedule this vaccine as soon as possible."
-            )
-        } else if let upcoming = nearestUpcoming {
-            // Upcoming Vaccine State (Within 30 days)
-            heroCardBase(
+                bottomMessage: "Please schedule this vaccine as soon as possible.",
+                associatedRecord: record
+            ))
+        }
+        
+        // 2. Upcoming records sorted by date
+        let sortedUpcoming = upcomingRecords.sorted { ($0.nextDoseDate ?? Date()) < ($1.nextDoseDate ?? Date()) }
+        for record in sortedUpcoming {
+            items.append(HeroCardItem(
+                id: record.id.uuidString,
                 title: "Upcoming",
-                recordName: upcoming.name,
-                recordDate: upcoming.nextDoseDate,
+                recordName: record.name,
+                recordDate: record.nextDoseDate,
                 iconName: "syringe.fill",
                 accentColor: Color.homePurple,
-                bottomMessage: "Keep it up! We'll remind you before it's due."
-            )
-        } else {
-            // Protected State (Default Experience)
-            heroCardBase(
+                bottomMessage: "Keep it up! We'll remind you before it's due.",
+                associatedRecord: record
+            ))
+        }
+        
+        // 3. Fallback to Protected if empty
+        if items.isEmpty {
+            items.append(HeroCardItem(
+                id: "protected",
                 title: "Protected",
                 recordName: "All Caught Up!",
                 recordDate: nil,
                 iconName: "shield.fill",
                 accentColor: .green,
-                bottomMessage: "Great job keeping \(petName) healthy."
-            )
+                bottomMessage: "Great job keeping \(petName) healthy.",
+                associatedRecord: nil
+            ))
+        }
+        
+        return items
+    }
+    
+    var body: some View {
+        let items = cardItems
+        if items.count > 1 {
+            TabView {
+                ForEach(items) { item in
+                    Button {
+                        if let record = item.associatedRecord {
+                            onTapRecord?(record)
+                        }
+                    } label: {
+                        heroCardBase(item: item)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 4)
+                    .padding(.bottom, 36) // space for page indicators
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            .frame(height: 190)
+            .onAppear {
+                UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.homePurple)
+                UIPageControl.appearance().pageIndicatorTintColor = UIColor.gray.withAlphaComponent(0.3)
+            }
+        } else if let first = items.first {
+            Button {
+                if let record = first.associatedRecord {
+                    onTapRecord?(record)
+                }
+            } label: {
+                heroCardBase(item: first)
+            }
+            .buttonStyle(.plain)
         }
     }
     
     @ViewBuilder
-    private func heroCardBase(
-        title: String,
-        recordName: String,
-        recordDate: Date?,
-        iconName: String,
-        accentColor: Color,
-        bottomMessage: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+    private func heroCardBase(item: HeroCardItem) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
             // Top Section
             HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(title)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.title)
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(accentColor)
+                        .foregroundStyle(item.accentColor)
                     
-                    Text(recordName)
+                    Text(item.recordName)
                         .font(.system(size: 22, weight: .bold))
                         .foregroundStyle(Color.textPrimary)
                         .lineLimit(1)
                     
-                    if let recordDate {
+                    if let recordDate = item.recordDate {
                         HStack(spacing: 6) {
                             Image(systemName: "calendar")
                                 .font(.system(size: 13))
@@ -94,6 +133,8 @@ struct VaccineHeroCard: View {
                         }
                         .foregroundStyle(.gray)
                         .padding(.top, 2)
+                    } else {
+                        Color.clear.frame(height: 18)
                     }
                 }
                 
@@ -101,28 +142,33 @@ struct VaccineHeroCard: View {
                 
                 ZStack {
                     Circle()
-                        .fill(accentColor)
+                        .fill(item.accentColor)
                         .frame(width: 56, height: 56)
                     
-                    Image(systemName: iconName)
+                    Image(systemName: item.iconName)
                         .font(.system(size: 26))
                         .foregroundStyle(.white)
-                        .rotationEffect(.degrees(iconName == "syringe.fill" ? -45 : 0))
+                        .rotationEffect(.degrees(item.iconName == "syringe.fill" ? -45 : 0))
                 }
             }
             
-            if !bottomMessage.isEmpty {
+            Spacer(minLength: 0)
+            
+            if !item.bottomMessage.isEmpty {
                 Divider()
                     .background(Color.gray.opacity(0.1))
+                    .padding(.vertical, 10)
                 
-                Text(bottomMessage)
-                    .font(.system(size: 14))
+                Text(item.bottomMessage)
+                    .font(.system(size: 13))
                     .foregroundStyle(Color.textPrimary)
                     .fontWeight(.medium)
-                    .lineSpacing(2)
+                    .lineLimit(2)
             }
         }
-        .padding(20)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .frame(height: 154)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color.cardIvory)

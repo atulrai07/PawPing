@@ -131,53 +131,63 @@ struct MealLoggingSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                headerSection
-                
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 24) {
-                        bannerCard
-                        
-                        foodTypeSection
-                            .padding(.horizontal)
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 24) {
+                    bannerCard
+                    
+                    foodTypeSection
+                        .padding(.horizontal)
 
-                        // Food-specific UI (Multi-ingredient for Custom, Quantity Selector for Standard) and calorie details
-                        if let food = selectedFood {
-                            VStack(spacing: 24) {
-                                if food.isEstimateOnly {
-                                    multiIngredientSection
-                                        .padding(.horizontal)
-                                } else {
-                                    QuantitySelectorView(selected: $selectedQuantity, unit: store.mealDietStore.unitFor(food: food))
-                                        .padding(.horizontal)
-                                }
-                                
-                                if calculatedCalories > 0 {
-                                    caloriePreview
-                                        .padding(.horizontal)
-                                }
-                                
-                                timePickerSection
+                    // Food-specific UI (Multi-ingredient for Custom, Quantity Selector for Standard) and calorie details
+                    if let food = selectedFood {
+                        VStack(spacing: 24) {
+                            if food.isEstimateOnly {
+                                multiIngredientSection
                                     .padding(.horizontal)
-                                
-                                if food.isEstimateOnly {
-                                    saveCustomButton
-                                } else {
-                                    saveStandardButton
-                                }
+                            } else {
+                                QuantitySelectorView(selected: $selectedQuantity, unit: store.mealDietStore.unitFor(food: food))
+                                    .padding(.horizontal)
                             }
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                            
+                            if calculatedCalories > 0 {
+                                caloriePreview
+                                    .padding(.horizontal)
+                            }
+                            
+                            timePickerSection
+                                .padding(.horizontal)
+                            
+                            if food.isEstimateOnly {
+                                saveCustomButton
+                            } else {
+                                saveStandardButton
+                            }
                         }
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
-                    .padding(.vertical, 8)
-                    .padding(.bottom, 40)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedFood)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: calculatedCalories)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: ingredients.count)
+                }
+                .padding(.vertical, 8)
+                .padding(.bottom, 40)
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedFood)
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: calculatedCalories)
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: ingredients.count)
+            }
+            .background(Color(uiColor: .systemBackground))
+            .navigationTitle(isReadOnly ? "\(mealType.rawValue) Details" : "Log \(mealType.rawValue)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .background(Color("baseBackground"))
-            .toolbar(.hidden, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showIngredientSearch) {
                 IngredientSearchSheet(store: store) { ingredient in
                     ingredients.append(ingredient)

@@ -42,74 +42,72 @@ struct VetClinicDetails: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 // MARK: - Header
-                VStack(spacing: 8) {
-                    ZStack(alignment: .top) {
-                        // Header Action Buttons
-                        HStack {
-                            // Bookmark / Save Button
-                            Button {
-                                Task {
-                                    await petStore.toggleSaveVet(
-                                        name: item.name,
-                                        address: item.address ?? "",
-                                        phone: item.phone ?? "",
-                                        latitude: item.latitude,
-                                        longitude: item.longitude
-                                    )
-                                }
-                            } label: {
-                                Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .foregroundStyle(isSaved ? Color("baseColor") : .primary)
-                                    .frame(width: 36, height: 36)
-                                    .background(Color(.systemGray6))
-                                    .clipShape(Circle())
-                            }
+                ZStack(alignment: .center) {
+                    // Center Titles
+                    VStack(spacing: 6) {
+                        Text(item.name)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(.primary)
+                            .multilineTextAlignment(.center)
+                        
+                        HStack(spacing: 8) {
+                            Text(item.displayCategoryName)
+                                .font(.system(size: 14))
+                                .foregroundStyle(.gray)
                             
-                            Spacer()
+                            Text("•")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.gray)
                             
-                            // Close Button
-                            Button {
-                                dismiss()
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .foregroundStyle(.primary)
-                                    .frame(width: 36, height: 36)
-                                    .background(Color(.systemGray6))
-                                    .clipShape(Circle())
+                            HStack(spacing: 4) {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                                
+                                Text("\(mockRating)")
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(.gray)
                             }
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 48)
+                    
+                    // Buttons Row
+                    HStack {
+                        // Bookmark / Save Button
+                        Button {
+                            Task {
+                                await petStore.toggleSaveVet(
+                                    name: item.name,
+                                    address: item.address ?? "",
+                                    phone: item.phone ?? "",
+                                    latitude: item.latitude,
+                                    longitude: item.longitude
+                                )
+                            }
+                        } label: {
+                            Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(isSaved ? Color("baseColor") : .primary)
+                                .frame(width: 36, height: 36)
+                                .background(Color(.systemGray6))
+                                .clipShape(Circle())
                         }
                         
-                        // Center Titles
-                        VStack(spacing: 6) {
-                            Text(item.name)
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundStyle(.primary)
-                                .multilineTextAlignment(.center)
-                            
-                            HStack(spacing: 8) {
-                                Text(item.displayCategoryName)
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(.gray)
-                                
-                                Text("•")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(.gray)
-                                
-                                HStack(spacing: 4) {
-                                    Image(systemName: "star.fill")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
-                                    
-                                    Text("\(mockRating)")
-                                        .font(.system(size: 14))
-                                        .foregroundStyle(.gray)
-                                }
-                            }
+                        Spacer()
+                        
+                        // Close / Dismiss Button
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 36, height: 36)
+                                .background(Color(.systemGray6))
+                                .clipShape(Circle())
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 60)
                     }
                 }
                 .padding(.top, 24)

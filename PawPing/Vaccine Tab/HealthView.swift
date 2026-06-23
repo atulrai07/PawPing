@@ -43,7 +43,7 @@ struct HealthView: View {
             Group {
                 if let petId = petStore.activePetId, let petName = petStore.activePet?.name {
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: 32) {
+                        VStack(spacing: 24) {
                             
                             // 1. Protection Summary Card
                             HealthSummaryCard(summary: store.summary)
@@ -61,16 +61,14 @@ struct HealthView: View {
                                 emptyOnboardingState(petName: petName)
                                     .padding(.horizontal, 20)
                             } else {
-                                Button {
-                                    if let overdue = overdueRecords.sorted(by: { ($0.nextDoseDate ?? Date.distantFuture) < ($1.nextDoseDate ?? Date.distantFuture) }).first {
-                                        recordToComplete = overdue
-                                    } else if let upcoming = upcomingRecords.sorted(by: { ($0.nextDoseDate ?? Date.distantFuture) < ($1.nextDoseDate ?? Date.distantFuture) }).first {
-                                        recordToComplete = upcoming
+                                VaccineHeroCard(
+                                    petName: petName,
+                                    overdueRecords: overdueRecords,
+                                    upcomingRecords: upcomingRecords,
+                                    onTapRecord: { record in
+                                        recordToComplete = record
                                     }
-                                } label: {
-                                    VaccineHeroCard(petName: petName, overdueRecords: overdueRecords, upcomingRecords: upcomingRecords)
-                                }
-                                .buttonStyle(.plain)
+                                )
                                 .padding(.horizontal, 20)
                             }
                             

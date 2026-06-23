@@ -766,12 +766,6 @@ struct MemoryDetailView: View {
                         
                         Spacer()
                         
-                        Text("\(min(currentImageIndex + 1, urls.count)) of \(urls.count)")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                        
-                        Spacer()
-                        
                         HStack(spacing: 12) {
                             if !urls.isEmpty, let shareUrl = URL(string: urls[min(currentImageIndex, urls.count - 1)]) {
                                 ShareLink(item: shareUrl) {
