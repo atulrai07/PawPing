@@ -102,7 +102,7 @@ struct VetClinicDetails: View {
                                         .font(.system(size: 12))
                                         .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
                                     
-                                    Text("\(mockRating) (\(mockReviews) reviews)")
+                                    Text("\(mockRating)")
                                         .font(.system(size: 14))
                                         .foregroundStyle(.gray)
                                 }

@@ -141,10 +141,6 @@ struct CareView: View {
                         .frame(width: 80, height: 90)
                         .background(isSelected ? Color.heroLavenderStart : Color.cardIvory)
                         .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(isSelected ? (Color(hex: "E6E0F8") ?? .purple.opacity(0.3)) : Color.gray.opacity(0.2), lineWidth: 1)
-                        )
                     }
                     .buttonStyle(.plain)
                 }

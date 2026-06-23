@@ -80,8 +80,9 @@ struct CompleteVaccineSheet: View {
                         showingVetSearch = true
                     } label: {
                         Label("Select from Map", systemImage: "map.fill")
-                            .foregroundStyle(.pawPrimary)
+                            .foregroundStyle(Color("baseColor"))
                     }
+                    .buttonStyle(.plain)
                     
                     TextField("Clinic/Vet Name", text: $vetName)
                     TextField("Address", text: $vetAddress)
@@ -89,6 +90,7 @@ struct CompleteVaccineSheet: View {
                         .keyboardType(.phonePad)
                 }
             }
+            .tint(Color("baseColor"))
             .navigationTitle("Complete Vaccine")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -135,6 +137,7 @@ struct CompleteVaccineSheet: View {
                 updateNextDoseDate()
             }
         }
+        .tint(Color("baseColor"))
     }
     
     // MARK: - Helpers

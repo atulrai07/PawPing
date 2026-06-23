@@ -123,10 +123,6 @@ struct SimpleCareCardView: View {
                 .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-        )
     }
 }
 

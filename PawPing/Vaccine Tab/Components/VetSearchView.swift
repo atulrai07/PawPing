@@ -90,7 +90,7 @@ struct VetSearchView: View {
                                                 Text(phone)
                                                     .font(.system(size: 14, weight: .medium))
                                             }
-                                            .foregroundStyle(.blue)
+                                            .foregroundStyle(Color("baseColor"))
                                             .padding(.top, 2)
                                         }
                                         
@@ -123,6 +123,7 @@ struct VetSearchView: View {
                 viewModel.performSearch()
             }
         }
+        .tint(Color("baseColor"))
     }
 }
 

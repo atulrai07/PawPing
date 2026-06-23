@@ -157,6 +157,7 @@ struct EditPetView: View {
                     }
                 }
             }
+            .tint(Color("baseColor"))
             .navigationTitle("Edit Pet")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -189,6 +190,7 @@ struct EditPetView: View {
                 }
             }
         }
+        .tint(Color("baseColor"))
     }
     
     private func saveChanges() {

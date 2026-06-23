@@ -87,8 +87,8 @@ struct HealthView: View {
                                         FullTimelineView(events: timelineEvents)
                                     } label: {
                                         Image(systemName: "chevron.right")
-                                            .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundStyle(.secondary)
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -97,13 +97,11 @@ struct HealthView: View {
                                 VStack(spacing: 0) {
                                     HealthTimelineView(events: timelineEvents, limit: 5)
                                 }
-                                .padding(16)
-                                .background(Color.cardIvory)
-                                .clipShape(RoundedRectangle(cornerRadius: 24))
-                                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
-                                .overlay(
+                                .padding(20)
+                                .background(
                                     RoundedRectangle(cornerRadius: 24)
-                                        .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+                                        .fill(Color.cardIvory)
+                                        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
                                 )
                                 .padding(.horizontal, 20)
                             }
@@ -144,6 +142,7 @@ struct HealthView: View {
             .sheet(isPresented: $showAddRecord) {
                 if let petId = petStore.activePetId {
                     AddHealthRecordView(petId: petId)
+                        .tint(Color("baseColor"))
                 }
             }
             .sheet(isPresented: $showReportConfig) {
@@ -151,9 +150,11 @@ struct HealthView: View {
                     .environment(store)
                     .environment(petStore)
                     .environment(appState)
+                    .tint(Color("baseColor"))
             }
             .sheet(item: $recordToComplete) { record in
                 CompleteVaccineSheet(originalRecord: record)
+                    .tint(Color("baseColor"))
             }
         }
     }
@@ -190,8 +191,8 @@ struct HealthView: View {
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundStyle(.gray)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.secondary)
         }
         .padding(16)
         .background(Color.cardIvory)
@@ -228,18 +229,14 @@ struct HealthView: View {
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundStyle(.gray)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.secondary)
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color.white)
                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.gray.opacity(0.1), lineWidth: 1)
         )
     }
 
@@ -283,10 +280,6 @@ struct HealthView: View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(Color.white)
                 .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 32)
-                .stroke(Color.gray.opacity(0.1), lineWidth: 1)
         )
     }
 

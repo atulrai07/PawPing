@@ -247,10 +247,6 @@ struct DistanceSummaryView: View {
                         .fill(isDark ? Color(white: 0.16) : Color.white)
                         .shadow(color: .black.opacity(isDark ? 0.15 : 0.03), radius: 6, x: 0, y: 3)
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(isDark ? Color(white: 0.22) : Color.textPrimary.opacity(0.06), lineWidth: 1)
-                )
                 .padding(.horizontal)
                 
                 // MARK: - Chart Card
@@ -536,10 +532,6 @@ struct DistanceStatCardView: View {
             RoundedRectangle(cornerRadius: 18)
                 .fill(isDark ? Color(white: 0.13) : Color.cardIvory)
                 .shadow(color: .black.opacity(isDark ? 0.15 : 0.03), radius: 6, x: 0, y: 3)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(isDark ? Color(white: 0.2) : Color.textPrimary.opacity(0.05), lineWidth: 1)
         )
     }
 }

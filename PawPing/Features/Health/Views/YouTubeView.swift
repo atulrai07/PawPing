@@ -99,10 +99,6 @@ struct VideoTutorialCard: View {
                 .background(Color("cardBackground"))
             }
             .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(accentColor.opacity(0.15), lineWidth: 1)
-            )
             .shadow(color: .black.opacity(0.08), radius: 6, y: 3)
         }
         .buttonStyle(ScaleButtonStyle())

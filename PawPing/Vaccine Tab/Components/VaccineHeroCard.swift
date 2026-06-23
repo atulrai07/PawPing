@@ -107,7 +107,7 @@ struct VaccineHeroCard: View {
                     Image(systemName: iconName)
                         .font(.system(size: 26))
                         .foregroundStyle(.white)
-                        // Removed the -45 degrees rotation to keep it pointing straight vertical/down
+                        .rotationEffect(.degrees(iconName == "syringe.fill" ? -45 : 0))
                 }
             }
             
@@ -127,10 +127,6 @@ struct VaccineHeroCard: View {
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color.cardIvory)
                 .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.gray.opacity(0.12), lineWidth: 1.5)
         )
     }
 }

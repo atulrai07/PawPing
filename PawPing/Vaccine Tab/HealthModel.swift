@@ -53,6 +53,7 @@ struct HealthRecord: Identifiable, Codable, Equatable {
     var vetPhone: String?
     var vetLatitude: Double?
     var vetLongitude: Double?
+    var imageUrl: String? // URL for vaccine report / certificate photo
 
     enum CodingKeys: String, CodingKey {
         case id, type, name, notes
@@ -65,6 +66,7 @@ struct HealthRecord: Identifiable, Codable, Equatable {
         case vetPhone = "vet_phone"
         case vetLatitude = "vet_latitude"
         case vetLongitude = "vet_longitude"
+        case imageUrl = "image_url"
     }
 
     // MARK: - Computed Properties
@@ -145,7 +147,8 @@ struct HealthRecord: Identifiable, Codable, Equatable {
             nextDoseDate: Calendar.current.date(byAdding: .weekOfYear, value: 3, to: Date()),
             notes: "",
             vetName: "PupiLife Pet Clinic",
-            vetAddress: "Saket, New Delhi"
+            vetAddress: "Saket, New Delhi",
+            imageUrl: nil
         ),
         HealthRecord(
             id: UUID(),
@@ -154,7 +157,8 @@ struct HealthRecord: Identifiable, Codable, Equatable {
             name: "Broad Spectrum",
             dateGiven: Calendar.current.date(byAdding: .month, value: -1, to: Date())!,
             nextDoseDate: Calendar.current.date(byAdding: .month, value: 2, to: Date()),
-            notes: ""
+            notes: "",
+            imageUrl: nil
         )
     ]
 }
