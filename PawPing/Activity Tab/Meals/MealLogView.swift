@@ -126,7 +126,7 @@ struct MealLogView: View {
         }
         .sheet(isPresented: $showMealSheet) {
             MealLoggingSheet(store: store, mealType: selectedMealType, logDate: selectedDate, isReadOnly: !isToday)
-                .presentationDetents([.height(570), .large])
+                .presentationDetents([.large])
         }
         .sheet(isPresented: $showDatePicker) {
             NavigationStack {

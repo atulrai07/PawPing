@@ -83,7 +83,24 @@ struct DistanceSummaryView: View {
     }
     
     private var daysMeetingGoal: Int {
-        currentWeekData.filter { $0.distanceInKm >= 2.0 }.count
+        let calendar = Calendar.current
+        let goalMins = store.walkActivity.goalMinutes
+        guard goalMins > 0 else { return 0 }
+        
+        var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        components.weekday = 2
+        guard let monday = calendar.date(from: components) else { return 0 }
+        let sunday = calendar.date(byAdding: .day, value: 6, to: monday) ?? Date()
+        
+        let thisWeekActivities = store.activities.filter { $0.date >= monday && $0.date <= sunday }
+        let groupedByDay = Dictionary(grouping: thisWeekActivities) { activity in
+            calendar.startOfDay(for: activity.date)
+        }
+        
+        return groupedByDay.values.filter { activities in
+            let totalMins = activities.reduce(0) { $0 + $1.durationMinutes }
+            return totalMins >= goalMins
+        }.count
     }
     
     private var bestDayOfMonth: (dateLabel: String, distance: Double) {
@@ -93,7 +110,7 @@ struct DistanceSummaryView: View {
             formatter.dateFormat = "MMM d"
             return (formatter.string(from: best.date), best.distanceInKm)
         }
-        return ("Jun 14", 4.6)
+        return ("—", 0.0)
     }
     
     // Bottom grid values (Week)
@@ -102,12 +119,12 @@ struct DistanceSummaryView: View {
         if let best = sorted.first, best.distanceInKm > 0 {
             return (best.distanceInKm, best.dayLabel)
         }
-        return (2.6, "Sat")
+        return (0.0, "—")
     }
     
     private var avgDistancePerWalkWeek: Double {
         let validWalks = currentWeekData.filter { $0.distanceInKm > 0 }
-        guard !validWalks.isEmpty else { return 1.5 }
+        guard !validWalks.isEmpty else { return 0.0 }
         let total = validWalks.reduce(0.0) { $0 + $1.distanceInKm }
         return total / Double(validWalks.count)
     }
@@ -123,7 +140,7 @@ struct DistanceSummaryView: View {
     
     private var avgDistancePerWalkMonth: Double {
         let validWalks = currentMonthData.filter { $0.distanceInKm > 0 }
-        guard !validWalks.isEmpty else { return 1.2 }
+        guard !validWalks.isEmpty else { return 0.0 }
         let total = validWalks.reduce(0.0) { $0 + $1.distanceInKm }
         return total / Double(validWalks.count)
     }
@@ -132,11 +149,11 @@ struct DistanceSummaryView: View {
         let calendar = Calendar.current
         let today = Date()
         guard let firstOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) else {
-            return "3h 21m"
+            return "0h 0m"
         }
         let monthActivities = store.activities.filter { $0.date >= firstOfMonth && $0.date <= today }
         let totalMinutes = monthActivities.reduce(0) { $0 + $1.durationMinutes }
-        guard totalMinutes > 0 else { return "3h 21m" }
+        guard totalMinutes > 0 else { return "0h 0m" }
         let hours = totalMinutes / 60
         let minutes = totalMinutes % 60
         return "\(hours)h \(minutes)m"
@@ -213,9 +230,9 @@ struct DistanceSummaryView: View {
                 let absPercent = abs(percent)
                 let direction = percent >= 0 ? "more" : "less"
                 HStack {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Image(systemName: percent >= 0 ? "chart.line.uptrend.xyaxis" : "chart.line.downtrend.xyaxis")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.homePurple)
+                        .foregroundColor(percent >= 0 ? .homePurple : .red)
                     
                     Text("\(absPercent)% \(direction) than last \(labelType)")
                         .font(.system(size: 13, weight: .semibold))
@@ -264,8 +281,9 @@ struct DistanceSummaryView: View {
                                 .foregroundColor(.white)
                         }
                         
-                        let goalDays = daysMeetingGoal > 0 ? daysMeetingGoal : 4
-                        Text("Great job!\nTommy met the goal on \(goalDays) days this week.")
+                        let goalDays = daysMeetingGoal
+                        let petName = store.activePet?.name ?? "Tommy"
+                        Text(goalDays > 0 ? "Great job!\n\(petName) met the goal on \(goalDays) days this week." : "Keep it up!\n\(petName) has not met the daily goal yet this week.")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.white)
                             .lineSpacing(2)
@@ -349,7 +367,7 @@ struct DistanceSummaryView: View {
                     } else {
                         // Box 1: Total Walks
                         DistanceStatCardView(
-                            iconName: "figure.walk",
+                            iconName: "dog.fill",
                             iconColor: Color.blue,
                             title: "Total Walks",
                             value: "\(totalWalksMonth)",

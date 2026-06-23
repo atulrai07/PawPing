@@ -88,7 +88,7 @@ struct ActivityView: View {
                     }
                     .sheet(isPresented: $showMealLogSheet) {
                         MealLoggingSheet(store: store, mealType: selectedMealType, logDate: Date(), isReadOnly: false)
-                            .presentationDetents([.height(570), .large])
+                            .presentationDetents([.large])
                     }
                 }
             }

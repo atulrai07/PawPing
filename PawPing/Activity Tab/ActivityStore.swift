@@ -223,12 +223,10 @@ class ActivityStore {
                 syncTask = Task {
                     do {
                         let payload = PetAppStateUpload(pet_id: petId, activity_data: jsonString)
-                        // Use update instead of upsert to perform a partial update (PATCH)
-                        // this prevents overwriting the meal_diet_data column.
+                        // Use upsert to create the row if it doesn't exist, updating only activity_data if it does
                         try await SupabaseConfig.client
                             .from("pet_app_state")
-                            .update(payload)
-                            .eq("pet_id", value: petId.uuidString)
+                            .upsert(payload)
                             .execute()
                     } catch {
                         print("  Failed to sync activity state to Supabase: \(error)")
