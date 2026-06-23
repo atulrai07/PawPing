@@ -141,6 +141,7 @@ struct CareView: View {
                         .frame(width: 80, height: 90)
                         .background(isSelected ? Color.heroLavenderStart : Color.cardIvory)
                         .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .shadow(color: Color.black.opacity(isSelected ? 0.02 : 0.04), radius: 6, x: 0, y: 3)
                     }
                     .buttonStyle(.plain)
                 }

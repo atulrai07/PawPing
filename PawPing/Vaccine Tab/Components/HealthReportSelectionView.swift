@@ -34,6 +34,7 @@ struct HealthReportSelectionView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
                 
                 // Action Button
                 Button {
@@ -49,6 +50,7 @@ struct HealthReportSelectionView: View {
                 }
                 .padding()
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Export Report")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

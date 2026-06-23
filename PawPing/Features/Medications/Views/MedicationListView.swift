@@ -27,54 +27,107 @@ struct MedicationListView: View {
         Group {
             if medications.isEmpty {
                 ContentUnavailableView("No Medications", systemImage: "pills", description: Text("Track your dog's medications here."))
+                    .background(
+                        LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            .ignoresSafeArea()
+                    )
             } else {
-                List {
-                    if !activeMedications.isEmpty {
-                        Section("Active") {
-                            ForEach(activeMedications) { med in
-                                NavigationLink(destination: MedicationDetailView(medication: med)) {
-                                    MedicationRow(medication: med)
-                                }
-                                .swipeActions(edge: .leading) {
-                                    Button {
-                                        if med.isActive(on: Date()) {
-                                            let slots = med.doseSlots(for: Date())
-                                            if let firstPending = slots.first(where: { $0.completedDate == nil }) {
-                                                selectedMedication = med
-                                                selectedSlot = firstPending
-                                                timeGiven = Date()
-                                                showLogDoseSheet = true
-                                            }
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 28) {
+                        if !activeMedications.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Active")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(.gray)
+                                    .padding(.horizontal, 20)
+                                
+                                VStack(spacing: 0) {
+                                    ForEach(activeMedications) { med in
+                                        NavigationLink(destination: MedicationDetailView(medication: med)) {
+                                            MedicationRow(medication: med)
                                         }
-                                    } label: {
-                                        Label("Log Dose", systemImage: "checkmark")
+                                        .buttonStyle(.plain)
+                                        
+                                        if med.id != activeMedications.last?.id {
+                                            Divider()
+                                                .padding(.leading, 56)
+                                                .padding(.vertical, 8)
+                                        }
                                     }
-                                    .tint(.green)
                                 }
+                                .padding(16)
+                                .background(Color.cardIvory)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
+                                .padding(.horizontal, 20)
+                            }
+                        }
+                        
+                        if !upcomingMedications.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Upcoming")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(.gray)
+                                    .padding(.horizontal, 20)
+                                
+                                VStack(spacing: 0) {
+                                    ForEach(upcomingMedications) { med in
+                                        NavigationLink(destination: MedicationDetailView(medication: med)) {
+                                            MedicationRow(medication: med)
+                                        }
+                                        .buttonStyle(.plain)
+                                        
+                                        if med.id != upcomingMedications.last?.id {
+                                            Divider()
+                                                .padding(.leading, 56)
+                                                .padding(.vertical, 8)
+                                        }
+                                    }
+                                }
+                                .padding(16)
+                                .background(Color.cardIvory)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
+                                .padding(.horizontal, 20)
+                            }
+                        }
+                        
+                        if !completedMedications.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Completed")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(.gray)
+                                    .padding(.horizontal, 20)
+                                
+                                VStack(spacing: 0) {
+                                    ForEach(completedMedications) { med in
+                                        NavigationLink(destination: MedicationDetailView(medication: med)) {
+                                            MedicationRow(medication: med)
+                                        }
+                                        .buttonStyle(.plain)
+                                        
+                                        if med.id != completedMedications.last?.id {
+                                            Divider()
+                                                .padding(.leading, 56)
+                                                .padding(.vertical, 8)
+                                        }
+                                    }
+                                }
+                                .padding(16)
+                                .background(Color.cardIvory)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
+                                .padding(.horizontal, 20)
                             }
                         }
                     }
-                    
-                    if !upcomingMedications.isEmpty {
-                        Section("Upcoming") {
-                            ForEach(upcomingMedications) { med in
-                                NavigationLink(destination: MedicationDetailView(medication: med)) {
-                                    MedicationRow(medication: med)
-                                }
-                            }
-                        }
-                    }
-                    
-                    if !completedMedications.isEmpty {
-                        Section("Completed") {
-                            ForEach(completedMedications) { med in
-                                NavigationLink(destination: MedicationDetailView(medication: med)) {
-                                    MedicationRow(medication: med)
-                                }
-                            }
-                        }
-                    }
+                    .padding(.top, 16)
+                    .padding(.bottom, 40)
                 }
+                .background(
+                    LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        .ignoresSafeArea()
+                )
             }
         }
         .navigationTitle("Medications")
