@@ -26,7 +26,7 @@ enum TimelineEventType: Equatable {
     
     var color: Color {
         switch self {
-        case .vaccination: return .blue
+        case .vaccination: return Color.homePurple
         case .medication: return .purple
         case .preventiveCare: return .green
         case .vetVisit: return .orange

@@ -44,43 +44,40 @@ struct DietSetupSheet: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                headerSection
-                
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 24) {
-                        // Pet Info (read-only)
-                        petInfoCard
+        VStack(spacing: 0) {
+            headerSection
+            
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 24) {
+                    // Pet Info (read-only)
+                    petInfoCard
 
-                        // Weight Input
-                        weightSection
+                    // Weight Input
+                    weightSection
 
-                        // Goal Picker
-                        goalSection
+                    // Goal Picker
+                    goalSection
 
-                        // Live Target Preview & Meal Preview
-                        if canStart {
-                            targetPreview
-                                .transition(.scale.combined(with: .opacity))
-                            
-                            mealPlanPreview
-                                .transition(.opacity.combined(with: .move(edge: .bottom)))
-                            
-                            startButton
-                                .transition(.opacity.combined(with: .move(edge: .bottom)))
-                        }
+                    // Live Target Preview & Meal Preview
+                    if canStart {
+                        targetPreview
+                            .transition(.scale.combined(with: .opacity))
+                        
+                        mealPlanPreview
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                        
+                        startButton
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    .padding(.bottom, 40)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: canStart)
-                    .animation(.easeInOut(duration: 0.3), value: previewTarget)
                 }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .padding(.bottom, 40)
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: canStart)
+                .animation(.easeInOut(duration: 0.3), value: previewTarget)
             }
-            .background(Color("baseBackground"))
-            .toolbar(.hidden, for: .navigationBar)
         }
+        .background(Color("baseBackground"))
         .onAppear {
             // Pre-fill with existing weight
             let currentKg = petStore.activePet?.weightKg ?? 10.0
@@ -344,81 +341,70 @@ struct DietSetupSheet: View {
 
     private var targetPreview: some View {
         let isDark = colorScheme == .dark
-        return HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Daily Calorie Target")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color("secondaryText"))
-
-                    HStack(spacing: 6) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "6E54D7")?.opacity(0.6) ?? .purple.opacity(0.6))
-                        
-                        Text("\(Int(previewTarget)) kcal/day")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
-                            .contentTransition(.numericText())
-                        
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "6E54D7")?.opacity(0.6) ?? .purple.opacity(0.6))
-                    }
-                }
+        return VStack(spacing: 16) {
+            // Top Row
+            HStack(alignment: .firstTextBaseline) {
+                Text("Daily Calorie Target")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color("secondaryText"))
                 
-                HStack(spacing: 12) {
-                    // RER
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("RER")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(Color("secondaryText"))
-                        Text("\(Int(previewRER))")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(.green)
-                    }
-                    
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.15))
-                        .frame(width: 1, height: 24)
-
-                    // Multiplier
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Multiplier")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(Color("secondaryText"))
-                        Text("×\(String(format: "%.1f", selectedGoal.rerMultiplier))")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(Color(hex: "6E54D7") ?? .purple)
-                    }
-
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.15))
-                        .frame(width: 1, height: 24)
-
-                    // Weight
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Weight")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(Color("secondaryText"))
-                        Text("\(String(format: "%.1f", weightKg)) kg")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(Color(hex: "6E54D7") ?? .purple)
-                    }
-                }
+                Spacer()
+                
+                Text("\(Int(previewTarget)) kcal/day")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                    .contentTransition(.numericText())
+                    .fixedSize(horizontal: true, vertical: false)
             }
-            .padding(.leading, 16)
             
-            Spacer()
+            Divider()
+                .opacity(isDark ? 0.3 : 0.6)
             
-            // Clipboard Image
-            Image("diet_plan_clipboard")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 100, height: 100)
-                .padding(.trailing, 10)
+            // Bottom Row
+            HStack(spacing: 0) {
+                // RER
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("RER")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(Color("secondaryText"))
+                    Text("\(Int(previewRER))")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.green)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Rectangle()
+                    .fill(Color.gray.opacity(0.15))
+                    .frame(width: 1, height: 24)
+                
+                // Multiplier
+                VStack(alignment: .center, spacing: 4) {
+                    Text("Multiplier")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(Color("secondaryText"))
+                    Text("×\(String(format: "%.1f", selectedGoal.rerMultiplier))")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(Color(hex: "6E54D7") ?? .purple)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                
+                Rectangle()
+                    .fill(Color.gray.opacity(0.15))
+                    .frame(width: 1, height: 24)
+                
+                // Weight
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("Weight")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(Color("secondaryText"))
+                    Text("\(String(format: "%.1f", weightKg)) kg")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(Color(hex: "6E54D7") ?? .purple)
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
         }
-        .padding(.vertical, 16)
+        .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(isDark ? (Color(hex: "6E54D7")?.opacity(0.12) ?? .purple.opacity(0.12)) : (Color(hex: "F3F2FF") ?? .purple.opacity(0.05)))
@@ -437,7 +423,7 @@ struct DietSetupSheet: View {
                     .foregroundColor(Color(hex: "6E54D7") ?? .purple)
             }
             
-            HStack(spacing: 4) {
+            HStack(spacing: 8) {
                 let target = previewTarget
                 let bCal = Int(ceil(target / 3.0))
                 let lCal = Int(floor(target / 3.0))
@@ -445,11 +431,7 @@ struct DietSetupSheet: View {
                 
                 mealPreviewCard(title: "Breakfast", kcal: bCal, icon: "sun.max.fill", iconColor: .orange, imageName: "bowl_pink")
                 
-                plusDivider
-                
                 mealPreviewCard(title: "Lunch", kcal: lCal, icon: "sun.min.fill", iconColor: .orange, imageName: "bowl_yellow")
-                
-                plusDivider
                 
                 mealPreviewCard(title: "Dinner", kcal: dCal, icon: "moon.fill", iconColor: Color(hex: "6E54D7") ?? .purple, imageName: "bowl_blue")
             }

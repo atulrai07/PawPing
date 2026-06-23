@@ -74,7 +74,7 @@ struct TimelineRow: View {
             ZStack(alignment: .top) {
                 if !isLast {
                     Rectangle()
-                        .fill(Color.gray.opacity(0.2))
+                        .fill(Color.homePurple.opacity(0.3))
                         .frame(width: 2)
                         .padding(.top, 44) // Start drawing line from bottom of 44x44 circle
                 }

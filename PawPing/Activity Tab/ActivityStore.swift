@@ -644,10 +644,101 @@ class ActivityStore {
         guard let data = image.jpegData(compressionQuality: 0.6) else { return }
         
         if let url = await petStore.uploadImage(data: data) {
-            let memory = PetMemory(id: UUID(), imageUrl: url, createdAt: Date())
+            let memory = PetMemory(
+                id: UUID(),
+                imageUrl: url,
+                createdAt: Date(),
+                name: "New Album",
+                location: "Somewhere Fun",
+                imageUrls: [url]
+            )
             self.memories.insert(memory, at: 0)
             saveData(for: activePetId)
         }
+    }
+    
+    @MainActor
+    func addMemoryAlbum(name: String, location: String, date: Date, images: [UIImage], petStore: PetStore) async {
+        var uploadedUrls: [String] = []
+        for img in images {
+            if let data = img.jpegData(compressionQuality: 0.6),
+               let url = await petStore.uploadImage(data: data) {
+                uploadedUrls.append(url)
+            }
+        }
+        guard !uploadedUrls.isEmpty else { return }
+        
+        let memory = PetMemory(
+            id: UUID(),
+            imageUrl: uploadedUrls[0],
+            createdAt: date,
+            name: name,
+            location: location,
+            imageUrls: uploadedUrls
+        )
+        self.memories.insert(memory, at: 0)
+        saveData(for: activePetId)
+    }
+    
+    @MainActor
+    func addImagesToAlbum(albumId: UUID, images: [UIImage], petStore: PetStore) async {
+        guard let idx = memories.firstIndex(where: { $0.id == albumId }) else { return }
+        var currentUrls = memories[idx].allImageUrls
+        
+        for img in images {
+            if let data = img.jpegData(compressionQuality: 0.6),
+               let url = await petStore.uploadImage(data: data) {
+                currentUrls.append(url)
+            }
+        }
+        
+        let updatedMemory = PetMemory(
+            id: memories[idx].id,
+            imageUrl: currentUrls.first ?? memories[idx].imageUrl,
+            createdAt: memories[idx].createdAt,
+            name: memories[idx].name,
+            location: memories[idx].location,
+            imageUrls: currentUrls
+        )
+        memories[idx] = updatedMemory
+        saveData(for: activePetId)
+    }
+    
+    @MainActor
+    func deletePhotoFromAlbum(albumId: UUID, photoUrl: String) {
+        guard let idx = memories.firstIndex(where: { $0.id == albumId }) else { return }
+        var currentUrls = memories[idx].allImageUrls
+        currentUrls.removeAll { $0 == photoUrl }
+        
+        if currentUrls.isEmpty {
+            self.memories.remove(at: idx)
+        } else {
+            let updatedMemory = PetMemory(
+                id: memories[idx].id,
+                imageUrl: currentUrls[0],
+                createdAt: memories[idx].createdAt,
+                name: memories[idx].name,
+                location: memories[idx].location,
+                imageUrls: currentUrls
+            )
+            self.memories[idx] = updatedMemory
+        }
+        saveData(for: activePetId)
+    }
+    
+    @MainActor
+    func updateMemoryAlbumInfo(albumId: UUID, name: String, location: String, date: Date) {
+        guard let idx = memories.firstIndex(where: { $0.id == albumId }) else { return }
+        let updatedMemory = PetMemory(
+            id: memories[idx].id,
+            imageUrl: memories[idx].imageUrl,
+            createdAt: date,
+            name: name,
+            location: location,
+            imageUrls: memories[idx].imageUrls
+        )
+        memories[idx] = updatedMemory
+        saveData(for: activePetId)
     }
     
     @MainActor

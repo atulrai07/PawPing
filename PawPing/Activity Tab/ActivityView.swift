@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import PhotosUI
 
 struct ActivityView: View {
     @Environment(ActivityStore.self) var store
@@ -23,6 +24,7 @@ struct ActivityView: View {
     @State private var showDietChat = false
     @State private var showEmergencyGuide = false
     @State private var showMemoriesGallery = false
+    @State private var selectedDetailMemory: PetMemory? = nil
     
     @State private var showMealLogSheet = false
     @State private var selectedMealType: MealType = .breakfast
@@ -48,6 +50,11 @@ struct ActivityView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 80)
                     .background(.clear)
+                    .onAppear {
+                        // Pre-warm the Lottie WKWebView so it's ready
+                        // before the user taps "Let's Go"
+                        LottiePreloader.shared.warmUp()
+                    }
                     .customNavigationScroll(
                         title: "Home",
                         petStore: petStore,
@@ -72,6 +79,12 @@ struct ActivityView: View {
                     }
                     .navigationDestination(isPresented: $showMemoriesGallery) {
                         MemoriesGalleryView()
+                    }
+                    .fullScreenCover(item: $selectedDetailMemory) { memory in
+                        MemoryDetailView(memory: memory) {
+                            store.deleteMemory(id: memory.id)
+                            selectedDetailMemory = nil
+                        }
                     }
                     .sheet(isPresented: $showMealLogSheet) {
                         MealLoggingSheet(store: store, mealType: selectedMealType, logDate: Date(), isReadOnly: false)
@@ -271,61 +284,9 @@ struct ActivityView: View {
 
     // MARK: - Recent Memories Helpers & Section
     
-    fileprivate enum HomeMemoryDisplayType {
+    enum HomeMemoryDisplayType {
         case collage
         case cards
-    }
-
-    fileprivate struct HomeGroupedMemory: Identifiable {
-        let id: String
-        let title: String
-        let description: String
-        let dateString: String
-        let imageURLs: [String]
-        let displayType: HomeMemoryDisplayType
-    }
-
-    private var groupedMemories: [HomeGroupedMemory] {
-        let calendar = Calendar.current
-        
-        let grouped = Dictionary(grouping: store.memories) { memory -> Date in
-            calendar.startOfDay(for: memory.createdAt)
-        }
-        
-        let sortedDates = grouped.keys.sorted(by: >)
-        var result: [HomeGroupedMemory] = []
-        
-        for (index, date) in sortedDates.enumerated() {
-            let memoriesForDate = grouped[date] ?? []
-            let urls = memoriesForDate.map { $0.imageUrl }
-            
-            let dateString: String
-            if calendar.isDateInToday(date) {
-                dateString = "Today"
-            } else if calendar.isDateInYesterday(date) {
-                dateString = "Yesterday"
-            } else {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "MMM d, yyyy"
-                dateString = formatter.string(from: date)
-            }
-            
-            let displayType: HomeMemoryDisplayType = (index % 2 == 0) ? .collage : .cards
-            let petName = petStore.activePet?.name ?? "Pet"
-            let title = index == 0 ? "Central Park" : "\(petName)'s Adventure"
-            let description = index == 0 ? "Morning walk" : "Fun outdoor play"
-            
-            result.append(HomeGroupedMemory(
-                id: dateString,
-                title: title,
-                description: description,
-                dateString: dateString,
-                imageURLs: urls,
-                displayType: displayType
-            ))
-        }
-        
-        return result
     }
 
     private var recentMemoriesSection: some View {
@@ -349,7 +310,7 @@ struct ActivityView: View {
             
             GeometryReader { outerGeo in
                 ScrollView(.horizontal, showsIndicators: false) {
-                    let items = groupedMemories
+                    let items = store.memories
                     if items.isEmpty {
                         VStack(spacing: 8) {
                             Image(systemName: "photo.on.rectangle.angled")
@@ -365,8 +326,14 @@ struct ActivityView: View {
                         .frame(height: 140)
                     } else {
                         HStack(spacing: 16) {
-                            ForEach(items) { memory in
-                                HomeMemoryCard(memory: memory)
+                            ForEach(Array(items.enumerated()), id: \.element.id) { index, memory in
+                                Button {
+                                    selectedDetailMemory = memory
+                                } label: {
+                                    let displayType: HomeMemoryDisplayType = (index % 2 == 0) ? .collage : .cards
+                                    HomeMemoryCard(memory: memory, displayType: displayType)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                         .padding(.horizontal)
@@ -380,97 +347,42 @@ struct ActivityView: View {
 
 // MARK: - Redesigned Memory Card View
 struct HomeMemoryCard: View {
-    fileprivate let memory: ActivityView.HomeGroupedMemory
+    let memory: PetMemory
+    let displayType: ActivityView.HomeMemoryDisplayType
     @Environment(\.colorScheme) private var colorScheme
+    
+    var dateString: String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(memory.createdAt) {
+            return "Today"
+        } else if calendar.isDateInYesterday(memory.createdAt) {
+            return "Yesterday"
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMM d, yyyy"
+            return formatter.string(from: memory.createdAt)
+        }
+    }
     
     var body: some View {
         HStack(spacing: 12) {
             // Left Side: Image/Collage/Card Stack area
-            Group {
-                if memory.imageURLs.isEmpty {
-                    VStack(spacing: 6) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.system(size: 24))
-                            .foregroundColor(.gray.opacity(0.8))
-                        Text("No pic")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.gray.opacity(0.8))
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    .background(colorScheme == .dark ? Color(white: 0.15) : (Color(hex: "F2F2F7") ?? Color(.systemGray6)))
-                } else if memory.displayType == .collage && memory.imageURLs.count >= 3 {
-                    // Collage Layout
-                    HStack(spacing: 2) {
-                        AsyncImage(url: URL(string: memory.imageURLs[0])) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
-                            Color.gray.opacity(0.1)
-                        }
-                        .frame(width: 80, height: 140)
-                        .clipped()
-                        
-                        VStack(spacing: 2) {
-                            AsyncImage(url: URL(string: memory.imageURLs[1])) { image in
-                                image.resizable().scaledToFill()
-                            } placeholder: {
-                                Color.gray.opacity(0.1)
-                            }
-                            .frame(width: 58, height: 69)
-                            .clipped()
-                            
-                            AsyncImage(url: URL(string: memory.imageURLs[2])) { image in
-                                image.resizable().scaledToFill()
-                            } placeholder: {
-                                Color.gray.opacity(0.1)
-                            }
-                            .frame(width: 58, height: 69)
-                            .clipped()
-                        }
-                    }
-                } else if memory.displayType == .cards && memory.imageURLs.count >= 2 {
-                    // Cards Stack Layout
-                    ZStack {
-                        Color.clear // Container boundaries
-                        
-                        ForEach(0..<min(memory.imageURLs.count, 3), id: \.self) { idx in
-                            AsyncImage(url: URL(string: memory.imageURLs[idx])) { image in
-                                image.resizable().scaledToFill()
-                            } placeholder: {
-                                Color.gray.opacity(0.1)
-                            }
-                            .frame(width: 105, height: 105)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
-                            .rotationEffect(.degrees(Double(idx - 1) * 8.0))
-                            .offset(x: CGFloat(idx - 1) * 8, y: CGFloat(idx - 1) * 2)
-                        }
-                    }
-                } else {
-                    // Fallback Single Image Layout
-                    AsyncImage(url: URL(string: memory.imageURLs[0])) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        Color.gray.opacity(0.1)
-                    }
-                    .frame(width: 140, height: 140)
-                    .clipped()
-                }
-            }
-            .frame(width: 140, height: 140)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
+            imageLayout(urls: memory.allImageUrls)
+                .frame(width: 140, height: 140)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
             
             // Right Side: Info Details
             VStack(alignment: .leading, spacing: 6) {
-                Text(memory.dateString)
+                Text(dateString)
                     .font(.system(size: 13))
                     .foregroundColor(.textSecondary)
                 
-                Text(memory.title)
+                Text(memory.displayName)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.textPrimary)
                     .lineLimit(1)
                 
-                Text(memory.description)
+                Text(memory.displayLocation)
                     .font(.system(size: 13))
                     .foregroundColor(.textSecondary)
                     .lineLimit(1)
@@ -480,7 +392,7 @@ struct HomeMemoryCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: "photo.stack")
                         .font(.system(size: 14))
-                    Text(memory.imageURLs.count > 0 ? "\(memory.imageURLs.count) photos" : "0 photos")
+                    Text("\(memory.allImageUrls.count) photos")
                         .font(.system(size: 13, weight: .medium))
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11, weight: .bold))
@@ -495,6 +407,91 @@ struct HomeMemoryCard: View {
         .frame(width: 296, height: 140)
         .background(colorScheme == .dark ? Color(white: 0.12) : (Color(hex: "F8F9FB") ?? Color(.systemGray6)))
         .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+    
+    @ViewBuilder
+    private func imageLayout(urls: [String]) -> some View {
+        if urls.isEmpty {
+            noPicView
+        } else if displayType == .collage && urls.count >= 3 {
+            collageLayout(urls: urls)
+        } else if displayType == .cards && urls.count >= 2 {
+            cardsLayout(urls: urls)
+        } else {
+            fallbackLayout(urls: urls)
+        }
+    }
+    
+    private var noPicView: some View {
+        VStack(spacing: 6) {
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.system(size: 24))
+                .foregroundColor(.gray.opacity(0.8))
+            Text("No pic")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.gray.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .background(colorScheme == .dark ? Color(white: 0.15) : (Color(hex: "F2F2F7") ?? Color(.systemGray6)))
+    }
+    
+    private func collageLayout(urls: [String]) -> some View {
+        HStack(spacing: 2) {
+            AsyncImage(url: URL(string: urls[0])) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                Color.gray.opacity(0.1)
+            }
+            .frame(width: 80, height: 140)
+            .clipped()
+            
+            VStack(spacing: 2) {
+                AsyncImage(url: URL(string: urls[1])) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Color.gray.opacity(0.1)
+                }
+                .frame(width: 58, height: 69)
+                .clipped()
+                
+                AsyncImage(url: URL(string: urls[2])) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Color.gray.opacity(0.1)
+                }
+                .frame(width: 58, height: 69)
+                .clipped()
+            }
+        }
+    }
+    
+    private func cardsLayout(urls: [String]) -> some View {
+        ZStack {
+            Color.clear // Container boundaries
+            
+            ForEach(0..<min(urls.count, 3), id: \.self) { idx in
+                AsyncImage(url: URL(string: urls[idx])) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Color.gray.opacity(0.1)
+                }
+                .frame(width: 105, height: 105)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
+                .rotationEffect(.degrees(Double(idx - 1) * 8.0))
+                .offset(x: CGFloat(idx - 1) * 8, y: CGFloat(idx - 1) * 2)
+            }
+        }
+    }
+    
+    private func fallbackLayout(urls: [String]) -> some View {
+        AsyncImage(url: URL(string: urls[0])) { image in
+            image.resizable().scaledToFill()
+        } placeholder: {
+            Color.gray.opacity(0.1)
+        }
+        .frame(width: 140, height: 140)
+        .clipped()
     }
 }
 
@@ -840,116 +837,115 @@ struct StatCardView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 110)
         .background(Color.cardIvory)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
 }
 
+
 // MARK: - Memories Gallery View
 struct MemoriesGalleryView: View {
     @Environment(ActivityStore.self) var store
     @Environment(PetStore.self) var petStore
     
-    enum ImagePickerSource: String, Identifiable {
-        case camera, library
-        var id: String { rawValue }
-        var type: UIImagePickerController.SourceType {
-            self == .camera ? .camera : .photoLibrary
-        }
-    }
-    
-    @State private var activeImageSource: ImagePickerSource? = nil
-    @State private var pickedImage: UIImage? = nil
-    @State private var isUploading = false
+    @State private var showCreateAlbum = false
     @State private var selectedMemory: PetMemory? = nil
     
-    let columns = [GridItem(.flexible()), GridItem(.flexible())]
+    let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
     
     var body: some View {
         ScrollView {
-            if store.memories.isEmpty && !isUploading {
+            if store.memories.isEmpty {
                 VStack(spacing: 16) {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 40))
                         .foregroundColor(.gray.opacity(0.5))
-                    Text("No memories yet.\nTap + to add some!")
+                    Text("No albums yet.\nTap + to create one!")
                         .multilineTextAlignment(.center)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(.gray)
                 }
-                .padding(.top, 60)
+                .padding(.top, 80)
             } else {
                 LazyVGrid(columns: columns, spacing: 16) {
-                    if isUploading {
-                        VStack {
-                            ProgressView()
-                            Text("Uploading...")
-                                .font(.caption)
-                                .foregroundStyle(.gray)
-                        }
-                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 160, maxHeight: 160)
-                        .background(Color.gray.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                    }
-                    
                     ForEach(store.memories) { memory in
-                        if let url = URL(string: memory.imageUrl) {
-                            Button {
-                                selectedMemory = memory
-                            } label: {
-                                AsyncImage(url: url) { image in
-                                    image.resizable().scaledToFill()
-                                } placeholder: {
-                                    Color.gray.opacity(0.2)
-                                }
-                                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 160, maxHeight: 160)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                            }
-                            .buttonStyle(.plain)
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    withAnimation {
-                                        store.deleteMemory(id: memory.id)
+                        Button {
+                            selectedMemory = memory
+                        } label: {
+                            VStack(alignment: .leading, spacing: 8) {
+                                ZStack(alignment: .bottomTrailing) {
+                                    AsyncImage(url: URL(string: memory.imageUrl)) { image in
+                                        image.resizable().scaledToFill()
+                                    } placeholder: {
+                                        Color.gray.opacity(0.2)
                                     }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                                    .frame(height: 150)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                                    .clipped()
+                                    
+                                    // Photos Count Badge
+                                    Text("\(memory.allImageUrls.count) \(memory.allImageUrls.count == 1 ? "photo" : "photos")")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color.black.opacity(0.6))
+                                        .clipShape(Capsule())
+                                        .padding(8)
                                 }
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(memory.displayName)
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(.textPrimary)
+                                        .lineLimit(1)
+                                    
+                                    HStack(spacing: 2) {
+                                        Image(systemName: "mappin.and.ellipse")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.textSecondary)
+                                        Text(memory.displayLocation)
+                                            .font(.system(size: 11))
+                                            .foregroundColor(.textSecondary)
+                                            .lineLimit(1)
+                                    }
+                                }
+                                .padding(.horizontal, 4)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                withAnimation {
+                                    store.deleteMemory(id: memory.id)
+                                }
+                            } label: {
+                                Label("Delete Album", systemImage: "trash")
                             }
                         }
                     }
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.top, 24)
+                .padding(.bottom, 24)
             }
         }
-        .navigationTitle("All Memories")
+        .navigationTitle("Photo Albums")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    Button {
-                        activeImageSource = .camera
-                    } label: {
-                        Label("Take Photo", systemImage: "camera")
-                    }
-                    
-                    Button {
-                        activeImageSource = .library
-                    } label: {
-                        Label("Choose from Library", systemImage: "photo.on.rectangle")
-                    }
+                Button {
+                    showCreateAlbum = true
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(Color(hex: "6E54D7") ?? .purple)
                 }
-                .disabled(isUploading)
             }
         }
-        .fullScreenCover(item: $activeImageSource) { source in
-            ImagePicker(selectedImage: $pickedImage, sourceType: source.type)
-                .ignoresSafeArea()
+        .sheet(isPresented: $showCreateAlbum) {
+            CreateAlbumSheet()
         }
         .fullScreenCover(item: $selectedMemory) { memory in
             MemoryDetailView(memory: memory) {
@@ -957,48 +953,181 @@ struct MemoriesGalleryView: View {
                 selectedMemory = nil
             }
         }
-        .onChange(of: pickedImage) { _, newImage in
-            if let newImage {
-                isUploading = true
-                Task {
-                    await store.addMemory(image: newImage, petStore: petStore)
-                    pickedImage = nil
-                    isUploading = false
+    }
+}
+
+// MARK: - Create Album Sheet
+struct CreateAlbumSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Environment(ActivityStore.self) var store
+    @Environment(PetStore.self) var petStore
+    
+    @State private var name = ""
+    @State private var location = ""
+    @State private var date = Date()
+    
+    // Picked photos
+    @State private var selectedImages: [UIImage] = []
+    
+    // Modals
+    @State private var showLibraryPicker = false
+    @State private var showCameraPicker = false
+    @State private var cameraImage: UIImage? = nil
+    
+    @State private var isSaving = false
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("Album Info")) {
+                    TextField("Album Name (e.g. Beach Fun)", text: $name)
+                    TextField("Location (e.g. Malibu Beach)", text: $location)
+                    DatePicker("Date", selection: $date, displayedComponents: .date)
+                }
+                
+                Section(header: Text("Photos (\(selectedImages.count))")) {
+                    if selectedImages.isEmpty {
+                        Text("No photos selected yet.")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 14))
+                            .padding(.vertical, 8)
+                    } else {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(Array(selectedImages.enumerated()), id: \.offset) { idx, img in
+                                    ZStack(alignment: .topTrailing) {
+                                        Image(uiImage: img)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 80, height: 80)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                            .clipped()
+                                        
+                                        Button {
+                                            selectedImages.remove(at: idx)
+                                        } label: {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .foregroundColor(.red)
+                                                .background(Color.white.clipShape(Circle()))
+                                        }
+                                        .offset(x: 4, y: -4)
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 8)
+                        }
+                    }
+                    
+                    HStack {
+                        Button {
+                            showCameraPicker = true
+                        } label: {
+                            Label("Camera", systemImage: "camera")
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .buttonStyle(.bordered)
+                        
+                        Button {
+                            showLibraryPicker = true
+                        } label: {
+                            Label("Gallery", systemImage: "photo.on.rectangle")
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .buttonStyle(.bordered)
+                    }
                 }
             }
+            .navigationTitle("Create Album")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .disabled(isSaving)
+                }
+                
+                ToolbarItem(placement: .confirmationAction) {
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Button("Create") {
+                            saveAlbum()
+                        }
+                        .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImages.isEmpty)
+                    }
+                }
+            }
+            .sheet(isPresented: $showLibraryPicker) {
+                MultiImagePicker(selectedImages: $selectedImages)
+            }
+            .fullScreenCover(isPresented: $showCameraPicker) {
+                ImagePicker(selectedImage: $cameraImage, sourceType: .camera)
+                    .ignoresSafeArea()
+            }
+            .onChange(of: cameraImage) { _, newImg in
+                if let newImg {
+                    selectedImages.append(newImg)
+                    cameraImage = nil
+                }
+            }
+        }
+    }
+    
+    private func saveAlbum() {
+        isSaving = true
+        Task {
+            await store.addMemoryAlbum(
+                name: name,
+                location: location.isEmpty ? "Somewhere Fun" : location,
+                date: date,
+                images: selectedImages,
+                petStore: petStore
+            )
+            isSaving = false
+            dismiss()
         }
     }
 }
 
 // MARK: - Memory Detail View
-
 struct MemoryDetailView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(ActivityStore.self) var store
+    @Environment(PetStore.self) var petStore
+    
     let memory: PetMemory
     let onDelete: () -> Void
+    
+    @State private var currentImageIndex = 0
+    @State private var showLibraryPicker = false
+    @State private var showCameraPicker = false
+    @State private var showEditSheet = false
+    @State private var pickedImages: [UIImage] = []
+    @State private var pickedCameraImage: UIImage? = nil
+    @State private var isAddingImages = false
+    
+    private var currentMemory: PetMemory {
+        store.memories.first { $0.id == memory.id } ?? memory
+    }
     
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            if let url = URL(string: memory.imageUrl) {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        // Optional pinch-to-zoom could go here, but scaledToFit provides a great standard viewing experience
-                } placeholder: {
-                    ProgressView()
-                        .tint(.white)
-                }
-            }
+            let urls = currentMemory.allImageUrls
             
             VStack {
+                // Top Navbar
                 HStack {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.left")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.white)
                             .padding(12)
@@ -1008,49 +1137,237 @@ struct MemoryDetailView: View {
                     
                     Spacer()
                     
-                    if let url = URL(string: memory.imageUrl) {
-                        ShareLink(item: url) {
-                            Image(systemName: "square.and.arrow.up")
+                    Text("\(min(currentImageIndex + 1, urls.count)) of \(urls.count)")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 12) {
+                        Button {
+                            showEditSheet = true
+                        } label: {
+                            Image(systemName: "pencil")
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(.white)
                                 .padding(12)
                                 .background(Color.black.opacity(0.5))
                                 .clipShape(Circle())
                         }
+                        
+                        Menu {
+                            Button {
+                                showCameraPicker = true
+                            } label: {
+                                Label("Camera Photo", systemImage: "camera")
+                            }
+                            
+                            Button {
+                                showLibraryPicker = true
+                            } label: {
+                                Label("Select Gallery Photos", systemImage: "photo")
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(12)
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .disabled(isAddingImages)
                     }
                 }
                 .padding(.horizontal)
                 .padding(.top, 16)
                 
-                Spacer()
-                
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Added on")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.7))
-                        Text(memory.createdAt, style: .date)
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    
+                // Photo Viewer
+                if isAddingImages {
                     Spacer()
-                    
-                    Button(role: .destructive) {
-                        onDelete()
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.red)
-                            .padding(12)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(Circle())
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .tint(.white)
+                        Text("Adding photos to album...")
+                            .foregroundColor(.white.opacity(0.8))
+                            .font(.caption)
                     }
+                    Spacer()
+                } else if !urls.isEmpty {
+                    TabView(selection: $currentImageIndex) {
+                        ForEach(Array(urls.enumerated()), id: \.element) { idx, urlStr in
+                            AsyncImage(url: URL(string: urlStr)) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                            } placeholder: {
+                                ProgressView()
+                                    .tint(.white)
+                            }
+                            .tag(idx)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                } else {
+                    Spacer()
+                    Text("No photos in this album.")
+                        .foregroundColor(.gray)
+                    Spacer()
+                }
+                
+                // Info Section
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(currentMemory.displayName)
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.white)
+                            
+                            HStack(spacing: 4) {
+                                Image(systemName: "mappin.and.ellipse")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.white.opacity(0.7))
+                                Text(currentMemory.displayLocation)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        Text(currentMemory.createdAt, style: .date)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                    
+                    HStack {
+                        // Delete individual photo
+                        if !urls.isEmpty {
+                            Button {
+                                deletePhoto(urls[min(currentImageIndex, urls.count - 1)])
+                            } label: {
+                                Label("Delete Photo", systemImage: "photo.badge.trash")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.red)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 14)
+                                    .background(Color.white.opacity(0.1))
+                                    .clipShape(Capsule())
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        // Delete Album
+                        Button(role: .destructive) {
+                            onDelete()
+                        } label: {
+                            Label("Delete Album", systemImage: "trash")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.red)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 14)
+                                .background(Color.red.opacity(0.15))
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .padding(.top, 8)
                 }
                 .padding()
                 .background(
-                    LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .bottom, endPoint: .top)
+                    LinearGradient(colors: [.black.opacity(0.9), .black.opacity(0.4), .clear], startPoint: .bottom, endPoint: .top)
                 )
+            }
+        }
+        .sheet(isPresented: $showLibraryPicker) {
+            MultiImagePicker(selectedImages: $pickedImages)
+        }
+        .sheet(isPresented: $showEditSheet) {
+            EditAlbumSheet(album: currentMemory)
+        }
+        .fullScreenCover(isPresented: $showCameraPicker) {
+            ImagePicker(selectedImage: $pickedCameraImage, sourceType: .camera)
+                .ignoresSafeArea()
+        }
+        .onChange(of: pickedCameraImage) { _, newImg in
+            if let newImg {
+                pickedImages.append(newImg)
+                pickedCameraImage = nil
+            }
+        }
+        .onChange(of: pickedImages) { _, images in
+            if !images.isEmpty {
+                isAddingImages = true
+                Task {
+                    await store.addImagesToAlbum(albumId: currentMemory.id, images: images, petStore: petStore)
+                    pickedImages = []
+                    isAddingImages = false
+                }
+            }
+        }
+    }
+    
+    private func deletePhoto(_ photoUrl: String) {
+        let urls = currentMemory.allImageUrls
+        store.deletePhotoFromAlbum(albumId: currentMemory.id, photoUrl: photoUrl)
+        if urls.count <= 1 {
+            // Album deleted because last photo was removed
+            dismiss()
+        } else {
+            // Adjust page index if deleted last page
+            if currentImageIndex >= urls.count - 1 {
+                currentImageIndex = max(0, urls.count - 2)
+            }
+        }
+    }
+}
+
+// MARK: - Edit Album Sheet View
+struct EditAlbumSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Environment(ActivityStore.self) var store
+    let albumId: UUID
+    
+    @State private var name: String
+    @State private var location: String
+    @State private var date: Date
+    
+    init(album: PetMemory) {
+        self.albumId = album.id
+        _name = State(initialValue: album.displayName)
+        _location = State(initialValue: album.displayLocation)
+        _date = State(initialValue: album.createdAt)
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("Album Info")) {
+                    TextField("Album Name", text: $name)
+                    TextField("Location", text: $location)
+                    DatePicker("Date", selection: $date, displayedComponents: .date)
+                }
+            }
+            .navigationTitle("Edit Album")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        store.updateMemoryAlbumInfo(
+                            albumId: albumId,
+                            name: name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Paw Adventure" : name,
+                            location: location.isEmpty ? "Somewhere Fun" : location,
+                            date: date
+                        )
+                        dismiss()
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
             }
         }
     }
