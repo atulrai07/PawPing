@@ -195,27 +195,6 @@ struct CareView: View {
         .frame(height: 200)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.05), radius: 15, x: 0, y: 8)
-        .overlay(alignment: .bottom) {
-            HStack {
-                // Near Location Indicator
-                HStack(spacing: 6) {
-                    Image(systemName: "location.fill")
-                        .foregroundColor(Color(hex: "6E54D7") ?? .purple)
-                        .font(.system(size: 14))
-                    Text("Near \(store.currentAreaName ?? "You")")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.gray)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.cardIvory)
-                .clipShape(Capsule())
-                .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                
-                Spacer()
-            }
-            .padding(16)
-        }
     }
 
     private var cardsList: some View {

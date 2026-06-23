@@ -40,7 +40,7 @@ struct WalkTrackingView: View {
 
     private var progressPercent: Int {
         guard store.walkActivity.goalMinutes > 0 else { return 0 }
-        let pct = (store.elapsedSeconds / 60.0) / Double(store.walkActivity.goalMinutes) * 100
+        let pct = Double(store.liveWalkedMinutes) / Double(store.walkActivity.goalMinutes) * 100.0
         return min(Int(pct), 100)
     }
 
@@ -67,16 +67,6 @@ struct WalkTrackingView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 6) {
                             HStack(spacing: 6) {
-                                Circle()
-                                    .fill(Color.homePurple)
-                                    .frame(width: 6, height: 6)
-                                Text("ACTIVE WALK")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.homePurple)
-                                    .tracking(0.5)
-                            }
-                            
-                            HStack(spacing: 6) {
                                 Text(store.activePet?.name ?? "Tommy")
                                     .font(.system(size: 22, weight: .bold))
                                     .foregroundColor(.textPrimary)
@@ -89,10 +79,6 @@ struct WalkTrackingView: View {
                                 .font(.system(size: 44, weight: .bold, design: .rounded))
                                 .foregroundColor(.homePurple)
                                 .monospacedDigit()
-                            
-                            Text("Walk in progress")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.textSecondary)
                         }
                         
                         Spacer()
@@ -117,54 +103,58 @@ struct WalkTrackingView: View {
                     )
                     .padding(.horizontal, 20)
 
-                    // MARK: - Three Stat Cards Row (Distance, Avg Pace, Goal)
-                    HStack(spacing: 12) {
-                        // Box 1: Distance
-                        TrackingStatCard(
-                            iconName: "mappin.and.ellipse",
-                            iconColor: Color.blue,
-                            title: "Distance",
-                            value: distanceText,
-                            unit: "km"
-                        )
-
-                        // Box 2: Calories burned
-                        TrackingStatCard(
-                            iconName: "flame.fill",
-                            iconColor: Color.orange,
-                            title: "Calories",
-                            value: caloriesText,
-                            unit: "kcal"
-                        )
-
-                        // Box 3: Goal
-                        TrackingStatCard(
-                            iconName: "flag.fill",
-                            iconColor: Color.blue,
-                            title: "Goal",
-                            value: "\(store.walkActivity.goalMinutes)",
-                            unit: "min",
-                            customProgressView: AnyView(
-                                VStack(spacing: 4) {
-                                    ZStack(alignment: .leading) {
-                                        Capsule()
-                                            .fill(Color.textPrimary.opacity(0.05))
-                                            .frame(height: 6)
-                                        Capsule()
-                                            .fill(Color.homePurple)
-                                            .frame(height: 6)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .scaleEffect(x: CGFloat(progressPercent) / 100.0, y: 1.0, anchor: .leading)
-                                    }
-                                    .frame(height: 6)
-                                    
-                                    Text("\(progressPercent)%")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(.textSecondary)
-                                }
-                            )
-                        )
+                    // MARK: - Unified Goal & Distance Stat Card
+                    HStack(spacing: 0) {
+                        // Distance Section
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("DISTANCE")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(Color.textSecondary)
+                                .tracking(0.5)
+                            
+                            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                                Text(distanceText)
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundColor(.textPrimary)
+                                Text("km")
+                                    .font(.system(size: 13, weight: .bold))
+                                    .foregroundColor(.textSecondary)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        // Vertical Divider
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.12))
+                            .frame(width: 1, height: 36)
+                            .padding(.horizontal, 16)
+                        
+                        // Goal Section
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("GOAL PROGRESS")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(Color.textSecondary)
+                                .tracking(0.5)
+                            
+                            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                                Text("\(progressPercent)%")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundColor(.homePurple)
+                                Text("/ \(store.walkActivity.goalMinutes) min")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(.textSecondary)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .padding(20)
+                    .background(Color.cardIvory)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+                    )
                     .padding(.horizontal, 20)
 
                     // MARK: - Time Remaining Card (Without Chevron)
@@ -178,7 +168,7 @@ struct WalkTrackingView: View {
                                 .foregroundColor(.homePurple)
                         }
                         
-                        let remainingMins = max(0, store.walkActivity.goalMinutes - Int(store.elapsedSeconds / 60))
+                        let remainingMins = max(0, store.walkActivity.goalMinutes - store.liveWalkedMinutes)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("\(remainingMins) min remaining")
                                 .font(.system(size: 13, weight: .bold))
@@ -230,16 +220,8 @@ struct WalkTrackingView: View {
                 
                 Spacer()
                 
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.textPrimary)
+                Color.clear
                     .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(isDark ? Color(white: 0.16) : .white)
-                            .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
-                    )
-                    .contentShape(Circle())
             }
             .padding(.horizontal, 20)
             .padding(.top, 10)

@@ -513,38 +513,34 @@ struct WalkSummaryCard: View {
     var store: ActivityStore
     @Environment(\.colorScheme) private var colorScheme
 
-    // Total distance this week
-    private var weeklyDistanceKm: Double {
-        store.distanceSummary.totalWeekDistance
-    }
-
-    // Number of walks this week (activities with distance > 0)
-    private var weeklyWalksCount: Int {
+    // Total distance today
+    private var todayDistanceKm: Double {
         let calendar = Calendar.current
-        var comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        comps.weekday = 2
-        guard let monday = calendar.date(from: comps) else { return 0 }
-        let sunday = calendar.date(byAdding: .day, value: 6, to: monday) ?? Date()
-        return store.activities.filter { $0.date >= monday && $0.date <= sunday }.count
-    }
-
-    // Last week's total distance for % comparison
-    private var lastWeekDistanceKm: Double {
-        let calendar = Calendar.current
-        var comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        comps.weekday = 2
-        guard let thisMonday = calendar.date(from: comps),
-              let lastMonday = calendar.date(byAdding: .weekOfYear, value: -1, to: thisMonday),
-              let lastSunday = calendar.date(byAdding: .day, value: 6, to: lastMonday)
-        else { return 0 }
         return store.activities
-            .filter { $0.date >= lastMonday && $0.date <= lastSunday }
+            .filter { calendar.isDateInToday($0.date) }
             .reduce(0) { $0 + $1.distanceInKm }
     }
 
-    private var vsLastWeekPercent: Int {
-        guard lastWeekDistanceKm > 0 else { return 0 }
-        return Int(((weeklyDistanceKm - lastWeekDistanceKm) / lastWeekDistanceKm) * 100)
+    // Number of walks today (activities with distance > 0)
+    private var todayWalksCount: Int {
+        let calendar = Calendar.current
+        return store.activities.filter { calendar.isDateInToday($0.date) }.count
+    }
+
+    // Yesterday's total distance for % comparison
+    private var yesterdayDistanceKm: Double {
+        let calendar = Calendar.current
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: Date()) else { return 0 }
+        return store.activities
+            .filter { calendar.isDate($0.date, inSameDayAs: yesterday) }
+            .reduce(0) { $0 + $1.distanceInKm }
+    }
+
+    private var vsYesterdayPercent: Int {
+        guard yesterdayDistanceKm > 0 else {
+            return todayDistanceKm > 0 ? 100 : 0
+        }
+        return Int(((todayDistanceKm - yesterdayDistanceKm) / yesterdayDistanceKm) * 100)
     }
 
     var body: some View {
@@ -579,7 +575,7 @@ struct WalkSummaryCard: View {
                         Text("Walk Summary")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.textPrimary)
-                        Text("This Week")
+                        Text("Today")
                             .font(.system(size: 12))
                             .foregroundColor(.textSecondary)
                     }
@@ -593,7 +589,7 @@ struct WalkSummaryCard: View {
                 HStack(alignment: .bottom, spacing: 0) {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(alignment: .lastTextBaseline, spacing: 4) {
-                            Text(String(format: "%.1f", weeklyDistanceKm))
+                            Text(String(format: "%.1f", todayDistanceKm))
                                 .font(.system(size: 32, weight: .bold))
                                 .foregroundColor(.homePurple)
                             Text("km")
@@ -614,7 +610,7 @@ struct WalkSummaryCard: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(alignment: .lastTextBaseline, spacing: 4) {
-                            Text("\(weeklyWalksCount)")
+                            Text("\(todayWalksCount)")
                                 .font(.system(size: 32, weight: .bold))
                                 .foregroundColor(.homePurple)
                             Text("walks")
@@ -622,7 +618,7 @@ struct WalkSummaryCard: View {
                                 .foregroundColor(.homePurple)
                                 .padding(.bottom, 3)
                         }
-                        Text("Completed")
+                        Text("Sessions")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.textSecondary)
                     }
@@ -630,19 +626,16 @@ struct WalkSummaryCard: View {
                     Spacer(minLength: 120) // reserve space for dog
                 }
 
-                // vs last week badge
-                let pct = vsLastWeekPercent
-                HStack(spacing: 5) {
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(.white)
-                        .frame(width: 22, height: 22)
-                        .background(Color.homePurple)
-                        .clipShape(Circle())
-                    Text(pct >= 0 ? "+\(pct)%" : "\(pct)%")
+                // vs yesterday badge
+                let pct = vsYesterdayPercent
+                HStack(spacing: 4) {
+                    Image(systemName: pct >= 0 ? "arrow.up" : "arrow.down")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(pct >= 0 ? .homePurple : .red)
+                    Text("\(abs(pct))%")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(pct >= 0 ? .homePurple : .red)
-                    Text("vs last week")
+                    Text("vs yesterday")
                         .font(.system(size: 12))
                         .foregroundColor(.textSecondary)
                 }
@@ -1099,6 +1092,7 @@ struct MemoryDetailView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(ActivityStore.self) var store
     @Environment(PetStore.self) var petStore
+    @Environment(\.colorScheme) var colorScheme
     
     let memory: PetMemory
     let onDelete: () -> Void
@@ -1110,85 +1104,89 @@ struct MemoryDetailView: View {
     @State private var pickedImages: [UIImage] = []
     @State private var pickedCameraImage: UIImage? = nil
     @State private var isAddingImages = false
+    @State private var isFocused = false
     
     private var currentMemory: PetMemory {
         store.memories.first { $0.id == memory.id } ?? memory
     }
     
+    private var isDark: Bool { colorScheme == .dark }
+    private var bgColor: Color { isFocused ? .black : (isDark ? .black : .white) }
+    private var textColor: Color { isFocused ? .white : (isDark ? .white : .primary) }
+    private var secondaryTextColor: Color { isFocused ? .white.opacity(0.7) : (isDark ? .white.opacity(0.7) : .secondary) }
+    private var buttonBgColor: Color { isFocused ? Color.white.opacity(0.12) : (isDark ? Color.white.opacity(0.12) : Color.black.opacity(0.06)) }
+    
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            bgColor.ignoresSafeArea()
             
             let urls = currentMemory.allImageUrls
             
             VStack {
                 // Top Navbar
-                HStack {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(12)
-                            .background(Color.black.opacity(0.5))
-                            .clipShape(Circle())
-                    }
-                    
-                    Spacer()
-                    
-                    Text("\(min(currentImageIndex + 1, urls.count)) of \(urls.count)")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.white)
-                    
-                    Spacer()
-                    
-                    HStack(spacing: 12) {
+                if !isFocused {
+                    HStack {
                         Button {
-                            showEditSheet = true
+                            dismiss()
                         } label: {
-                            Image(systemName: "pencil")
+                            Image(systemName: "chevron.left")
                                 .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(textColor)
                                 .padding(12)
-                                .background(Color.black.opacity(0.5))
+                                .background(buttonBgColor)
                                 .clipShape(Circle())
                         }
                         
+                        Spacer()
+                        
+                        Text(urls.isEmpty ? "0 of 0" : "\(min(currentImageIndex + 1, urls.count)) of \(urls.count)")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(textColor)
+                        
+                        Spacer()
+                        
                         Menu {
                             Button {
-                                showCameraPicker = true
+                                showEditSheet = true
                             } label: {
-                                Label("Camera Photo", systemImage: "camera")
+                                Label("Edit Album Details", systemImage: "pencil")
                             }
                             
-                            Button {
-                                showLibraryPicker = true
+                            if !urls.isEmpty {
+                                Button(role: .destructive) {
+                                    deletePhoto(urls[min(currentImageIndex, urls.count - 1)])
+                                } label: {
+                                    Label("Delete Photo", systemImage: "photo.badge.trash")
+                                }
+                            }
+                            
+                            Button(role: .destructive) {
+                                onDelete()
                             } label: {
-                                Label("Select Gallery Photos", systemImage: "photo")
+                                Label("Delete Album", systemImage: "trash")
                             }
                         } label: {
-                            Image(systemName: "plus")
+                            Image(systemName: "ellipsis")
                                 .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(textColor)
                                 .padding(12)
-                                .background(Color.black.opacity(0.5))
+                                .background(buttonBgColor)
                                 .clipShape(Circle())
                         }
-                        .disabled(isAddingImages)
                     }
+                    .padding(.horizontal)
+                    .padding(.top, 16)
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
-                .padding(.horizontal)
-                .padding(.top, 16)
                 
                 // Photo Viewer
                 if isAddingImages {
                     Spacer()
                     VStack(spacing: 12) {
                         ProgressView()
-                            .tint(.white)
+                            .tint(textColor)
                         Text("Adding photos to album...")
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(secondaryTextColor)
                             .font(.caption)
                     }
                     Spacer()
@@ -1201,12 +1199,17 @@ struct MemoryDetailView: View {
                                     .scaledToFit()
                             } placeholder: {
                                 ProgressView()
-                                    .tint(.white)
+                                    .tint(textColor)
                             }
                             .tag(idx)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isFocused.toggle()
+                        }
+                    }
                 } else {
                     Spacer()
                     Text("No photos in this album.")
@@ -1215,67 +1218,68 @@ struct MemoryDetailView: View {
                 }
                 
                 // Info Section
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(currentMemory.displayName)
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.white)
+                if !isFocused {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .bottom) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(currentMemory.displayName)
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(textColor)
+                                
+                                HStack(spacing: 4) {
+                                    Image(systemName: "mappin.and.ellipse")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(secondaryTextColor)
+                                    Text(currentMemory.displayLocation)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(secondaryTextColor)
+                                }
+                                
+                                Text(currentMemory.createdAt, style: .date)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(secondaryTextColor)
+                                    .padding(.top, 2)
+                            }
                             
-                            HStack(spacing: 4) {
-                                Image(systemName: "mappin.and.ellipse")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.white.opacity(0.7))
-                                Text(currentMemory.displayLocation)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.white.opacity(0.7))
-                            }
-                        }
-                        
-                        Spacer()
-                        
-                        Text(currentMemory.createdAt, style: .date)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                    
-                    HStack {
-                        // Delete individual photo
-                        if !urls.isEmpty {
-                            Button {
-                                deletePhoto(urls[min(currentImageIndex, urls.count - 1)])
+                            Spacer()
+                            
+                            // Floating Plus Button at bottom right of the card
+                            Menu {
+                                Button {
+                                    showCameraPicker = true
+                                } label: {
+                                    Label("Camera Photo", systemImage: "camera")
+                                }
+                                
+                                Button {
+                                    showLibraryPicker = true
+                                } label: {
+                                    Label("Select Gallery Photos", systemImage: "photo")
+                                }
                             } label: {
-                                Label("Delete Photo", systemImage: "photo.badge.trash")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.red)
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 14)
-                                    .background(Color.white.opacity(0.1))
-                                    .clipShape(Capsule())
+                                Circle()
+                                    .fill(Color(hex: "6E54D7") ?? .purple)
+                                    .frame(width: 50, height: 50)
+                                    .shadow(color: (Color(hex: "6E54D7") ?? .purple).opacity(0.3), radius: 6, x: 0, y: 3)
+                                    .overlay(
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 20, weight: .bold))
+                                            .foregroundColor(.white)
+                                    )
                             }
-                        }
-                        
-                        Spacer()
-                        
-                        // Delete Album
-                        Button(role: .destructive) {
-                            onDelete()
-                        } label: {
-                            Label("Delete Album", systemImage: "trash")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.red)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 14)
-                                .background(Color.red.opacity(0.15))
-                                .clipShape(Capsule())
+                            .disabled(isAddingImages)
                         }
                     }
-                    .padding(.top, 8)
+                    .padding()
+                    .background(
+                        LinearGradient(
+                            colors: [bgColor.opacity(0.95), bgColor.opacity(0.4), .clear],
+                            startPoint: .bottom,
+                            endPoint: .top
+                        )
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
-                .padding()
-                .background(
-                    LinearGradient(colors: [.black.opacity(0.9), .black.opacity(0.4), .clear], startPoint: .bottom, endPoint: .top)
-                )
             }
         }
         .sheet(isPresented: $showLibraryPicker) {
