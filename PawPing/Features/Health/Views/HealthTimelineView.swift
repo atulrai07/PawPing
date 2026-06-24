@@ -75,7 +75,7 @@ struct TimelineRow: View {
                 if !isLast {
                     Rectangle()
                         .fill(Color.homePurple.opacity(0.3))
-                        .frame(width: 2)
+                        .frame(width: 1)
                         .padding(.top, 44) // Start drawing line from bottom of 44x44 circle
                 }
                 

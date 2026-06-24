@@ -17,7 +17,7 @@ struct VideoTutorialCard: View {
     }
     
     private var thumbnailURL: URL? {
-        URL(string: "https://img.youtube.com/vi/\(videoID)/hqdefault.jpg")
+        URL(string: "https://img.youtube.com/vi/\(videoID)/maxresdefault.jpg")
     }
     
     var body: some View {
@@ -33,8 +33,8 @@ struct VideoTutorialCard: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .aspectRatio(16/9, contentMode: .fill)
-                                .frame(height: 180)
+                                .scaledToFill()
+                                .frame(height: 175)
                                 .clipped()
                         case .failure:
                             thumbnailPlaceholder
@@ -68,13 +68,13 @@ struct VideoTutorialCard: View {
                         )
                         .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
                 }
-                .frame(height: 180)
+                .frame(height: 175)
                 .clipped()
                 
                 // Bottom info bar
-                HStack(spacing: 10) {
+                HStack(spacing: 12) {
                     Image(systemName: "play.rectangle.fill")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(accentColor)
                     
                     VStack(alignment: .leading, spacing: 2) {
@@ -91,7 +91,7 @@ struct VideoTutorialCard: View {
                     Spacer()
                     
                     Image(systemName: "arrow.up.right.square")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 16)
@@ -115,7 +115,7 @@ struct VideoTutorialCard: View {
                     endPoint: .bottomTrailing
                 )
             )
-            .frame(height: 180)
+            .frame(height: 175)
             .overlay(
                 VStack(spacing: 8) {
                     Text("Video Tutorial")
