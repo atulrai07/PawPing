@@ -158,7 +158,7 @@ struct ActivityView: View {
                     } label: {
                         HStack {
                             Text(store.isWalking ? "Resume" : "Let's go!")
-                            Image(systemName: "arrow.right")
+                        
                         }
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.white)
