@@ -178,7 +178,8 @@ struct MemoriesGalleryView: View {
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(.gray)
                 }
-                .padding(.top, 80)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 120)
             } else {
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(store.memories) { memory in
@@ -881,7 +882,11 @@ struct EditAlbumSheet: View {
                 Section(header: Text("Album Info")) {
                     TextField("Album Name", text: $name)
                     TextField("Location", text: $location)
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
+                    
+                    LabeledContent("Created On") {
+                        Text(date.formatted(.dateTime.day().month(.wide).year()))
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             .navigationTitle("Edit Album")

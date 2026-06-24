@@ -322,7 +322,7 @@ struct ActivityView: View {
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 32)
                         }
-                        .frame(width: max(outerGeo.size.width - 32, 0))
+                        .frame(width: outerGeo.size.width)
                         .frame(height: 140)
                     } else {
                         HStack(spacing: 16) {
