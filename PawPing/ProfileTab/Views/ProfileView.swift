@@ -76,6 +76,7 @@ struct ProfileView: View {
             .alert("Are you sure you want to log out?", isPresented: $showingLogoutAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Log Out", role: .destructive) {
+                    activityStore.switchPet(to: nil)
                     petStore.clear()
                     Task {
                         await authStore.logout()

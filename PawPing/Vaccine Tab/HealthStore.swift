@@ -49,6 +49,7 @@ class HealthStore {
     /// The active pet's name, used for notification content.
     /// Set externally when the pet is switched.
     var activePetName: String = ""
+    var activePetId: UUID? = nil
 
     /// Computed on the fly — always in sync with healthRecords.
     var summary: HealthSummary {
@@ -76,6 +77,11 @@ class HealthStore {
                 .order("date", ascending: false)
                 .execute()
                 .value
+
+            guard petId == self.activePetId else {
+                print("Fetched vaccines for a pet that is no longer active. Ignoring.")
+                return
+            }
 
             self.healthRecords = rows.map { row in
                 toHealthRecord(row, petId: petId)

@@ -106,7 +106,16 @@ class ActivityStore {
         // Sync sub-stores
         mealDietStore.switchPet(to: pet?.id)
         
-        guard let pet else { return }
+        guard let pet else {
+            // Clear current data if no pet is active
+            self.meals = []
+            self.activities = []
+            self.memories = []
+            self.walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: 0)
+            self.timeWalkedGraph = TimeWalkedGraphModel(data: [], goalMinutes: 0)
+            self.distanceSummary = DistanceSummaryModel(weekData: [], monthData: [], weekRange: "", monthName: "")
+            return
+        }
         let petId = pet.id
         let resolvedGoal = BreedDataService.shared.resolveWalkGoal(for: pet)
         let key = "activity_store_data_\(petId.uuidString)"
@@ -148,6 +157,7 @@ class ActivityStore {
             // New pet, initialize default state
             self.meals = Self.defaultMeals(for: petId, userId: pet.ownerId)
             self.walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: resolvedGoal)
+            self.activities = []
             
             self.timeWalkedGraph = TimeWalkedGraphModel(
                 data: [
@@ -282,6 +292,10 @@ class ActivityStore {
                let storedData = try? JSONDecoder().decode(ActivityStoreData.self, from: data) {
                 
                 await MainActor.run {
+                    guard petId == self.activePetId else {
+                        print("Fetched app state for a pet that is no longer active. Ignoring.")
+                        return
+                    }
                     let today = Calendar.current.startOfDay(for: Date())
                     var loadedMeals = storedData.meals
                     if let firstMealDate = loadedMeals.first?.date, 
@@ -296,20 +310,23 @@ class ActivityStore {
                     
                     self.meals = loadedMeals
                     
-                    // Override goalMinutes with the dynamically resolved value
+                    // Override goalMinutes with the dynamically resolved value, but preserve computed walk minutes
                     var restoredWalk = storedData.walkActivity
                     if let pet = self.activePet {
                         restoredWalk.goalMinutes = BreedDataService.shared.resolveWalkGoal(for: pet)
                     }
+                    restoredWalk.currentMinutes = self.walkActivity.currentMinutes
                     self.walkActivity = restoredWalk
-                    self.timeWalkedGraph = storedData.timeWalkedGraph
-                    self.distanceSummary = storedData.distanceSummary
+                    
+                    // Ignore storedData's graph and distance summary since we rebuild them dynamically from self.activities
                     self.memories = storedData.memories ?? []
                     // self.activities = storedData.activities ?? []
                     
                     // Update local cache
                     let key = "activity_store_data_\(petId.uuidString)"
                     UserDefaults.standard.set(data, forKey: key)
+                    
+                    rebuildStats()
                 }
             }
         } catch {
@@ -432,6 +449,10 @@ class ActivityStore {
                 .value
             
             await MainActor.run {
+                guard petId == self.activePetId else {
+                    print("Fetched walks for a pet that is no longer active. Ignoring.")
+                    return
+                }
                 let fetchedActivities = fetched.map { rec in
                     Activity(
                         id: rec.id,
@@ -442,20 +463,11 @@ class ActivityStore {
                     )
                 }
                 
-                var merged = self.activities
-                let existingIds = Set(merged.map { $0.id })
-                for newAct in fetchedActivities {
-                    if !existingIds.contains(newAct.id) {
-                        merged.append(newAct)
-                    }
-                }
-                merged.sort { $0.date > $1.date }
-                
-                self.activities = merged
+                self.activities = fetchedActivities
                 // Update local cache
                 saveActivitiesLocally(for: petId)
                 rebuildStats()
-                print("Successfully fetched \(fetched.count) walk activities from Supabase and merged")
+                print("Successfully fetched \(fetched.count) walk activities from Supabase")
             }
         } catch {
             print("Failed to fetch walk activities from Supabase: \(error)")

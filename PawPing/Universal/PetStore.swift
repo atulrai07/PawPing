@@ -59,7 +59,7 @@ class PetStore {
             }
         } catch {
             print("  Error fetching pets: \(error)")
-            self.lastError = "Failed to fetch pets. Please check your connection."
+            self.lastError = "Failed to fetch pets. \(error.localizedDescription)"
             self.showError = true
         }
     }

@@ -478,6 +478,10 @@ class MealDietStore {
                let state = try? JSONDecoder().decode(CombinedState.self, from: data) {
                 
                 await MainActor.run {
+                    guard petId == self.currentPetId else {
+                        print("Fetched meal/diet data for a pet that is no longer active. Ignoring.")
+                        return
+                    }
                     self.dietPlan = state.dietPlan
                     self.mealLogs = state.mealLogs
                     

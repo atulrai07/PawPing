@@ -146,10 +146,10 @@ class AuthStore {
             appState?.currentUserName = "Pet Owner"
         }
         
-        appState?.isAuthenticated = true
-        
-        // Ensure profile exists in DB
+        // Ensure profile exists in DB first to prevent RLS/sync races during login transitions
         await ensureProfileExists(for: user)
+        
+        appState?.isAuthenticated = true
     }
     
     private func ensureProfileExists(for user: User) async {
