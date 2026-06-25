@@ -144,7 +144,7 @@ struct DietSetupSheet: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Label(petStore.activePet?.breed ?? "—", systemImage: "pawprint.fill")
-                        Label("\(petStore.activePet?.age ?? "?") years old", systemImage: "birthday.cake.fill")
+                        Label("\(petStore.activePet?.ageDisplay ?? "?") old", systemImage: "birthday.cake.fill")
                     }
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Color("secondaryText"))

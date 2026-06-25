@@ -109,7 +109,7 @@ struct HealthReportConfigView: View {
                 Text("Breed : \(petStore.activePet?.breed ?? "—")")
                     .font(.system(size: 14))
                 
-                Text("Age : \(petStore.activePet?.age ?? "?")")
+                Text("Age : \(petStore.activePet?.ageDisplay ?? "?")")
                     .font(.system(size: 14))
                 
                 Text("Owner : Rahul Kumar")

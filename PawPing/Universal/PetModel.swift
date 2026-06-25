@@ -56,6 +56,39 @@ struct Pet: Identifiable, Codable, Hashable {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.date(from: birthday)
     }
+    
+    var ageDisplay: String {
+        guard let birthdayDate = birthdayDate else {
+            if age == "1" {
+                return "1 year"
+            } else if let num = Int(age) {
+                return "\(num) years"
+            }
+            return age
+        }
+        
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month], from: birthdayDate, to: Date())
+        
+        if let years = components.year, years > 0 {
+            if years == 1 {
+                if let months = components.month, months > 0 {
+                    return "1 yr \(months) mo"
+                }
+                return "1 year"
+            } else {
+                if let months = components.month, months > 0 {
+                    return "\(years) yrs \(months) mo"
+                }
+                return "\(years) years"
+            }
+        } else if let months = components.month, months > 0 {
+            return months == 1 ? "1 month" : "\(months) months"
+        } else {
+            let days = calendar.dateComponents([.day], from: birthdayDate, to: Date()).day ?? 0
+            return days == 1 ? "1 day" : "\(days) days"
+        }
+    }
 }
 
 // MARK: - Pet Gender

@@ -201,7 +201,7 @@ private extension ProfileView {
                 HStack {
                     attributeItem(icon: "mars.and.venus", text: pet.gender.rawValue.capitalized)
                     Divider().frame(height: 16)
-                    attributeItem(icon: "calendar", text: pet.age)
+                    attributeItem(icon: "calendar", text: pet.ageDisplay)
                     Divider().frame(height: 16)
                     attributeItem(icon: "scalemass", text: "\(String(format: "%.1f", pet.weightKg)) kg")
                 }

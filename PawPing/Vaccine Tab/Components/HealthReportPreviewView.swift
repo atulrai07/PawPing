@@ -131,7 +131,7 @@ struct HealthReportPreviewView: View {
                 Text("Breed: \(pet.breed)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text("Age: \(pet.age)")
+                Text("Age: \(pet.ageDisplay)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Text("Owner: \(appState.currentUserName)")
