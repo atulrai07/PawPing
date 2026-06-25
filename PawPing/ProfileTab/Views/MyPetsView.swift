@@ -72,10 +72,12 @@ struct MyPetsView: View {
                             selectedPet = pet
                         }
                         .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                petToDelete = pet
-                            } label: {
-                                Label("Delete", systemImage: "trash")
+                            if petStore.pets.count > 1 {
+                                Button(role: .destructive) {
+                                    petToDelete = pet
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
                             }
                         }
                         .listRowBackground(Color.clear)

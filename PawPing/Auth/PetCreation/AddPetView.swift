@@ -9,6 +9,7 @@ import PhotosUI
 struct AddPetView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(AuthStore.self) var authStore
+    @Environment(AppState.self) var appState
     var onSave: () -> Void
     
     @State private var name: String = ""
@@ -152,8 +153,14 @@ struct AddPetView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
+                    Button(appState.hasPets ? "Cancel" : "Log Out") {
+                        if !appState.hasPets {
+                            Task {
+                                await authStore.logout()
+                            }
+                        } else {
+                            dismiss()
+                        }
                     }
                 }
                 

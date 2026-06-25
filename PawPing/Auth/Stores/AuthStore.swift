@@ -179,6 +179,30 @@ class AuthStore {
         }
     }
     
+    func signInWithApple(idToken: String, fullName: String?) async throws {
+        let response = try await client.auth.signInWithIdToken(
+            credentials: .init(provider: .apple, idToken: idToken)
+        )
+        
+        let user = response.user
+        
+        if let fullName, !fullName.isEmpty {
+            struct ProfileUpdate: Encodable {
+                let id: String
+                let full_name: String
+                let email: String
+            }
+            let profile = ProfileUpdate(
+                id: user.id.uuidString.lowercased(),
+                full_name: fullName,
+                email: user.email ?? ""
+            )
+            _ = try? await client.from("profiles").upsert(profile).execute()
+        }
+        
+        await updateState(with: user)
+    }
+    
     private func logoutLocally() {
         appState?.isAuthenticated = false
         appState?.currentUserId = ""

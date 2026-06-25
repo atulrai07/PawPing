@@ -117,6 +117,11 @@ class PetStore {
     
     @MainActor
     func deletePet(id: UUID) async {
+        guard pets.count > 1 else {
+            self.lastError = "You cannot delete your only pet. You must keep at least one pet."
+            self.showError = true
+            return
+        }
         do {
             try await client
                 .from("pets")

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 
 struct SignupView: View {
     @Binding var path: NavigationPath
@@ -13,6 +14,7 @@ struct SignupView: View {
     @State private var name = ""
     @State private var email = ""
     @State private var password = ""
+    @State private var appleSignInCoordinator: SignInWithAppleCoordinator? = nil
     @State private var isLoading = false
     @State private var errorMessage = ""
     
@@ -81,6 +83,8 @@ struct SignupView: View {
                         Text(errorMessage)
                             .font(.system(size: 14))
                             .foregroundStyle(.red)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 
@@ -119,7 +123,24 @@ struct SignupView: View {
                 // Social Buttons
                 VStack(spacing: 16) {
                     Button {
-                        // Apple Login
+                        isLoading = true
+                        errorMessage = ""
+                        let coordinator = SignInWithAppleCoordinator(authStore: authStore) { error in
+                            self.errorMessage = error.localizedDescription
+                            self.isLoading = false
+                        } onSuccess: {
+                            self.isLoading = false
+                        }
+                        self.appleSignInCoordinator = coordinator
+                        
+                        let provider = ASAuthorizationAppleIDProvider()
+                        let request = provider.createRequest()
+                        request.requestedScopes = [.fullName, .email]
+                        
+                        let controller = ASAuthorizationController(authorizationRequests: [request])
+                        controller.delegate = coordinator
+                        controller.presentationContextProvider = coordinator
+                        controller.performRequests()
                     } label: {
                         HStack {
                             Image(systemName: "applelogo")
