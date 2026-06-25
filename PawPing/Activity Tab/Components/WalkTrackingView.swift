@@ -13,6 +13,39 @@ struct WalkTrackingView: View {
     var store: ActivityStore
     var onDismiss: () -> Void
 
+    @State private var isLocked = false
+    @State private var unlockProgress: Double = 0.0
+    @State private var isPressing = false
+    @State private var unlockWorkItem: DispatchWorkItem? = nil
+
+    private func startUnlockSequence() {
+        isPressing = true
+        withAnimation(.linear(duration: 1.5)) {
+            unlockProgress = 1.0
+        }
+        
+        let workItem = DispatchWorkItem {
+            if self.isPressing {
+                withAnimation(.spring()) {
+                    self.isLocked = false
+                    self.isPressing = false
+                    self.unlockProgress = 0.0
+                }
+            }
+        }
+        self.unlockWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: workItem)
+    }
+
+    private func cancelUnlockSequence() {
+        isPressing = false
+        unlockWorkItem?.cancel()
+        unlockWorkItem = nil
+        withAnimation(.easeOut(duration: 0.2)) {
+            unlockProgress = 0.0
+        }
+    }
+
     private var distanceText: String {
         let d = store.locationManager.totalDistance
         return String(format: "%.2f", d / 1000.0)
@@ -191,6 +224,7 @@ struct WalkTrackingView: View {
             .layoutPriority(1)
             .clipped()
             .ignoresSafeArea(edges: .top)
+            .allowsHitTesting(!isLocked)
 
             // 2. Fixed Header Toolbar (Transparent Backdrop overlay)
             HStack {
@@ -204,6 +238,8 @@ struct WalkTrackingView: View {
                             .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
                     )
                     .contentShape(Circle())
+                    .opacity(isLocked ? 0.3 : 1.0)
+                    .allowsHitTesting(!isLocked)
                     .onTapGesture {
                         onDismiss()
                     }
@@ -237,78 +273,141 @@ struct WalkTrackingView: View {
             // 3. Fixed Controls Panel (Aligned Bottom Card overlay)
             VStack {
                 Spacer()
-                HStack(spacing: 0) {
-                    // Lock Control
-                    VStack(spacing: 6) {
-                        Button {
-                            // Lock action trigger
-                        } label: {
-                            Circle()
-                                .fill(isDark ? Color(white: 0.18) : .white)
-                                .frame(width: 54, height: 54)
-                                .shadow(color: .black.opacity(0.06), radius: 4)
-                                .overlay(
-                                    Image(systemName: "lock")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundColor(.homePurple)
+                
+                Group {
+                    if isLocked {
+                        // Locked UI
+                        VStack(spacing: 12) {
+                            Text("Screen Locked")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(.textPrimary)
+                            
+                            VStack(spacing: 8) {
+                                ZStack {
+                                    // Progress circle background
+                                    Circle()
+                                        .stroke(Color.homePurple.opacity(0.15), lineWidth: 4)
+                                        .frame(width: 80, height: 80)
+                                    
+                                    // Progress ring
+                                    Circle()
+                                        .trim(from: 0.0, to: CGFloat(unlockProgress))
+                                        .stroke(Color.homePurple, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                                        .frame(width: 80, height: 80)
+                                        .rotationEffect(Angle(degrees: -90))
+                                    
+                                    // Inner lock icon button
+                                    Circle()
+                                        .fill(LinearGradient(colors: [Color.homePurple, Color.homePurple.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                        .frame(width: 68, height: 68)
+                                        .shadow(color: Color.homePurple.opacity(0.3), radius: 8, x: 0, y: 4)
+                                        .overlay(
+                                            Image(systemName: isPressing ? "lock.open.fill" : "lock.fill")
+                                                .font(.system(size: 24, weight: .bold))
+                                                .foregroundColor(.white)
+                                                .scaleEffect(isPressing ? 1.2 : 1.0)
+                                                .animation(.spring(), value: isPressing)
+                                        )
+                                }
+                                .gesture(
+                                    DragGesture(minimumDistance: 0)
+                                        .onChanged { _ in
+                                            if !isPressing {
+                                                startUnlockSequence()
+                                            }
+                                        }
+                                        .onEnded { _ in
+                                            cancelUnlockSequence()
+                                        }
                                 )
+                                
+                                Text("Hold to Unlock")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.textSecondary)
+                            }
                         }
-                        .buttonStyle(.plain)
-                        
-                        Text("Lock")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    
-                    // Play / Pause Control
-                    VStack(spacing: 6) {
-                        Button {
-                            store.togglePause()
-                        } label: {
-                            Circle()
-                                .fill(LinearGradient(colors: [Color.homePurple, Color.homePurple.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                .frame(width: 80, height: 80)
-                                .shadow(color: Color.homePurple.opacity(0.3), radius: 8, x: 0, y: 4)
-                                .overlay(
-                                    Image(systemName: store.isPaused ? "play.fill" : "pause.fill")
-                                        .font(.system(size: 28, weight: .bold))
-                                        .foregroundColor(.white)
-                                )
+                        .padding(.vertical, 20)
+                        .frame(maxWidth: .infinity)
+                        .transition(.opacity.combined(with: .scale))
+                    } else {
+                        // Standard controls
+                        HStack(spacing: 0) {
+                            // Lock Control
+                            VStack(spacing: 6) {
+                                Button {
+                                    withAnimation(.spring()) {
+                                        isLocked = true
+                                    }
+                                } label: {
+                                    Circle()
+                                        .fill(isDark ? Color(white: 0.18) : .white)
+                                        .frame(width: 54, height: 54)
+                                        .shadow(color: .black.opacity(0.06), radius: 4)
+                                        .overlay(
+                                            Image(systemName: "lock")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(.homePurple)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                                
+                                Text("Lock")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.textSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            
+                            // Play / Pause Control
+                            VStack(spacing: 6) {
+                                Button {
+                                    store.togglePause()
+                                } label: {
+                                    Circle()
+                                        .fill(LinearGradient(colors: [Color.homePurple, Color.homePurple.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                        .frame(width: 80, height: 80)
+                                        .shadow(color: Color.homePurple.opacity(0.3), radius: 8, x: 0, y: 4)
+                                        .overlay(
+                                            Image(systemName: store.isPaused ? "play.fill" : "pause.fill")
+                                                .font(.system(size: 28, weight: .bold))
+                                                .foregroundColor(.white)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                                
+                                Text(store.isPaused ? "Resume" : "Pause")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.textSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            
+                            // Stop Control
+                            VStack(spacing: 6) {
+                                Button {
+                                    store.stopWalk()
+                                    onDismiss()
+                                } label: {
+                                    Circle()
+                                        .fill(isDark ? Color(white: 0.18) : .white)
+                                        .frame(width: 54, height: 54)
+                                        .shadow(color: .black.opacity(0.06), radius: 4)
+                                        .overlay(
+                                            Image(systemName: "stop.fill")
+                                                .font(.system(size: 18, weight: .bold))
+                                                .foregroundColor(Color.red.opacity(0.8))
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                                
+                                Text("Stop")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.textSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.plain)
-                        
-                        Text(store.isPaused ? "Resume" : "Pause")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.textSecondary)
+                        .padding(.vertical, 20)
+                        .transition(.opacity.combined(with: .scale))
                     }
-                    .frame(maxWidth: .infinity)
-                    
-                    // Stop Control
-                    VStack(spacing: 6) {
-                        Button {
-                            store.stopWalk()
-                            onDismiss()
-                        } label: {
-                            Circle()
-                                .fill(isDark ? Color(white: 0.18) : .white)
-                                .frame(width: 54, height: 54)
-                                .shadow(color: .black.opacity(0.06), radius: 4)
-                                .overlay(
-                                    Image(systemName: "stop.fill")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundColor(Color.red.opacity(0.8))
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        
-                        Text("Stop")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
                 }
-                .padding(.vertical, 20)
                 .background(
                     RoundedRectangle(cornerRadius: 24)
                         .fill(isDark ? Color(white: 0.12) : Color.homePurple.opacity(0.04))
