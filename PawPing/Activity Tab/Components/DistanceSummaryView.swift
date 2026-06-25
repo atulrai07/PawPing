@@ -15,8 +15,118 @@ struct DistanceSummaryView: View {
     
     @State private var selectedRange = 0
     @State private var showCalendar = false
+    @State private var chartMode = 0 // 0 = Distance (km), 1 = Time (minutes)
     
     private let ranges = ["Week", "Month"]
+    
+    struct ActivityChartPoint: Identifiable {
+        let id = UUID()
+        let date: Date
+        let distanceInKm: Double
+        let durationMinutes: Double
+        let dayLabel: String
+        let dayOfMonthLabel: String
+    }
+    
+    private var currentWeekChartData: [ActivityChartPoint] {
+        let calendar = Calendar.current
+        let today = Date()
+        var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+        components.weekday = 2
+        let monday = calendar.date(from: components) ?? today
+        let weekDates = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: monday) }
+        
+        var points: [ActivityChartPoint] = []
+        for wDate in weekDates {
+            let dayStart = calendar.startOfDay(for: wDate)
+            let dayActivities = store.activities.filter { calendar.isDate($0.date, inSameDayAs: dayStart) }
+            
+            let dist = dayActivities.reduce(0.0) { $0 + $1.distanceInKm }
+            let mins = dayActivities.reduce(0.0) { $0 + Double($1.durationMinutes) }
+            
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEE"
+            let dLabel = formatter.string(from: wDate)
+            formatter.dateFormat = "d"
+            let dmLabel = formatter.string(from: wDate)
+            
+            points.append(ActivityChartPoint(
+                date: wDate,
+                distanceInKm: dist,
+                durationMinutes: mins,
+                dayLabel: dLabel,
+                dayOfMonthLabel: dmLabel
+            ))
+        }
+        
+        let totalDist = points.reduce(0.0) { $0 + $1.distanceInKm }
+        if totalDist == 0 && store.activities.isEmpty {
+            let valsDist = [1.2, 2.3, 1.7, 0.9, 0.0, 2.6, 1.5]
+            let valsMins = [24.0, 46.0, 34.0, 18.0, 0.0, 52.0, 30.0]
+            return zip(points, zip(valsDist, valsMins)).map { pt, val in
+                ActivityChartPoint(
+                    date: pt.date,
+                    distanceInKm: val.0,
+                    durationMinutes: val.1,
+                    dayLabel: pt.dayLabel,
+                    dayOfMonthLabel: pt.dayOfMonthLabel
+                )
+            }
+        }
+        
+        return points
+    }
+
+    private var currentMonthChartData: [ActivityChartPoint] {
+        let calendar = Calendar.current
+        let today = Date()
+        guard let firstOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today)),
+              let monthRange = calendar.range(of: .day, in: .month, for: today)
+        else { return [] }
+        
+        var points: [ActivityChartPoint] = []
+        for day in monthRange {
+            if let dayDate = calendar.date(byAdding: .day, value: day - 1, to: firstOfMonth) {
+                let dayStart = calendar.startOfDay(for: dayDate)
+                let dayActivities = store.activities.filter { calendar.isDate($0.date, inSameDayAs: dayStart) }
+                
+                let dist = dayActivities.reduce(0.0) { $0 + $1.distanceInKm }
+                let mins = dayActivities.reduce(0.0) { $0 + Double($1.durationMinutes) }
+                
+                let formatter = DateFormatter()
+                formatter.dateFormat = "EEE"
+                let dLabel = formatter.string(from: dayDate)
+                formatter.dateFormat = "d"
+                let dmLabel = formatter.string(from: dayDate)
+                
+                points.append(ActivityChartPoint(
+                    date: dayDate,
+                    distanceInKm: dist,
+                    durationMinutes: mins,
+                    dayLabel: dLabel,
+                    dayOfMonthLabel: dmLabel
+                ))
+            }
+        }
+        
+        let totalDist = points.reduce(0.0) { $0 + $1.distanceInKm }
+        if totalDist == 0 && store.activities.isEmpty {
+            return points.map { pt in
+                let day = Int(pt.dayOfMonthLabel) ?? 1
+                let valDist: Double = (day == 14 || day == 15) ? 4.6 : ((day % 5 == 0) ? 1.8 : ((day % 3 == 0) ? 0.8 : 0.0))
+                let valMins = valDist * 20.0
+                return ActivityChartPoint(
+                    date: pt.date,
+                    distanceInKm: valDist,
+                    durationMinutes: valMins,
+                    dayLabel: pt.dayLabel,
+                    dayOfMonthLabel: pt.dayOfMonthLabel
+                )
+            }
+        }
+        
+        return points
+    }
     
     // MARK: - Synchronized Data Source (Logged or Fallback)
     
@@ -83,7 +193,24 @@ struct DistanceSummaryView: View {
     }
     
     private var daysMeetingGoal: Int {
-        currentWeekData.filter { $0.distanceInKm >= 2.0 }.count
+        let calendar = Calendar.current
+        let goalMins = store.walkActivity.goalMinutes
+        guard goalMins > 0 else { return 0 }
+        
+        var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        components.weekday = 2
+        guard let monday = calendar.date(from: components) else { return 0 }
+        let sunday = calendar.date(byAdding: .day, value: 6, to: monday) ?? Date()
+        
+        let thisWeekActivities = store.activities.filter { $0.date >= monday && $0.date <= sunday }
+        let groupedByDay = Dictionary(grouping: thisWeekActivities) { activity in
+            calendar.startOfDay(for: activity.date)
+        }
+        
+        return groupedByDay.values.filter { activities in
+            let totalMins = activities.reduce(0) { $0 + $1.durationMinutes }
+            return totalMins >= goalMins
+        }.count
     }
     
     private var bestDayOfMonth: (dateLabel: String, distance: Double) {
@@ -93,7 +220,7 @@ struct DistanceSummaryView: View {
             formatter.dateFormat = "MMM d"
             return (formatter.string(from: best.date), best.distanceInKm)
         }
-        return ("Jun 14", 4.6)
+        return ("—", 0.0)
     }
     
     // Bottom grid values (Week)
@@ -102,12 +229,12 @@ struct DistanceSummaryView: View {
         if let best = sorted.first, best.distanceInKm > 0 {
             return (best.distanceInKm, best.dayLabel)
         }
-        return (2.6, "Sat")
+        return (0.0, "—")
     }
     
     private var avgDistancePerWalkWeek: Double {
         let validWalks = currentWeekData.filter { $0.distanceInKm > 0 }
-        guard !validWalks.isEmpty else { return 1.5 }
+        guard !validWalks.isEmpty else { return 0.0 }
         let total = validWalks.reduce(0.0) { $0 + $1.distanceInKm }
         return total / Double(validWalks.count)
     }
@@ -123,7 +250,7 @@ struct DistanceSummaryView: View {
     
     private var avgDistancePerWalkMonth: Double {
         let validWalks = currentMonthData.filter { $0.distanceInKm > 0 }
-        guard !validWalks.isEmpty else { return 1.2 }
+        guard !validWalks.isEmpty else { return 0.0 }
         let total = validWalks.reduce(0.0) { $0 + $1.distanceInKm }
         return total / Double(validWalks.count)
     }
@@ -132,11 +259,11 @@ struct DistanceSummaryView: View {
         let calendar = Calendar.current
         let today = Date()
         guard let firstOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) else {
-            return "3h 21m"
+            return "0h 0m"
         }
         let monthActivities = store.activities.filter { $0.date >= firstOfMonth && $0.date <= today }
         let totalMinutes = monthActivities.reduce(0) { $0 + $1.durationMinutes }
-        guard totalMinutes > 0 else { return "3h 21m" }
+        guard totalMinutes > 0 else { return "0h 0m" }
         let hours = totalMinutes / 60
         let minutes = totalMinutes % 60
         return "\(hours)h \(minutes)m"
@@ -213,9 +340,9 @@ struct DistanceSummaryView: View {
                 let absPercent = abs(percent)
                 let direction = percent >= 0 ? "more" : "less"
                 HStack {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Image(systemName: percent >= 0 ? "chart.line.uptrend.xyaxis" : "chart.line.downtrend.xyaxis")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.homePurple)
+                        .foregroundColor(percent >= 0 ? .homePurple : .red)
                     
                     Text("\(absPercent)% \(direction) than last \(labelType)")
                         .font(.system(size: 13, weight: .semibold))
@@ -230,17 +357,29 @@ struct DistanceSummaryView: View {
                         .fill(isDark ? Color(white: 0.16) : Color.white)
                         .shadow(color: .black.opacity(isDark ? 0.15 : 0.03), radius: 6, x: 0, y: 3)
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(isDark ? Color(white: 0.22) : Color.textPrimary.opacity(0.06), lineWidth: 1)
-                )
                 .padding(.horizontal)
                 
                 // MARK: - Chart Card
                 VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text(chartMode == 0 ? "Distance Trend" : "Duration Trend")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.textPrimary)
+                        
+                        Spacer()
+                        
+                        Picker("Metric", selection: $chartMode) {
+                            Text("Distance").tag(0)
+                            Text("Time").tag(1)
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 160)
+                    }
+                    .padding(.horizontal, 4)
+                    
                     chartContent
                         .frame(height: 200)
-                        .padding(.top, 16)
+                        .padding(.top, 10)
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 14)
@@ -264,8 +403,9 @@ struct DistanceSummaryView: View {
                                 .foregroundColor(.white)
                         }
                         
-                        let goalDays = daysMeetingGoal > 0 ? daysMeetingGoal : 4
-                        Text("Great job!\nTommy met the goal on \(goalDays) days this week.")
+                        let goalDays = daysMeetingGoal
+                        let petName = store.activePet?.name ?? "Tommy"
+                        Text(goalDays > 0 ? "Great job!\n\(petName) met the goal on \(goalDays) days this week." : "Keep it up!\n\(petName) has not met the daily goal yet this week.")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.white)
                             .lineSpacing(2)
@@ -349,7 +489,7 @@ struct DistanceSummaryView: View {
                     } else {
                         // Box 1: Total Walks
                         DistanceStatCardView(
-                            iconName: "figure.walk",
+                            iconName: "dog.fill",
                             iconColor: Color.blue,
                             title: "Total Walks",
                             value: "\(totalWalksMonth)",
@@ -414,11 +554,16 @@ struct DistanceSummaryView: View {
     // MARK: - Chart Content View
     private var chartContent: some View {
         let isDark = colorScheme == .dark
-        let data = selectedRange == 0 ? currentWeekData : currentMonthData
+        let data = selectedRange == 0 ? currentWeekChartData : currentMonthChartData
         
-        let maxVal = data.map { $0.distanceInKm }.max() ?? 0.0
-        let targetGoal: Double = selectedRange == 0 ? 2.0 : 3.0
-        let yMax = max(targetGoal + 1.0, maxVal * 1.15)
+        let maxVal = data.map { chartMode == 0 ? $0.distanceInKm : $0.durationMinutes }.max() ?? 0.0
+        let targetGoal: Double
+        if chartMode == 0 {
+            targetGoal = selectedRange == 0 ? 2.0 : 3.0
+        } else {
+            targetGoal = Double(store.walkActivity.goalMinutes)
+        }
+        let yMax = max(targetGoal + (chartMode == 0 ? 1.0 : 15.0), maxVal * 1.15)
         
         return Chart {
             // Target Goal Rule Line
@@ -427,18 +572,21 @@ struct DistanceSummaryView: View {
                 .foregroundStyle(Color.homePurple)
             
             ForEach(data) { item in
+                let yVal = chartMode == 0 ? item.distanceInKm : item.durationMinutes
+                let threshold = chartMode == 0 ? 2.5 : Double(store.walkActivity.goalMinutes) * 0.8
+                
                 BarMark(
                     x: .value("Date", selectedRange == 0 ? item.dayLabel : item.dayOfMonthLabel),
-                    y: .value("Distance", item.distanceInKm)
+                    y: .value(chartMode == 0 ? "Distance" : "Time", yVal)
                 )
                 .foregroundStyle(
                     selectedRange == 0 ? Color.homePurple : 
-                    ((item.distanceInKm > 2.5) ? Color.homePurple : Color.homePurple.opacity(0.25))
+                    ((yVal > threshold) ? Color.homePurple : Color.homePurple.opacity(0.25))
                 )
                 .cornerRadius(selectedRange == 0 ? 6 : 3)
                 .annotation(position: .top) {
-                    if selectedRange == 0 || item.distanceInKm > 3.0 || (item.distanceInKm > 0 && selectedRange == 1 && item.dayOfMonthLabel == "15") {
-                        Text(String(format: "%.1f", item.distanceInKm))
+                    if selectedRange == 0 || yVal > (chartMode == 0 ? 3.0 : Double(store.walkActivity.goalMinutes) * 1.0) || (yVal > 0 && selectedRange == 1 && item.dayOfMonthLabel == "15") {
+                        Text(chartMode == 0 ? String(format: "%.1f", yVal) : String(format: "%.0f", yVal))
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.textPrimary)
                     }
@@ -467,8 +615,8 @@ struct DistanceSummaryView: View {
         .chartYAxis {
             AxisMarks(position: .leading, values: .automatic) { value in
                 AxisValueLabel {
-                    if let distance = value.as(Double.self) {
-                        Text(distance == 0 ? "0" : String(format: "%.1f km", distance))
+                    if let val = value.as(Double.self) {
+                        Text(val == 0 ? "0" : (chartMode == 0 ? String(format: "%.1f km", val) : String(format: "%.0f min", val)))
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(Color.textSecondary)
                     }
@@ -518,10 +666,6 @@ struct DistanceStatCardView: View {
             RoundedRectangle(cornerRadius: 18)
                 .fill(isDark ? Color(white: 0.13) : Color.cardIvory)
                 .shadow(color: .black.opacity(isDark ? 0.15 : 0.03), radius: 6, x: 0, y: 3)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(isDark ? Color(white: 0.2) : Color.textPrimary.opacity(0.05), lineWidth: 1)
         )
     }
 }

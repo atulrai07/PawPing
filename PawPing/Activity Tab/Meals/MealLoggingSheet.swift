@@ -131,47 +131,63 @@ struct MealLoggingSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                headerSection
-                
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 24) {
-                        bannerCard
-                        
-                        foodTypeSection
-                            .padding(.horizontal)
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 24) {
+                    bannerCard
+                    
+                    foodTypeSection
+                        .padding(.horizontal)
 
-                        // For Custom flow: show multi-ingredient UI and a dedicated Save button
-                        if let food = selectedFood, food.isEstimateOnly {
-                            VStack(spacing: 24) {
+                    // Food-specific UI (Multi-ingredient for Custom, Quantity Selector for Standard) and calorie details
+                    if let food = selectedFood {
+                        VStack(spacing: 24) {
+                            if food.isEstimateOnly {
                                 multiIngredientSection
                                     .padding(.horizontal)
-                                
-                                if calculatedCalories > 0 {
-                                    caloriePreview
-                                        .padding(.horizontal)
-                                }
-                                
-                                timePickerSection
+                            } else {
+                                QuantitySelectorView(selected: $selectedQuantity, unit: store.mealDietStore.unitFor(food: food))
                                     .padding(.horizontal)
-                                
-                                saveCustomButton
                             }
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                        } else {
-                            // Standard selection shows the Tip Card
-                            tipCard
+                            
+                            if calculatedCalories > 0 {
+                                caloriePreview
+                                    .padding(.horizontal)
+                            }
+                            
+                            timePickerSection
+                                .padding(.horizontal)
+                            
+                            if food.isEstimateOnly {
+                                saveCustomButton
+                            } else {
+                                saveStandardButton
+                            }
                         }
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
-                    .padding(.vertical, 8)
-                    .padding(.bottom, 40)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedFood)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: calculatedCalories)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: ingredients.count)
+                }
+                .padding(.vertical, 8)
+                .padding(.bottom, 40)
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedFood)
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: calculatedCalories)
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: ingredients.count)
+            }
+            .background(Color(uiColor: .systemBackground))
+            .navigationTitle(isReadOnly ? "\(mealType.rawValue) Details" : "Log \(mealType.rawValue)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .background(Color("baseBackground"))
-            .toolbar(.hidden, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $showIngredientSearch) {
                 IngredientSearchSheet(store: store) { ingredient in
                     ingredients.append(ingredient)
@@ -216,13 +232,12 @@ struct MealLoggingSheet: View {
                 dismiss()
             } label: {
                 Circle()
-                    .fill(Color("cardBackground"))
+                    .fill(Color(.systemGray6))
                     .frame(width: 36, height: 36)
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
                     .overlay(
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(Color(hex: "6E54D7") ?? .purple)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.secondary)
                     )
             }
         }
@@ -250,9 +265,6 @@ struct MealLoggingSheet: View {
                     Text(bannerTitle)
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.primary)
-                    Text(bannerSubtitle)
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
                 }
             }
             .padding(.leading, 16)
@@ -300,27 +312,10 @@ struct MealLoggingSheet: View {
                 ForEach(FoodType.allCases) { food in
                     Button {
                         withAnimation {
-                            if food == .custom {
-                                selectedFood = food
-                            } else {
-                                selectedFood = food
-                                
-                                // Auto-save standard selection
-                                let unit = store.mealDietStore.unitFor(food: food)
-                                store.updateMeal(
-                                    type: mealType,
-                                    foodType: food,
-                                    quantity: 1.0,
-                                    unit: unit,
-                                    ingredients: [],
-                                    time: Date(),
-                                    isTaken: true,
-                                    forDate: logDate
-                                )
-                                // Brief delay for selection animation
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                    dismiss()
-                                }
+                            selectedFood = food
+                            // If switching to a standard food, default to 1.0 quantity
+                            if food != .custom {
+                                selectedQuantity = 1.0
                             }
                         }
                     } label: {
@@ -588,6 +583,52 @@ struct MealLoggingSheet: View {
             HStack {
                 Spacer()
                 Text("Save Custom Meal")
+                    .font(.system(size: 17, weight: .bold))
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 16, weight: .bold))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 24)
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "8D75F6") ?? .purple, Color(hex: "6E54D7") ?? .indigo],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(Capsule())
+            .shadow(color: (Color(hex: "6E54D7") ?? .purple).opacity(0.3), radius: 10, x: 0, y: 5)
+        }
+        .disabled(!canSave)
+        .opacity(canSave ? 1.0 : 0.6)
+        .padding(.horizontal)
+    }
+
+    // MARK: - Save Standard Button
+
+    private var saveStandardButton: some View {
+        Button {
+            if let food = selectedFood {
+                let unit = store.mealDietStore.unitFor(food: food)
+                store.updateMeal(
+                    type: mealType,
+                    foodType: food,
+                    quantity: selectedQuantity,
+                    unit: unit,
+                    ingredients: [],
+                    time: selectedTime,
+                    isTaken: true,
+                    forDate: logDate
+                )
+            }
+            dismiss()
+        } label: {
+            HStack {
+                Spacer()
+                Text("Save Meal")
                     .font(.system(size: 17, weight: .bold))
                 Spacer()
                 Image(systemName: "arrow.right")

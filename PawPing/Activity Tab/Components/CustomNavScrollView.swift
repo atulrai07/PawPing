@@ -32,20 +32,14 @@ private struct StickyNavHeader: View {
                 HStack {
                     Spacer()
 
-                    // Add button (liquid glass style)
                     if let addAction = onAddTap {
                         Button {
                             addAction()
                         } label: {
-                            ZStack {
-                                Circle()
-                                    .fill(.ultraThinMaterial)
-                                    .frame(width: 36, height: 36)
-
-                                Image(systemName: "plus")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .foregroundStyle(Color("baseColor"))
-                            }
+                            Image(systemName: "plus")
+                                .font(.system(size: 22, weight: .medium))
+                                .foregroundStyle(Color("baseColor"))
+                                .frame(width: 36, height: 36)
                         }
                         .padding(.trailing, 8)
                     }

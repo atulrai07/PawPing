@@ -52,49 +52,108 @@ struct FullTimelineView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if isFilterActive {
-                    HStack {
-                        Image(systemName: "line.3.horizontal.decrease.circle.fill")
-                            .foregroundStyle(Color.pawPrimary)
-                        Text("Filters Active")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-                        
-                        Spacer()
-                        
-                        Button {
-                            selectedMonth = nil
-                            useDateRange = false
-                        } label: {
-                            Text("Clear")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .foregroundStyle(Color.pawPrimary)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                }
-                
+        Group {
+            if filteredEvents.isEmpty {
                 VStack(spacing: 0) {
-                    HealthTimelineView(events: filteredEvents, limit: nil)
+                    if isFilterActive {
+                        HStack {
+                            Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                                .foregroundStyle(Color.pawPrimary)
+                            Text("Filters Active")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.secondary)
+                            
+                            Spacer()
+                            
+                            Button {
+                                selectedMonth = nil
+                                useDateRange = false
+                            } label: {
+                                Text("Clear")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.pawPrimary)
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(spacing: 16) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.system(size: 40))
+                            .foregroundStyle(Color.homePurple)
+                            .padding(18)
+                            .background(Color.homePurple.opacity(0.1))
+                            .clipShape(Circle())
+                        
+                        Text("No Health Events")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(Color.textPrimary)
+                        
+                        Text("Your pet's health journey will appear here.")
+                            .font(.system(size: 15))
+                            .foregroundStyle(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                    }
+                    .padding(32)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.cardIvory)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+                    .padding(.horizontal, 24)
+                    
+                    Spacer()
                 }
-                .padding(16)
-                .background(Color.cardIvory)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
-                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-                )
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if isFilterActive {
+                            HStack {
+                                Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                                    .foregroundStyle(Color.pawPrimary)
+                                Text("Filters Active")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.secondary)
+                                
+                                Spacer()
+                                
+                                Button {
+                                    selectedMonth = nil
+                                    useDateRange = false
+                                } label: {
+                                    Text("Clear")
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(Color.pawPrimary)
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                        }
+                        
+                        VStack(spacing: 0) {
+                            HealthTimelineView(events: filteredEvents, limit: nil)
+                        }
+                        .padding(16)
+                        .background(Color.cardIvory)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20)
+                    }
+                }
             }
         }
-        .background(Color("baseBackground"))
+        .background(
+            LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+        )
         .navigationTitle("Full Timeline")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

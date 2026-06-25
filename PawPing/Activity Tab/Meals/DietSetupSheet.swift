@@ -170,73 +170,66 @@ struct DietSetupSheet: View {
 
     // MARK: - Weight Section
 
+    private var unitBinding: Binding<WeightUnit> {
+        Binding(
+            get: { weightUnit },
+            set: { newUnit in
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
+                    let oldUnit = weightUnit
+                    weightUnit = newUnit
+                    if let raw = Double(weightInput) {
+                        let kg = oldUnit.toKg(raw)
+                        weightInput = String(format: "%.1f", newUnitFromKg(kg, for: newUnit))
+                    }
+                }
+            }
+        )
+    }
+
     private var weightSection: some View {
         let isDark = colorScheme == .dark
         return VStack(alignment: .leading, spacing: 12) {
             Text("Current Weight")
                 .font(.system(size: 16, weight: .bold))
 
-            HStack(spacing: 12) {
-                // Weight Display/Input Card
-                HStack {
-                    TextField("e.g. 25", text: $weightInput)
-                        .keyboardType(.decimalPad)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
-                        .frame(width: 80)
-                    
-                    Spacer()
-                    
-                    Text(weightUnit.rawValue)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color("secondaryText"))
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(Color("cardBackground"))
-                .clipShape(RoundedRectangle(cornerRadius: 18))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(Color.gray.opacity(isDark ? 0.25 : 0.12), lineWidth: 1.5)
-                )
-
-                // Custom segmented control matching image
-                HStack(spacing: 0) {
-                    ForEach(WeightUnit.allCases, id: \.self) { unit in
-                        let isSelected = weightUnit == unit
-                        Button {
-                            withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
-                                let oldUnit = weightUnit
-                                weightUnit = unit
-                                if let raw = Double(weightInput) {
-                                    let kg = oldUnit.toKg(raw)
-                                    weightInput = String(format: "%.1f", newUnitFromKg(kg, for: unit))
-                                }
-                            }
-                        } label: {
-                            Text(unit.rawValue)
-                                .font(.system(size: 14, weight: isSelected ? .bold : .medium))
-                                .foregroundColor(isSelected ? (Color(hex: "6E54D7") ?? .purple) : Color("secondaryText"))
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                                .background(
-                                    Group {
-                                        if isSelected {
-                                            Capsule()
-                                                .fill(Color("cardBackground"))
-                                                .shadow(color: .black.opacity(isDark ? 0.16 : 0.08), radius: 4, x: 0, y: 2)
-                                        } else {
-                                            Color.clear
-                                        }
-                                    }
-                                )
+            HStack {
+                TextField("e.g. 25", text: $weightInput)
+                    .keyboardType(.decimalPad)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                
+                Spacer()
+                
+                // Dropdown Menu for Unit selection
+                Menu {
+                    Picker("Unit", selection: unitBinding) {
+                        ForEach(WeightUnit.allCases, id: \.self) { unit in
+                            Text(unit.rawValue).tag(unit)
                         }
                     }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(weightUnit.rawValue)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(Color(hex: "6E54D7") ?? .purple)
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color(hex: "6E54D7") ?? .purple)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(isDark ? Color.gray.opacity(0.12) : (Color(hex: "F2F2F7") ?? Color(.systemGray6)))
+                    .clipShape(Capsule())
                 }
-                .padding(4)
-                .background(isDark ? Color.gray.opacity(0.12) : (Color(hex: "F2F2F7") ?? Color(.systemGray6)))
-                .clipShape(Capsule())
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color("cardBackground"))
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color.gray.opacity(isDark ? 0.25 : 0.12), lineWidth: 1.5)
+            )
         }
     }
         

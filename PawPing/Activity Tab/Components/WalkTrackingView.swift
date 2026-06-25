@@ -151,10 +151,6 @@ struct WalkTrackingView: View {
                     .background(Color.cardIvory)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-                    )
                     .padding(.horizontal, 20)
 
                     // MARK: - Time Remaining Card (Without Chevron)
@@ -371,10 +367,6 @@ struct TrackingStatCard: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(isDark ? Color(white: 0.13) : Color.cardIvory)
                 .shadow(color: .black.opacity(isDark ? 0.15 : 0.03), radius: 6, x: 0, y: 3)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(isDark ? Color(white: 0.2) : Color.textPrimary.opacity(0.05), lineWidth: 1)
         )
     }
 }

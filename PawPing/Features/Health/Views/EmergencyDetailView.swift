@@ -11,21 +11,29 @@ struct EmergencyDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Header Panel
-                VStack(spacing: 16) {
-                    Circle()
-                        .fill(guide.color.opacity(0.12))
-                        .frame(width: 80, height: 80)
-                        .overlay(
-                            Image(systemName: guide.icon)
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundStyle(guide.color)
-                        )
+                // Emergency Intro Banner (contains the SF Symbol decoratively)
+                HStack(spacing: 16) {
+                    Image(systemName: guide.icon)
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundStyle(guide.color)
+                        .frame(width: 52, height: 52)
+                        .background(guide.color.opacity(0.12))
+                        .clipShape(Circle())
                     
-                    Text(guide.title)
-                        .font(.system(size: 28, weight: .bold))
-                        .multilineTextAlignment(.center)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Emergency Protocol")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(guide.color)
+                        Text("Follow the steps below to assist your pet.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
                 }
+                .padding(16)
+                .background(guide.color.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .padding(.horizontal)
                 .padding(.top, 16)
                 
                 // Video Tutorial Panel
@@ -69,10 +77,12 @@ struct EmergencyDetailView: View {
                     }
                     .padding(18)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color("cardBackground"))
+                    .background(Color.cardIvory)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
                 }
                 .padding(.horizontal)
+                .padding(.top, guide.videoID == nil ? 0 : 0)
                 
                 // Action Steps Flow
                 VStack(alignment: .leading, spacing: 14) {
@@ -109,8 +119,9 @@ struct EmergencyDetailView: View {
                         }
                     }
                     .padding(20)
-                    .background(Color("cardBackground"))
+                    .background(Color.cardIvory)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
                 }
                 .padding(.horizontal)
                 
@@ -120,7 +131,8 @@ struct EmergencyDetailView: View {
             }
         }
         .background(Color("baseBackground"))
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(guide.title)
+        .navigationBarTitleDisplayMode(.large)
     }
 }
 

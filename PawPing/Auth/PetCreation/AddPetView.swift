@@ -128,6 +128,7 @@ struct AddPetView: View {
                         .tint(Color("baseColor"))
                 }
             }
+            .tint(Color("baseColor"))
             .onChange(of: pickedImage) { _, newImage in
                 if let newImage, let compressedData = newImage.jpegData(compressionQuality: 0.7) {
                     selectedImageData = compressedData
@@ -177,5 +178,6 @@ struct AddPetView: View {
                 BreedPickerView(selectedBreed: $breed)
             }
         }
+        .tint(Color("baseColor"))
     }
 }

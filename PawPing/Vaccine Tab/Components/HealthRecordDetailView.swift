@@ -10,6 +10,7 @@ struct HealthRecordDetailView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showDeleteConfirmation = false
     @State private var showEditRecord = false
+    @State private var showingFullImage = false
     
     let record: HealthRecord
     
@@ -84,6 +85,30 @@ struct HealthRecordDetailView: View {
                 }
             }
             
+            if let imageUrlString = rec.imageUrl, let url = URL(string: imageUrlString) {
+                Section("Vaccine Report / Photo") {
+                    Button {
+                        showingFullImage = true
+                    } label: {
+                        HStack {
+                            Spacer()
+                            AsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxHeight: 200)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(height: 150)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            
             if !rec.notes.isEmpty {
                 Section("Notes") {
                     Text(rec.notes)
@@ -121,6 +146,11 @@ struct HealthRecordDetailView: View {
         .sheet(isPresented: $showEditRecord) {
             AddHealthRecordView(petId: rec.petId, recordToEdit: rec)
         }
+        .fullScreenCover(isPresented: $showingFullImage) {
+            if let imageUrlString = rec.imageUrl, let url = URL(string: imageUrlString) {
+                FullScreenImageView(url: url)
+            }
+        }
     }
     
     private func statusColor(for status: HealthStatus) -> Color {
@@ -137,6 +167,42 @@ struct HealthRecordDetailView: View {
                 .foregroundStyle(.secondary)
             Spacer()
             Text(value)
+        }
+    }
+}
+
+struct FullScreenImageView: View {
+    let url: URL
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                } placeholder: {
+                    ProgressView()
+                        .tint(.white)
+                }
+            }
+            .navigationTitle("Vaccine Report")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .foregroundStyle(.white)
+                    .fontWeight(.semibold)
+                }
+            }
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(Color.black, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
 }

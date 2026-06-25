@@ -34,6 +34,7 @@ private struct DBVaccineRecord: Codable {
     var status: String?            // Existing column in DB
     var batch_number: String?      // Existing column in DB
     var completed: Bool?           // New requirement
+    var image_url: String?         // Vaccine report photo URL
 }
 
 // MARK: - HealthStore
@@ -225,7 +226,8 @@ class HealthStore {
             vet_longitude: record.vetLongitude,
             status: nil,
             batch_number: nil,
-            completed: record.isCompleted
+            completed: record.isCompleted,
+            image_url: record.imageUrl
         )
     }
 
@@ -246,7 +248,8 @@ class HealthStore {
             vetAddress: row.vet_address,
             vetPhone: row.vet_phone,
             vetLatitude: row.vet_latitude,
-            vetLongitude: row.vet_longitude
+            vetLongitude: row.vet_longitude,
+            imageUrl: row.image_url
         )
     }
 }

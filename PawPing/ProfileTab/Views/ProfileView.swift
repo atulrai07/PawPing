@@ -18,7 +18,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 32) {
+                VStack(spacing: 24) {
                     
                     // 1. Header Section
                     headerSection
@@ -332,10 +332,6 @@ private extension ProfileView {
             }
             
             Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.gray)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 16)
@@ -405,7 +401,7 @@ private extension ProfileView {
                 }
                 Divider().padding(.leading, 56)
                 
-                NavigationLink(destination: EmptyView()) {
+                NavigationLink(destination: NotificationSettingsView()) {
                     settingsRow(icon: "bell.fill", iconColor: .green, title: "Notifications")
                 }
                 Divider().padding(.leading, 56)

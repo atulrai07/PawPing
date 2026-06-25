@@ -14,7 +14,7 @@ import SwiftUI
 // Tertiary:  #FF8C69 → Badges, labels, secondary CTAs
 extension Color {
 
-    static let pawPrimary = Color(red: 72/255.0, green: 106/255.0, blue: 242/255.0)
+    static let pawPrimary = Color("baseColor")
 
     static let pawSecondary = Color(red: 30/255.0, green: 41/255.0, blue: 59/255.0)
 

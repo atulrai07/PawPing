@@ -68,8 +68,8 @@ struct HealthRecordRowView: View {
                 }
                 
                 Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.secondary.opacity(0.5))
-                    .font(.system(size: 14, weight: .bold))
             }
         }
         .padding(.vertical, 10)

@@ -55,6 +55,14 @@ struct AddHealthRecordView: View {
     @State private var vetLatitude: Double?
     @State private var vetLongitude: Double?
     
+    // Photo / Certificate State
+    @State private var pickedImage: UIImage? = nil
+    @State private var imageUrl: String? = nil
+    @State private var showingImageSource = false
+    @State private var showingImagePicker = false
+    @State private var imageSourceType: UIImagePickerController.SourceType = .photoLibrary
+    @State private var isUploadingImage = false
+    
     @State private var showingVetSearch = false
     @State private var errorMessage: String? = nil
     @State private var showError = false
@@ -77,6 +85,7 @@ struct AddHealthRecordView: View {
             _vetPhone = State(initialValue: rec.vetPhone ?? "")
             _vetLatitude = State(initialValue: rec.vetLatitude)
             _vetLongitude = State(initialValue: rec.vetLongitude)
+            _imageUrl = State(initialValue: rec.imageUrl)
         } else {
             _recordType = State(initialValue: .vaccine)
             _name = State(initialValue: "")
@@ -90,6 +99,7 @@ struct AddHealthRecordView: View {
             _vetPhone = State(initialValue: "")
             _vetLatitude = State(initialValue: nil)
             _vetLongitude = State(initialValue: nil)
+            _imageUrl = State(initialValue: nil)
         }
     }
     
@@ -137,7 +147,7 @@ struct AddHealthRecordView: View {
                             }
                         } label: {
                             Text(name.isEmpty ? "Select or Type" : name)
-                                .foregroundStyle(name.isEmpty ? .secondary : .primary)
+                                .foregroundStyle(name.isEmpty ? Color("baseColor") : .primary)
                         }
                     }
                     
@@ -172,8 +182,9 @@ struct AddHealthRecordView: View {
                         showingVetSearch = true
                     } label: {
                         Label("Select from Map", systemImage: "map.fill")
-                            .foregroundStyle(.pawPrimary)
+                            .foregroundStyle(Color("baseColor"))
                     }
+                    .buttonStyle(.plain)
                     
                     TextField("Clinic/Vet Name", text: $vetName)
                     TextField("Address", text: $vetAddress)
@@ -181,11 +192,105 @@ struct AddHealthRecordView: View {
                         .keyboardType(.phonePad)
                 }
                 
+                Section("Vaccine Report / Photo") {
+                    if let image = pickedImage {
+                        HStack {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 80, height: 80)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("New Photo Selected")
+                                    .font(.headline)
+                                Text("Will be uploaded when you save")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Button(role: .destructive) {
+                                pickedImage = nil
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    } else if let urlStr = imageUrl, let url = URL(string: urlStr) {
+                        HStack {
+                            AsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(width: 80, height: 80)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Uploaded Report")
+                                    .font(.headline)
+                                Text("Stored in cloud")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Button(role: .destructive) {
+                                imageUrl = nil
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    } else {
+                        Button {
+                            showingImageSource = true
+                        } label: {
+                            HStack {
+                                Spacer()
+                                VStack(spacing: 8) {
+                                    Image(systemName: "doc.viewfinder.fill")
+                                        .font(.system(size: 28))
+                                        .foregroundStyle(.pawPrimary)
+                                    Text("Upload Vet Report or Photo")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.primary)
+                                    Text("Camera or Gallery (PNG, JPG)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(.vertical, 8)
+                                Spacer()
+                            }
+                        }
+                        .confirmationDialog("Upload Photo", isPresented: $showingImageSource, titleVisibility: .visible) {
+                            Button("Take Photo") {
+                                imageSourceType = .camera
+                                showingImagePicker = true
+                            }
+                            Button("Choose from Library") {
+                                imageSourceType = .photoLibrary
+                                showingImagePicker = true
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        }
+                    }
+                }
+                
                 Section("Notes") {
                     TextField("Add any additional notes here...", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
                 }
             }
+            .tint(Color("baseColor"))
             .navigationTitle(recordToEdit == nil ? "Add Health Record" : "Edit Health Record")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -206,6 +311,9 @@ struct AddHealthRecordView: View {
                     handleVetSelection(mapItem)
                 }
             }
+            .sheet(isPresented: $showingImagePicker) {
+                ImagePicker(selectedImage: $pickedImage, sourceType: imageSourceType)
+            }
             .alert("Error", isPresented: $showError, actions: {
                 Button("OK") { }
             }, message: {
@@ -220,6 +328,7 @@ struct AddHealthRecordView: View {
                 }
             }
         }
+        .tint(Color("baseColor"))
     }
     
     // MARK: - Helpers
@@ -246,23 +355,36 @@ struct AddHealthRecordView: View {
         
         isSaving = true
         
-        let record = HealthRecord(
-            id: recordToEdit?.id ?? UUID(),
-            petId: petId,
-            type: recordType.rawValue,
-            name: name,
-            dateGiven: dateGiven,
-            nextDoseDate: hasNextDose ? (nextDoseDate ?? Calendar.current.date(byAdding: .year, value: 1, to: dateGiven)) : nil,
-            notes: notes,
-            isCompleted: recordToEdit?.isCompleted ?? false,
-            vetName: vetName.isEmpty ? nil : vetName,
-            vetAddress: vetAddress.isEmpty ? nil : vetAddress,
-            vetPhone: vetPhone.isEmpty ? nil : vetPhone,
-            vetLatitude: vetLatitude,
-            vetLongitude: vetLongitude
-        )
-        
         Task {
+            var finalImageUrl = imageUrl
+            
+            if let image = pickedImage, let data = image.jpegData(compressionQuality: 0.8) {
+                print("📸 Uploading vaccine report photo...")
+                if let uploadedUrl = await petStore.uploadImage(data: data) {
+                    finalImageUrl = uploadedUrl
+                    print("📸 Upload successful: \(uploadedUrl)")
+                } else {
+                    print("⚠️ Upload failed, continuing without photo")
+                }
+            }
+            
+            let record = HealthRecord(
+                id: recordToEdit?.id ?? UUID(),
+                petId: petId,
+                type: recordType.rawValue,
+                name: name,
+                dateGiven: dateGiven,
+                nextDoseDate: hasNextDose ? (nextDoseDate ?? Calendar.current.date(byAdding: .year, value: 1, to: dateGiven)) : nil,
+                notes: notes,
+                isCompleted: recordToEdit?.isCompleted ?? false,
+                vetName: vetName.isEmpty ? nil : vetName,
+                vetAddress: vetAddress.isEmpty ? nil : vetAddress,
+                vetPhone: vetPhone.isEmpty ? nil : vetPhone,
+                vetLatitude: vetLatitude,
+                vetLongitude: vetLongitude,
+                imageUrl: finalImageUrl
+            )
+            
             if recordToEdit != nil {
                 print("📝 Attempting to update health record: \(record.name)")
                 await healthStore.updateHealthRecord(record)

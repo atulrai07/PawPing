@@ -23,9 +23,11 @@ struct LoginView: View {
                 HStack {
                     Spacer()
                     Image("Pawping_logo")
+                        .renderingMode(.template)
                         .resizable()
                         .scaledToFit()
                         .frame(height: 62.5)
+                        .foregroundStyle(Color("baseColor"))
                     Spacer()
                 }
                 .padding(.top, 33)

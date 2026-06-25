@@ -185,7 +185,7 @@ class ActivityStore {
             
             self.memories = []
             
-            saveData(for: petId)
+            saveData(for: petId, syncToCloud: false)
             saveActivitiesLocally(for: petId)
         }
         
@@ -201,7 +201,7 @@ class ActivityStore {
 
     private var syncTask: Task<Void, Never>?
 
-    private func saveData(for petId: UUID?) {
+    private func saveData(for petId: UUID?, syncToCloud: Bool = true) {
         guard let petId else { return }
         let key = "activity_store_data_\(petId.uuidString)"
         
@@ -218,17 +218,15 @@ class ActivityStore {
             UserDefaults.standard.set(encoded, forKey: key)
             
             // Sync to Supabase
-            if let jsonString = String(data: encoded, encoding: .utf8) {
+            if syncToCloud, let jsonString = String(data: encoded, encoding: .utf8) {
                 syncTask?.cancel()
                 syncTask = Task {
                     do {
                         let payload = PetAppStateUpload(pet_id: petId, activity_data: jsonString)
-                        // Use update instead of upsert to perform a partial update (PATCH)
-                        // this prevents overwriting the meal_diet_data column.
+                        // Use upsert to create the row if it doesn't exist, updating only activity_data if it does
                         try await SupabaseConfig.client
                             .from("pet_app_state")
-                            .update(payload)
-                            .eq("pet_id", value: petId.uuidString)
+                            .upsert(payload)
                             .execute()
                     } catch {
                         print("  Failed to sync activity state to Supabase: \(error)")

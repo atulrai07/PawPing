@@ -7,19 +7,22 @@ struct OnboardingPageView: View {
     var onGetStarted: () -> Void
     
     var body: some View {
-        GeometryReader { geo in
-            let safeAreaInsets = geo.safeAreaInsets
-            let screenHeight = geo.size.height + safeAreaInsets.top + safeAreaInsets.bottom
-            let dynamicCardHeight = screenHeight * OnboardingLayout.cardHeightMultiplier
-            let currentItem = items[currentPage]
+        ZStack {
+            OnboardingLayout.backgroundColor
+                .ignoresSafeArea()
             
-            VStack(spacing: 0) {
-                // Top Section
-                ZStack {
-                    OnboardingLayout.backgroundColor
-                        .ignoresSafeArea()
-                    
-                    VStack {
+            GeometryReader { geo in
+                let safeAreaInsets = geo.safeAreaInsets
+                let screenHeight = geo.size.height + safeAreaInsets.top + safeAreaInsets.bottom
+                let dynamicCardHeight = screenHeight * OnboardingLayout.cardHeightMultiplier
+                let currentItem = items[currentPage]
+                
+                VStack(spacing: 0) {
+                    // Top Section
+                    ZStack {
+                        Color.clear
+                        
+                        VStack {
                         // Skip Button
                         HStack {
                             Spacer()
@@ -107,13 +110,14 @@ struct OnboardingPageView: View {
                 .frame(height: dynamicCardHeight)
                 .background(
                     UnevenRoundedRectangle(topLeadingRadius: OnboardingLayout.cardCornerRadius, topTrailingRadius: OnboardingLayout.cardCornerRadius)
-                        .fill(Color("cardBackground"))
-                        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: -4)
+                        .fill(Color(uiColor: .systemBackground))
+                        .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: -6)
                         .ignoresSafeArea(edges: .bottom)
                 )
             }
             .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentPage)
             .ignoresSafeArea(edges: .bottom)
+        }
         }
     }
 }

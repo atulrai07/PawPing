@@ -11,25 +11,25 @@ struct OnboardingItem: Identifiable {
 let onboardingData: [OnboardingItem] = [
     OnboardingItem(
         title: "Healthy & Active\nLifestyle",
-        description: "Track daily walks and keep your dog\nactive",
+        description: "Track daily walks and keep your dog active",
         dogImage: "dog1Onboarding",
         lineImage: "line1Onboarding"
     ),
     OnboardingItem(
         title: "Diet & Feeding\nTracker",
-        description: "Track Meals and Allergies of Your Dog",
+        description: "Track meals and allergies of your dog",
         dogImage: "dog2Onboarding",
         lineImage: "line2Onboarding"
     ),
     OnboardingItem(
-        title: "Never Miss a\nhealth Milestone",
-        description: "Automatic Reminders for Vaccines",
+        title: "Never Miss a\nHealth Milestone",
+        description: "Get automatic reminders for vaccines",
         dogImage: "dog3Onboarding",
         lineImage: "line1Onboarding"
     ),
     OnboardingItem(
-        title: "Expert Care just a\nTap Away",
-        description: "Connect Nearby Vet Care and Day Care\nfor Better Support",
+        title: "Expert Care Just a\nTap Away",
+        description: "Connect with nearby vet care and daycare for better support",
         dogImage: "dog4Onboarding",
         lineImage: "line4Onboarding"
     )

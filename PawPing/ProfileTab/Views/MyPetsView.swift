@@ -14,7 +14,10 @@ struct MyPetsView: View {
     @State private var petToDelete: Pet? = nil
     
     var body: some View {
-        Group {
+        ZStack {
+            LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+            
             if petStore.pets.isEmpty {
                 ContentUnavailableView(
                     "No Pets Added",
@@ -24,52 +27,64 @@ struct MyPetsView: View {
             } else {
                 List {
                     ForEach(petStore.pets) { pet in
-                HStack(spacing: 16) {
-                    if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
-                        AsyncImage(url: url) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
-                            Color.gray.opacity(0.2)
+                        HStack(spacing: 16) {
+                            if let urlString = pet.profileImageUrl, let url = URL(string: urlString) {
+                                AsyncImage(url: url) { image in
+                                    image.resizable().scaledToFill()
+                                } placeholder: {
+                                    Color.gray.opacity(0.2)
+                                }
+                                .frame(width: 50, height: 50)
+                                .clipShape(Circle())
+                            } else {
+                                Image(pet.imageName)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(pet.name)
+                                    .font(.headline)
+                                    .foregroundStyle(Color.textPrimary)
+                                Text(pet.breed)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.textSecondary)
+                            }
+                            
+                            Spacer()
+                            
+                            if pet.id == petStore.activePetId {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color("baseColor"))
+                            }
                         }
-                        .frame(width: 50, height: 50)
-                        .clipShape(Circle())
-                    } else {
-                        Image(pet.imageName)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 50, height: 50)
-                            .clipShape(Circle())
-                    }
-                    
-                    VStack(alignment: .leading) {
-                        Text(pet.name)
-                            .font(.headline)
-                        Text(pet.breed)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    if pet.id == petStore.activePetId {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(Color("baseColor"))
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.cardIvory)
+                                .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 3)
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            petStore.switchPet(to: pet.id)
+                            selectedPet = pet
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                petToDelete = pet
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                     }
                 }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    petStore.switchPet(to: pet.id)
-                    selectedPet = pet
-                }
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        petToDelete = pet
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-                }
-                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
         .alert("Do you really want to delete?", isPresented: Binding(

@@ -44,10 +44,6 @@ struct HealthSummaryCard: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 20))
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color(hex: "6E54D7")?.opacity(0.1) ?? .purple.opacity(0.1), lineWidth: 1)
-        )
         .shadow(color: Color(hex: "6E54D7")?.opacity(0.05) ?? .clear, radius: 15, x: 0, y: 10)
     }
     

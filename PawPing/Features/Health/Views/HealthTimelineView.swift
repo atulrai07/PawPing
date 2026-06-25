@@ -75,7 +75,7 @@ struct TimelineRow: View {
                 if !isLast {
                     Rectangle()
                         .fill(Color.homePurple.opacity(0.3))
-                        .frame(width: 2)
+                        .frame(width: 1)
                         .padding(.top, 44) // Start drawing line from bottom of 44x44 circle
                 }
                 
@@ -118,8 +118,8 @@ struct TimelineRow: View {
                 }
                 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.gray)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.secondary)
             }
             .padding(.top, 12) // Align with vertical center of the 44x44 circle
         }
