@@ -197,6 +197,37 @@ class ActivityStore {
             await fetchFromSupabase(for: petId)
             await fetchWalksFromSupabase(for: petId)
         }
+        
+        // Schedule walk reminders if enabled
+        let walkEnabled = UserDefaults.standard.object(forKey: "pawping_notif_walk") as? Bool ?? true
+        if walkEnabled {
+            Task {
+                await NotificationManager.shared.scheduleWalkReminders(
+                    petName: pet.name,
+                    petId: petId
+                )
+                // Check if today's goal is already met to conditionally cancel evening reminder
+                let goalMet = self.liveWalkedMinutes >= self.walkActivity.goalMinutes && self.walkActivity.goalMinutes > 0
+                await NotificationManager.shared.rescheduleEveningWalkIfNeeded(
+                    petName: pet.name,
+                    petId: petId,
+                    goalMet: goalMet
+                )
+            }
+        }
+        
+        // Schedule meal reminders if enabled
+        let mealEnabled = UserDefaults.standard.object(forKey: "pawping_notif_meals") as? Bool ?? true
+        if mealEnabled {
+            Task {
+                let timing = MealTimingSettings.load()
+                await NotificationManager.shared.scheduleMealReminders(
+                    petName: pet.name,
+                    petId: petId,
+                    timing: timing
+                )
+            }
+        }
     }
 
     private var syncTask: Task<Void, Never>?
@@ -432,10 +463,11 @@ class ActivityStore {
     }
 
     private static func defaultMeals(for petId: UUID) -> [Meal] {
+        let timing = MealTimingSettings.load()
         return [
-            Meal(id: UUID(), petId: petId, icon: "sun.max", time: "8:00", meridian: "AM", mealType: .breakfast, isTaken: false),
-            Meal(id: UUID(), petId: petId, icon: "sunset.fill", time: "12:30", meridian: "PM", mealType: .lunch, isTaken: false),
-            Meal(id: UUID(), petId: petId, icon: "moon", time: "8:30", meridian: "PM", mealType: .dinner, isTaken: false)
+            Meal(id: UUID(), petId: petId, icon: "sun.max", time: timing.timeString(for: .breakfast), meridian: timing.meridian(for: .breakfast), mealType: .breakfast, isTaken: false),
+            Meal(id: UUID(), petId: petId, icon: "sunset.fill", time: timing.timeString(for: .lunch), meridian: timing.meridian(for: .lunch), mealType: .lunch, isTaken: false),
+            Meal(id: UUID(), petId: petId, icon: "moon", time: timing.timeString(for: .dinner), meridian: timing.meridian(for: .dinner), mealType: .dinner, isTaken: false)
         ]
     }
 
@@ -492,6 +524,17 @@ class ActivityStore {
             saveActivitiesLocally(for: activePetId)
             Task {
                 await uploadWalkActivityToSupabase(newActivity, for: activePetId)
+            }
+            
+            // Cancel evening walk reminder if goal is now met
+            if liveWalkedMinutes >= walkActivity.goalMinutes && walkActivity.goalMinutes > 0 {
+                Task {
+                    await NotificationManager.shared.rescheduleEveningWalkIfNeeded(
+                        petName: activePet?.name ?? "",
+                        petId: activePetId,
+                        goalMet: true
+                    )
+                }
             }
         }
     }

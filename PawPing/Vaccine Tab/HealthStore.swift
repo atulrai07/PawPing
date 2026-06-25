@@ -45,6 +45,10 @@ class HealthStore {
     private let client = SupabaseConfig.client
 
     var healthRecords: [HealthRecord] = []
+    
+    /// The active pet's name, used for notification content.
+    /// Set externally when the pet is switched.
+    var activePetName: String = ""
 
     /// Computed on the fly — always in sync with healthRecords.
     var summary: HealthSummary {
@@ -98,6 +102,12 @@ class HealthStore {
         if success {
             print(" Record saved successfully, refetching...")
             await fetchVaccines(for: record.petId)
+            
+            // Schedule notification for upcoming dose
+            if record.nextDoseDate != nil && !record.isCompleted {
+                let petName = activePetName.isEmpty ? "Your pet" : activePetName
+                await NotificationManager.shared.scheduleHealthRecordReminder(for: record, petName: petName)
+            }
         } else {
             print("Failed to save record to Supabase.")
         }
@@ -109,6 +119,9 @@ class HealthStore {
     func deleteHealthRecord(id: UUID, petId: UUID) async {
         healthRecords.removeAll { $0.id == id }
         await deleteFromSupabase(id: id)
+        
+        // Cancel any pending notifications for this record
+        await NotificationManager.shared.cancelReminders(for: id)
     }
 
     // MARK: - Update
@@ -119,6 +132,13 @@ class HealthStore {
             healthRecords[index] = record
         }
         await updateInSupabase(record)
+        
+        // Reschedule notification with updated dates
+        await NotificationManager.shared.cancelReminders(for: record.id)
+        if record.nextDoseDate != nil && !record.isCompleted {
+            let petName = activePetName.isEmpty ? "Your pet" : activePetName
+            await NotificationManager.shared.scheduleHealthRecordReminder(for: record, petName: petName)
+        }
     }
 
     // MARK: - Mark as Done (using updateVaccineStatus)
@@ -126,6 +146,9 @@ class HealthStore {
     @MainActor
     func markAsDone(id: UUID, petId: UUID) async {
         await updateVaccineStatus(vaccineId: id, petId: petId, isCompleted: true)
+        
+        // Cancel notifications for completed record
+        await NotificationManager.shared.cancelReminders(for: id)
     }
 
     @MainActor

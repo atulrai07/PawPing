@@ -5,13 +5,24 @@ import Observation
 class WeightStore {
     var records: [WeightRecord] = []
     
-    func load(for petId: UUID) {
+    func load(for petId: UUID, petName: String = "") {
         let key = "weight_records_\(petId.uuidString)"
         if let data = UserDefaults.standard.data(forKey: key),
            let decoded = try? JSONDecoder().decode([WeightRecord].self, from: data) {
             self.records = decoded.sorted { $0.date > $1.date }
         } else {
             self.records = []
+        }
+        
+        // Schedule monthly weight reminder if enabled
+        let weightEnabled = UserDefaults.standard.object(forKey: "pawping_notif_weight") as? Bool ?? false
+        if weightEnabled && !petName.isEmpty {
+            Task {
+                await NotificationManager.shared.scheduleWeightLogReminder(
+                    petName: petName,
+                    petId: petId
+                )
+            }
         }
     }
     

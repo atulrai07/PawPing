@@ -92,6 +92,7 @@ struct PawPingApp: App {
             .onChange(of: petStore.activePetId) { _, newPetId in
                 let pet = petStore.pets.first { $0.id == newPetId }
                 activityStore.switchPet(to: pet)
+                healthStore.activePetName = pet?.name ?? ""
                 
                 if let newPetId {
                     Task {

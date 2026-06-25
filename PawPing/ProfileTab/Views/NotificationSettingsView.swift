@@ -12,8 +12,22 @@ struct NotificationSettingsView: View {
     @State private var isPushEnabled = false
     @State private var medicationReminders = true
     @State private var vaccineAlerts = true
+    @State private var mealReminders = true
+    @State private var walkReminders = true
     @State private var weightReminders = false
     @State private var showPermissionDeniedAlert = false
+    
+    // Meal timing
+    @State private var mealTimingSettings = MealTimingSettings.load()
+    @State private var showMealTimePicker = false
+    @State private var editingMealType: MealType? = nil
+    
+    // UserDefaults keys
+    private let kMedication = "pawping_notif_medication"
+    private let kVaccine = "pawping_notif_vaccine"
+    private let kMeals = "pawping_notif_meals"
+    private let kWalk = "pawping_notif_walk"
+    private let kWeight = "pawping_notif_weight"
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -54,126 +68,131 @@ struct NotificationSettingsView: View {
                     
                     VStack(spacing: 0) {
                         // Main Push Toggle
-                        Toggle(isOn: $isPushEnabled) {
-                            HStack(spacing: 16) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.blue.opacity(0.1))
-                                        .frame(width: 40, height: 40)
-                                    Image(systemName: "app.badge.fill")
-                                        .font(.system(size: 18))
-                                        .foregroundStyle(.blue)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Push Notifications")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(Color.textPrimary)
-                                    Text("Master toggle for all alerts")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(.gray)
-                                }
-                            }
-                        }
-                        .tint(Color("baseColor"))
+                        notificationRow(
+                            icon: "app.badge.fill",
+                            iconColor: .blue,
+                            title: "Push Notifications",
+                            subtitle: "Master toggle for all alerts",
+                            isOn: $isPushEnabled,
+                            isEnabled: true
+                        )
                         .onChange(of: isPushEnabled) { _, newValue in
                             if newValue {
                                 requestNotificationPermission()
                             }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 16)
                         
                         Divider().padding(.leading, 76)
                         
                         // Medication Toggle
-                        Toggle(isOn: $medicationReminders) {
-                            HStack(spacing: 16) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.orange.opacity(0.1))
-                                        .frame(width: 40, height: 40)
-                                    Image(systemName: "pills.fill")
-                                        .font(.system(size: 18))
-                                        .foregroundStyle(.orange)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Medications")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(Color.textPrimary)
-                                    Text("Reminders to give daily doses")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(.gray)
-                                }
-                            }
+                        notificationRow(
+                            icon: "pills.fill",
+                            iconColor: .orange,
+                            title: "Medications",
+                            subtitle: "Reminders to give daily doses",
+                            isOn: $medicationReminders,
+                            isEnabled: isPushEnabled
+                        )
+                        .onChange(of: medicationReminders) { _, newValue in
+                            UserDefaults.standard.set(newValue, forKey: kMedication)
                         }
-                        .disabled(!isPushEnabled)
-                        .tint(Color("baseColor"))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 16)
                         
                         Divider().padding(.leading, 76)
                         
                         // Vaccine Toggle
-                        Toggle(isOn: $vaccineAlerts) {
-                            HStack(spacing: 16) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.purple.opacity(0.1))
-                                        .frame(width: 40, height: 40)
-                                    Image(systemName: "syringe.fill")
-                                        .font(.system(size: 18))
-                                        .foregroundStyle(.purple)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Vaccine Alerts")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(Color.textPrimary)
-                                    Text("Dose and booster reminders")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(.gray)
-                                }
+                        notificationRow(
+                            icon: "syringe.fill",
+                            iconColor: .purple,
+                            title: "Vaccine Alerts",
+                            subtitle: "Dose and booster reminders",
+                            isOn: $vaccineAlerts,
+                            isEnabled: isPushEnabled
+                        )
+                        .onChange(of: vaccineAlerts) { _, newValue in
+                            UserDefaults.standard.set(newValue, forKey: kVaccine)
+                            if !newValue {
+                                Task { await NotificationManager.shared.cancelReminders(withPrefix: "health_") }
                             }
                         }
-                        .disabled(!isPushEnabled)
-                        .tint(Color("baseColor"))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 16)
+                        
+                        Divider().padding(.leading, 76)
+                        
+                        // Meal Reminders Toggle
+                        notificationRow(
+                            icon: "fork.knife",
+                            iconColor: .pink,
+                            title: "Meal Reminders",
+                            subtitle: "Reminders for feeding times",
+                            isOn: $mealReminders,
+                            isEnabled: isPushEnabled
+                        )
+                        .onChange(of: mealReminders) { _, newValue in
+                            UserDefaults.standard.set(newValue, forKey: kMeals)
+                            if !newValue {
+                                Task { await NotificationManager.shared.cancelReminders(withPrefix: "meal_") }
+                            }
+                        }
+                        
+                        Divider().padding(.leading, 76)
+                        
+                        // Walk Reminders Toggle
+                        notificationRow(
+                            icon: "figure.walk",
+                            iconColor: .green,
+                            title: "Walk Reminders",
+                            subtitle: "Morning & evening walk nudges",
+                            isOn: $walkReminders,
+                            isEnabled: isPushEnabled
+                        )
+                        .onChange(of: walkReminders) { _, newValue in
+                            UserDefaults.standard.set(newValue, forKey: kWalk)
+                            if !newValue {
+                                Task { await NotificationManager.shared.cancelReminders(withPrefix: "walk_") }
+                            }
+                        }
                         
                         Divider().padding(.leading, 76)
                         
                         // Weight Tracking Toggle
-                        Toggle(isOn: $weightReminders) {
-                            HStack(spacing: 16) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.teal.opacity(0.1))
-                                        .frame(width: 40, height: 40)
-                                    Image(systemName: "scalemass.fill")
-                                        .font(.system(size: 18))
-                                        .foregroundStyle(.teal)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Weight Logs")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(Color.textPrimary)
-                                    Text("Reminders to log pet weight monthly")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(.gray)
-                                }
+                        notificationRow(
+                            icon: "scalemass.fill",
+                            iconColor: .teal,
+                            title: "Weight Logs",
+                            subtitle: "Reminders to log pet weight monthly",
+                            isOn: $weightReminders,
+                            isEnabled: isPushEnabled
+                        )
+                        .onChange(of: weightReminders) { _, newValue in
+                            UserDefaults.standard.set(newValue, forKey: kWeight)
+                            if !newValue {
+                                Task { await NotificationManager.shared.cancelReminders(withPrefix: "weight_") }
                             }
                         }
-                        .disabled(!isPushEnabled)
-                        .tint(Color("baseColor"))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 16)
                     }
                     .background(Color.cardIvory)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+                }
+                
+                // Meal Timing Section
+                if isPushEnabled && mealReminders {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Meal Timing")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Color.textPrimary)
+                        
+                        VStack(spacing: 0) {
+                            mealTimeRow(mealType: .breakfast, icon: "sun.max.fill", iconColor: .orange)
+                            Divider().padding(.leading, 76)
+                            mealTimeRow(mealType: .lunch, icon: "sun.haze.fill", iconColor: .yellow)
+                            Divider().padding(.leading, 76)
+                            mealTimeRow(mealType: .dinner, icon: "moon.stars.fill", iconColor: .indigo)
+                        }
+                        .background(Color.cardIvory)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
                 
                 Spacer()
@@ -193,6 +212,7 @@ struct NotificationSettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             checkCurrentNotificationStatus()
+            loadToggleStates()
         }
         .alert("Permission Denied", isPresented: $showPermissionDeniedAlert) {
             Button("Settings") {
@@ -206,6 +226,103 @@ struct NotificationSettingsView: View {
         } message: {
             Text("Please enable notification permissions in your iOS Settings to configure alerts.")
         }
+        .sheet(isPresented: $showMealTimePicker) {
+            if let mealType = editingMealType {
+                MealTimePickerSheet(
+                    mealType: mealType,
+                    currentDate: mealTimingSettings.date(for: mealType)
+                ) { newDate in
+                    mealTimingSettings.update(for: mealType, from: newDate)
+                    mealTimingSettings.save()
+                    
+                    // Reschedule meal notifications with new timing
+                    Task { await NotificationManager.shared.cancelReminders(withPrefix: "meal_") }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Reusable Row
+    
+    private func notificationRow(icon: String, iconColor: Color, title: String, subtitle: String, isOn: Binding<Bool>, isEnabled: Bool) -> some View {
+        Toggle(isOn: isOn) {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(iconColor.opacity(0.1))
+                        .frame(width: 40, height: 40)
+                    Image(systemName: icon)
+                        .font(.system(size: 18))
+                        .foregroundStyle(iconColor)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.textPrimary)
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.gray)
+                }
+            }
+        }
+        .disabled(!isEnabled)
+        .tint(Color("baseColor"))
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+    }
+    
+    // MARK: - Meal Time Row
+    
+    private func mealTimeRow(mealType: MealType, icon: String, iconColor: Color) -> some View {
+        Button {
+            editingMealType = mealType
+            showMealTimePicker = true
+        } label: {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(iconColor.opacity(0.1))
+                        .frame(width: 40, height: 40)
+                    Image(systemName: icon)
+                        .font(.system(size: 18))
+                        .foregroundStyle(iconColor)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(mealType.rawValue)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.textPrimary)
+                    Text("Reminder at \(mealTimingSettings.displayTime(for: mealType))")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.gray)
+                }
+                
+                Spacer()
+                
+                Text(mealTimingSettings.displayTime(for: mealType))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.homePurple)
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.gray.opacity(0.5))
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    // MARK: - Helpers
+    
+    private func loadToggleStates() {
+        medicationReminders = UserDefaults.standard.object(forKey: kMedication) as? Bool ?? true
+        vaccineAlerts = UserDefaults.standard.object(forKey: kVaccine) as? Bool ?? true
+        mealReminders = UserDefaults.standard.object(forKey: kMeals) as? Bool ?? true
+        walkReminders = UserDefaults.standard.object(forKey: kWalk) as? Bool ?? true
+        weightReminders = UserDefaults.standard.object(forKey: kWeight) as? Bool ?? false
+        mealTimingSettings = MealTimingSettings.load()
     }
     
     private func checkCurrentNotificationStatus() {
@@ -229,6 +346,52 @@ struct NotificationSettingsView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Meal Time Picker Sheet
+
+struct MealTimePickerSheet: View {
+    let mealType: MealType
+    @State var currentDate: Date
+    var onSave: (Date) -> Void
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                Text("Set \(mealType.rawValue) Time")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(Color.textPrimary)
+                    .padding(.top, 24)
+                
+                DatePicker(
+                    "Time",
+                    selection: $currentDate,
+                    displayedComponents: .hourAndMinute
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+                
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        onSave(currentDate)
+                        dismiss()
+                    }
+                    .fontWeight(.bold)
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 

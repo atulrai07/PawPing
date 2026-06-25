@@ -163,7 +163,7 @@ struct MealLogView: View {
         }
         .task(id: petStore.activePetId) {
             if let petId = petStore.activePetId {
-                weightStore.load(for: petId)
+                weightStore.load(for: petId, petName: petStore.activePet?.name ?? "")
             }
         }
     }
