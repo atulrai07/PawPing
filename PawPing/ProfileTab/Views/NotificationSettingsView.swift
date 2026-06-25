@@ -9,6 +9,10 @@ import SwiftUI
 import UserNotifications
 
 struct NotificationSettingsView: View {
+    @Environment(PetStore.self) var petStore
+    @Environment(ActivityStore.self) var activityStore
+    @Environment(AuthStore.self) var authStore
+
     @State private var isPushEnabled = false
     @State private var medicationReminders = true
     @State private var vaccineAlerts = true
@@ -16,11 +20,6 @@ struct NotificationSettingsView: View {
     @State private var walkReminders = true
     @State private var weightReminders = false
     @State private var showPermissionDeniedAlert = false
-    
-    // Meal timing
-    @State private var mealTimingSettings = MealTimingSettings.load()
-    @State private var showMealTimePicker = false
-    @State private var editingMealType: MealType? = nil
     
     // UserDefaults keys
     private let kMedication = "pawping_notif_medication"
@@ -130,6 +129,17 @@ struct NotificationSettingsView: View {
                             UserDefaults.standard.set(newValue, forKey: kMeals)
                             if !newValue {
                                 Task { await NotificationManager.shared.cancelReminders(withPrefix: "meal_") }
+                            } else {
+                                if let pet = petStore.activePet {
+                                    Task {
+                                        let timing = MealTimingSettings.load(for: authStore.appState?.currentUserId)
+                                        await NotificationManager.shared.scheduleMealReminders(
+                                            petName: pet.name,
+                                            petId: pet.id,
+                                            timing: timing
+                                        )
+                                    }
+                                }
                             }
                         }
                         
@@ -148,6 +158,18 @@ struct NotificationSettingsView: View {
                             UserDefaults.standard.set(newValue, forKey: kWalk)
                             if !newValue {
                                 Task { await NotificationManager.shared.cancelReminders(withPrefix: "walk_") }
+                            } else {
+                                if let pet = petStore.activePet {
+                                    Task {
+                                        await NotificationManager.shared.scheduleWalkReminders(petName: pet.name, petId: pet.id)
+                                        let goalMet = activityStore.liveWalkedMinutes >= activityStore.walkActivity.goalMinutes && activityStore.walkActivity.goalMinutes > 0
+                                        await NotificationManager.shared.rescheduleEveningWalkIfNeeded(
+                                            petName: pet.name,
+                                            petId: pet.id,
+                                            goalMet: goalMet
+                                        )
+                                    }
+                                }
                             }
                         }
                         
@@ -166,33 +188,18 @@ struct NotificationSettingsView: View {
                             UserDefaults.standard.set(newValue, forKey: kWeight)
                             if !newValue {
                                 Task { await NotificationManager.shared.cancelReminders(withPrefix: "weight_") }
+                            } else {
+                                if let pet = petStore.activePet {
+                                    Task {
+                                        await NotificationManager.shared.scheduleWeightLogReminder(petName: pet.name, petId: pet.id)
+                                    }
+                                }
                             }
                         }
                     }
                     .background(Color.cardIvory)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-                }
-                
-                // Meal Timing Section
-                if isPushEnabled && mealReminders {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Meal Timing")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(Color.textPrimary)
-                        
-                        VStack(spacing: 0) {
-                            mealTimeRow(mealType: .breakfast, icon: "sun.max.fill", iconColor: .orange)
-                            Divider().padding(.leading, 76)
-                            mealTimeRow(mealType: .lunch, icon: "sun.haze.fill", iconColor: .yellow)
-                            Divider().padding(.leading, 76)
-                            mealTimeRow(mealType: .dinner, icon: "moon.stars.fill", iconColor: .indigo)
-                        }
-                        .background(Color.cardIvory)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-                    }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
                 
                 Spacer()
@@ -226,20 +233,6 @@ struct NotificationSettingsView: View {
         } message: {
             Text("Please enable notification permissions in your iOS Settings to configure alerts.")
         }
-        .sheet(isPresented: $showMealTimePicker) {
-            if let mealType = editingMealType {
-                MealTimePickerSheet(
-                    mealType: mealType,
-                    currentDate: mealTimingSettings.date(for: mealType)
-                ) { newDate in
-                    mealTimingSettings.update(for: mealType, from: newDate)
-                    mealTimingSettings.save()
-                    
-                    // Reschedule meal notifications with new timing
-                    Task { await NotificationManager.shared.cancelReminders(withPrefix: "meal_") }
-                }
-            }
-        }
     }
     
     // MARK: - Reusable Row
@@ -272,48 +265,6 @@ struct NotificationSettingsView: View {
         .padding(.vertical, 16)
     }
     
-    // MARK: - Meal Time Row
-    
-    private func mealTimeRow(mealType: MealType, icon: String, iconColor: Color) -> some View {
-        Button {
-            editingMealType = mealType
-            showMealTimePicker = true
-        } label: {
-            HStack(spacing: 16) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(iconColor.opacity(0.1))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: icon)
-                        .font(.system(size: 18))
-                        .foregroundStyle(iconColor)
-                }
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(mealType.rawValue)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color.textPrimary)
-                    Text("Reminder at \(mealTimingSettings.displayTime(for: mealType))")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.gray)
-                }
-                
-                Spacer()
-                
-                Text(mealTimingSettings.displayTime(for: mealType))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.homePurple)
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.gray.opacity(0.5))
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-        }
-        .buttonStyle(.plain)
-    }
-    
     // MARK: - Helpers
     
     private func loadToggleStates() {
@@ -322,7 +273,6 @@ struct NotificationSettingsView: View {
         mealReminders = UserDefaults.standard.object(forKey: kMeals) as? Bool ?? true
         walkReminders = UserDefaults.standard.object(forKey: kWalk) as? Bool ?? true
         weightReminders = UserDefaults.standard.object(forKey: kWeight) as? Bool ?? false
-        mealTimingSettings = MealTimingSettings.load()
     }
     
     private func checkCurrentNotificationStatus() {
@@ -398,5 +348,8 @@ struct MealTimePickerSheet: View {
 #Preview {
     NavigationStack {
         NotificationSettingsView()
+            .environment(PetStore())
+            .environment(ActivityStore())
+            .environment(AuthStore())
     }
 }

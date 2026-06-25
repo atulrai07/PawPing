@@ -207,7 +207,7 @@ struct ActivityView: View {
             HStack(spacing: 12) {
                 MealCardView(
                     title: "Breakfast", 
-                    time: b?.isTaken == true ? "\(b!.time) \(b!.meridian)" : "8:00 AM", 
+                    time: b != nil ? "\(b!.time) \(b!.meridian)" : "8:00 AM", 
                     iconName: "sun.max.fill", 
                     iconColor: .homeYellow, 
                     imageName: "bowl_pink", 
@@ -218,7 +218,7 @@ struct ActivityView: View {
                 }
                 MealCardView(
                     title: "Lunch", 
-                    time: l?.isTaken == true ? "\(l!.time) \(l!.meridian)" : "12:30 PM", 
+                    time: l != nil ? "\(l!.time) \(l!.meridian)" : "12:30 PM", 
                     iconName: "sun.min.fill", 
                     iconColor: .orange, 
                     imageName: "bowl_yellow", 
@@ -229,7 +229,7 @@ struct ActivityView: View {
                 }
                 MealCardView(
                     title: "Dinner", 
-                    time: d?.isTaken == true ? "\(d!.time) \(d!.meridian)" : "8:30 PM", 
+                    time: d != nil ? "\(d!.time) \(d!.meridian)" : "8:30 PM", 
                     iconName: "moon.fill", 
                     iconColor: .homePurple, 
                     imageName: "bowl_blue", 

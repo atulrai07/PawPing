@@ -406,8 +406,13 @@ private extension ProfileView {
                 }
                 Divider().padding(.leading, 56)
                 
+                NavigationLink(destination: AppSettingsView()) {
+                    settingsRow(icon: "gearshape.fill", iconColor: .teal, title: "App Settings")
+                }
+                Divider().padding(.leading, 56)
+                
                 NavigationLink(destination: AccountManagementView()) {
-                    settingsRow(icon: "gearshape.fill", iconColor: .orange, title: "App Settings")
+                    settingsRow(icon: "person.crop.circle.fill", iconColor: .orange, title: "Account Settings")
                 }
                 Divider().padding(.leading, 56)
                 

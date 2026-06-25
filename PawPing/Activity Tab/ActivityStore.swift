@@ -119,11 +119,11 @@ class ActivityStore {
             var loadedMeals = storedData.meals
             if let firstMealDate = loadedMeals.first?.date, 
                !Calendar.current.isDate(firstMealDate, inSameDayAs: today) {
-                loadedMeals = Self.defaultMeals(for: petId)
+                loadedMeals = Self.defaultMeals(for: petId, userId: pet.ownerId)
             }
             
             if loadedMeals.isEmpty {
-                loadedMeals = Self.defaultMeals(for: petId)
+                loadedMeals = Self.defaultMeals(for: petId, userId: pet.ownerId)
             }
             
             self.meals = loadedMeals
@@ -146,7 +146,7 @@ class ActivityStore {
             self.memories = storedData.memories ?? []
         } else {
             // New pet, initialize default state
-            self.meals = Self.defaultMeals(for: petId)
+            self.meals = Self.defaultMeals(for: petId, userId: pet.ownerId)
             self.walkActivity = WalkActivity(currentMinutes: 0, goalMinutes: resolvedGoal)
             
             self.timeWalkedGraph = TimeWalkedGraphModel(
@@ -220,7 +220,7 @@ class ActivityStore {
         let mealEnabled = UserDefaults.standard.object(forKey: "pawping_notif_meals") as? Bool ?? true
         if mealEnabled {
             Task {
-                let timing = MealTimingSettings.load()
+                let timing = MealTimingSettings.load(for: pet.ownerId)
                 await NotificationManager.shared.scheduleMealReminders(
                     petName: pet.name,
                     petId: petId,
@@ -286,12 +286,12 @@ class ActivityStore {
                     var loadedMeals = storedData.meals
                     if let firstMealDate = loadedMeals.first?.date, 
                        !Calendar.current.isDate(firstMealDate, inSameDayAs: today) {
-                        loadedMeals = Self.defaultMeals(for: petId)
+                        loadedMeals = Self.defaultMeals(for: petId, userId: self.activePet?.ownerId)
                     }
                     
                     
                     if loadedMeals.isEmpty {
-                        loadedMeals = Self.defaultMeals(for: petId)
+                        loadedMeals = Self.defaultMeals(for: petId, userId: self.activePet?.ownerId)
                     }
                     
                     self.meals = loadedMeals
@@ -462,13 +462,24 @@ class ActivityStore {
         }
     }
 
-    private static func defaultMeals(for petId: UUID) -> [Meal] {
-        let timing = MealTimingSettings.load()
+    private static func defaultMeals(for petId: UUID, userId: String?) -> [Meal] {
+        let timing = MealTimingSettings.load(for: userId)
         return [
             Meal(id: UUID(), petId: petId, icon: "sun.max", time: timing.timeString(for: .breakfast), meridian: timing.meridian(for: .breakfast), mealType: .breakfast, isTaken: false),
             Meal(id: UUID(), petId: petId, icon: "sunset.fill", time: timing.timeString(for: .lunch), meridian: timing.meridian(for: .lunch), mealType: .lunch, isTaken: false),
             Meal(id: UUID(), petId: petId, icon: "moon", time: timing.timeString(for: .dinner), meridian: timing.meridian(for: .dinner), mealType: .dinner, isTaken: false)
         ]
+    }
+
+    func updateMealTimings(with settings: MealTimingSettings) {
+        for i in 0..<meals.count {
+            if !meals[i].isTaken {
+                let mealType = meals[i].mealType
+                meals[i].time = settings.timeString(for: mealType)
+                meals[i].meridian = settings.meridian(for: mealType)
+            }
+        }
+        saveData(for: activePetId)
     }
 
     // MARK: - Walk Session Controls
@@ -623,6 +634,7 @@ class ActivityStore {
             return meals
         }
         
+        let timing = MealTimingSettings.load(for: activePet?.ownerId)
         return MealType.allCases.map { type in
             if let log = mealDietStore.mealLog(for: type, on: date) {
                 return Meal(
@@ -645,8 +657,8 @@ class ActivityStore {
                     id: UUID(),
                     petId: activePetId ?? UUID(),
                     icon: type.icon,
-                    time: type.defaultTime,
-                    meridian: type.defaultMeridian,
+                    time: timing.timeString(for: type),
+                    meridian: timing.meridian(for: type),
                     date: date,
                     mealType: type,
                     isTaken: false

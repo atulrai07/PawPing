@@ -200,9 +200,34 @@ class PetStore {
             
             if let dbProfile = profiles.first {
                 self.currentUserProfile = dbProfile
+                
+                // Sync settings from Supabase to local UserDefaults
+                if let settings = dbProfile.mealTimingSettings {
+                    settings.save(for: userId)
+                }
             }
         } catch {
             print("  Error fetching user profile: \(error)")
+        }
+    }
+    
+    func updateMealTimingSettings(_ settings: MealTimingSettings) async {
+        guard let userId = currentUserProfile?.id else { return }
+        struct ProfileSettingsUpdate: Encodable {
+            let meal_timing_settings: MealTimingSettings
+        }
+        let update = ProfileSettingsUpdate(meal_timing_settings: settings)
+        do {
+            try await client
+                .from("profiles")
+                .update(update)
+                .eq("id", value: userId)
+                .execute()
+            
+            self.currentUserProfile?.mealTimingSettings = settings
+            settings.save(for: userId)
+        } catch {
+            print("Failed to save meal timing settings to Supabase: \(error)")
         }
     }
     

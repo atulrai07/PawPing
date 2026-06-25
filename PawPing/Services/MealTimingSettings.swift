@@ -79,16 +79,29 @@ struct MealTimingSettings: Codable, Equatable {
     
     // MARK: - Persistence
     
-    private static let key = "pawping_meal_timing_settings"
+    private static func key(for userId: String?) -> String {
+        if let userId = userId, !userId.isEmpty {
+            return "pawping_meal_timing_settings_\(userId.lowercased())"
+        }
+        return "pawping_meal_timing_settings"
+    }
     
     func save() {
+        save(for: nil)
+    }
+    
+    func save(for userId: String?) {
         if let data = try? JSONEncoder().encode(self) {
-            UserDefaults.standard.set(data, forKey: Self.key)
+            UserDefaults.standard.set(data, forKey: Self.key(for: userId))
         }
     }
     
     static func load() -> MealTimingSettings {
-        guard let data = UserDefaults.standard.data(forKey: key),
+        load(for: nil)
+    }
+    
+    static func load(for userId: String?) -> MealTimingSettings {
+        guard let data = UserDefaults.standard.data(forKey: key(for: userId)),
               let settings = try? JSONDecoder().decode(MealTimingSettings.self, from: data)
         else { return .default }
         return settings

@@ -126,10 +126,12 @@ struct USDAFood: Codable, Identifiable {
     let caloriesPer100g: Double
 }
 
-enum MealType: String, Codable, CaseIterable {
+enum MealType: String, Codable, CaseIterable, Identifiable {
     case breakfast = "Breakfast"
     case lunch     = "Lunch"
     case dinner    = "Dinner"
+    
+    var id: String { self.rawValue }
     
     var icon: String {
         switch self {
