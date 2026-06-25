@@ -131,12 +131,16 @@ class AuthStore {
     
     func logout() async {
         try? await client.auth.signOut()
+        await NotificationManager.shared.cancelAllReminders()
         logoutLocally()
     }
     
     // MARK: - Private Helpers
     
     private func updateState(with user: User) async {
+        // Clear all existing reminders to ensure a clean slate for the newly logged-in user
+        await NotificationManager.shared.cancelAllReminders()
+        
         // BUG FIX: Force lowercase for consistency with PetStore
         appState?.currentUserId = user.id.uuidString.lowercased()
         
@@ -153,29 +157,68 @@ class AuthStore {
     }
     
     private func ensureProfileExists(for user: User) async {
-        struct ProfileUpdate: Encodable {
+        let userId = user.id.uuidString.lowercased()
+        
+        struct ProfileFetch: Decodable {
             let id: String
-            let full_name: String
-            let email: String
+            let full_name: String?
         }
         
-        let name: String
-        if case let .string(val) = user.userMetadata["full_name"] {
-            name = val
-        } else {
-            name = "New User"
-        }
-        
-        // BUG FIX: Ensure the ID being upserted is lowercase
-        let profile = ProfileUpdate(id: user.id.uuidString.lowercased(), full_name: name, email: user.email ?? "")
-        
+        var existingProfile: ProfileFetch? = nil
         do {
-            try await client
+            let fetched: [ProfileFetch] = try await client
                 .from("profiles")
-                .upsert(profile)
+                .select("id, full_name")
+                .eq("id", value: userId)
                 .execute()
+                .value
+            existingProfile = fetched.first
         } catch {
-            print("Note: Profile upsert finished. \(error.localizedDescription)")
+            print("Error checking existing profile: \(error.localizedDescription)")
+        }
+        
+        var nameToUse: String? = nil
+        
+        // 1. If DB already has a valid name, prioritize it
+        if let dbName = existingProfile?.full_name,
+           !dbName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+           dbName != "New User",
+           dbName != "Pet Owner" {
+            nameToUse = dbName
+        }
+        
+        // 2. Otherwise, check userMetadata
+        if nameToUse == nil {
+            if case let .string(val) = user.userMetadata["full_name"],
+               !val.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               val != "New User",
+               val != "Pet Owner" {
+                nameToUse = val
+            }
+        }
+        
+        // 3. Fallback
+        let finalName = nameToUse ?? existingProfile?.full_name ?? "Pet Owner"
+        
+        // Update local AppState name
+        appState?.currentUserName = finalName
+        
+        // 4. Only upsert if profile is missing or name changed
+        if existingProfile == nil || existingProfile?.full_name != finalName {
+            struct ProfileUpdate: Encodable {
+                let id: String
+                let full_name: String
+            }
+            let profile = ProfileUpdate(id: userId, full_name: finalName)
+            
+            do {
+                try await client
+                    .from("profiles")
+                    .upsert(profile)
+                    .execute()
+            } catch {
+                print("Note: Profile upsert finished. \(error.localizedDescription)")
+            }
         }
     }
     
@@ -184,23 +227,55 @@ class AuthStore {
             credentials: .init(provider: .apple, idToken: idToken)
         )
         
-        let user = response.user
+        var user = response.user
         
         if let fullName, !fullName.isEmpty {
+            // Update Supabase Auth user metadata so it is stored in raw_user_meta_data
+            if let updatedUser = try? await client.auth.update(user: UserAttributes(data: ["full_name": .string(fullName)])) {
+                user = updatedUser
+            }
+            
+            // Also upsert directly to profiles table
             struct ProfileUpdate: Encodable {
                 let id: String
                 let full_name: String
-                let email: String
             }
             let profile = ProfileUpdate(
                 id: user.id.uuidString.lowercased(),
-                full_name: fullName,
-                email: user.email ?? ""
+                full_name: fullName
             )
             _ = try? await client.from("profiles").upsert(profile).execute()
         }
         
         await updateState(with: user)
+    }
+    
+    func updateProfileName(to newName: String) async throws {
+        let session = try await client.auth.session
+        let user = session.user
+        let userId = user.id.uuidString.lowercased()
+        
+        // 1. Update Supabase Auth metadata
+        _ = try await client.auth.update(
+            user: UserAttributes(data: ["full_name": .string(newName)])
+        )
+        
+        // 2. Update profiles table
+        struct ProfileUpdate: Encodable {
+            let id: String
+            let full_name: String
+        }
+        let profile = ProfileUpdate(
+            id: userId,
+            full_name: newName
+        )
+        try await client
+            .from("profiles")
+            .upsert(profile)
+            .execute()
+        
+        // 3. Update local state name
+        appState?.currentUserName = newName
     }
     
     private func logoutLocally() {

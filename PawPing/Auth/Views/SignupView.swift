@@ -193,6 +193,13 @@ struct SignupView: View {
     }
     
     private func signup() {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isValid = trimmedName.allSatisfy { $0.isLetter || $0.isWhitespace }
+        guard isValid else {
+            errorMessage = "Name must contain letters and spaces only."
+            return
+        }
+        
         isLoading = true
         errorMessage = ""
         

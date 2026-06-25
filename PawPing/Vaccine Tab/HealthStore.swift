@@ -86,6 +86,18 @@ class HealthStore {
             self.healthRecords = rows.map { row in
                 toHealthRecord(row, petId: petId)
             }
+            
+            // Reschedule reminders for upcoming/incomplete health records if notifications are enabled
+            let vaccineEnabled = UserDefaults.standard.object(forKey: "pawping_notif_vaccine") as? Bool ?? true
+            if vaccineEnabled {
+                let petName = activePetName.isEmpty ? "Your pet" : activePetName
+                for record in self.healthRecords {
+                    if record.nextDoseDate != nil && !record.isCompleted {
+                        await NotificationManager.shared.scheduleHealthRecordReminder(for: record, petName: petName)
+                    }
+                }
+            }
+            
             print(" Successfully fetched \(self.healthRecords.count) health records for pet \(petId)")
         } catch {
             print("  Error fetching health records: \(error)")

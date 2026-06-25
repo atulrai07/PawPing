@@ -45,6 +45,16 @@ class MedicationStore {
             self.medications.append(contentsOf: fetched)
             saveToUserDefaults()
             
+            // Reschedule reminders for active/upcoming medications if notification option is enabled
+            let medicationEnabled = UserDefaults.standard.object(forKey: "pawping_notif_medication") as? Bool ?? true
+            if medicationEnabled {
+                for medication in fetched {
+                    if medication.endDate == nil || medication.endDate! > Date() {
+                        await NotificationManager.shared.scheduleMedicationReminders(for: medication)
+                    }
+                }
+            }
+            
             print("Successfully fetched \(fetched.count) medications from Supabase for pet \(petId)")
         } catch {
             print("Error fetching medications from Supabase: \(error)")

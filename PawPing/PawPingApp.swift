@@ -21,6 +21,7 @@ struct PawPingApp: App {
     // Initial loading and splash
     @State private var isInitialLoading = true
     @State private var showSplash = true
+    @State private var showingNamePrompt = false
 
     var body: some Scene {
         WindowGroup {
@@ -52,6 +53,11 @@ struct PawPingApp: App {
                         }
                     }
                     .environment(authStore)
+                    .sheet(isPresented: $showingNamePrompt) {
+                        NamePromptSheet()
+                            .environment(authStore)
+                            .environment(petStore)
+                    }
                 } else {
                     ProgressView("Connecting...")
                 }
@@ -79,6 +85,7 @@ struct PawPingApp: App {
                 } else {
                     isInitialLoading = false
                 }
+                checkNamePrompt()
             }
             .task(id: appState.isAuthenticated) {
                 if appState.isAuthenticated {
@@ -93,7 +100,16 @@ struct PawPingApp: App {
                     petStore.clear()
                     isInitialLoading = false
                 }
+                checkNamePrompt()
             }
+            .onChange(of: appState.isAuthenticated) { _, _ in
+                checkNamePrompt()
+            }
+            .onChange(of: appState.currentUserName) { _, _ in
+                checkNamePrompt()
+            }
+            .onChange(of: isInitialLoading) { _, _ in
+                checkNamePrompt()
             }
             .onChange(of: petStore.activePetId) { _, newPetId in
                 let pet = petStore.pets.first { $0.id == newPetId }
@@ -109,4 +125,11 @@ struct PawPingApp: App {
                 }
             }
         }
+    }
+    
+    private func checkNamePrompt() {
+        let name = appState.currentUserName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isPlaceholder = name.isEmpty || name == "New User" || name == "Pet Owner"
+        showingNamePrompt = appState.isAuthenticated && !isInitialLoading && isPlaceholder
+    }
 }

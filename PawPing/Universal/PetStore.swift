@@ -123,6 +123,34 @@ class PetStore {
             return
         }
         do {
+            // Cancel reminders for pet itself (meals, walks, weight)
+            await NotificationManager.shared.cancelReminders(for: id)
+            
+            // Fetch and cancel medication reminders for this pet
+            struct IDFetcher: Decodable {
+                let id: UUID
+            }
+            let meds: [IDFetcher] = (try? await client
+                .from("medications")
+                .select("id")
+                .eq("pet_id", value: id.uuidString.lowercased())
+                .execute()
+                .value) ?? []
+            for med in meds {
+                await NotificationManager.shared.cancelReminders(for: med.id)
+            }
+            
+            // Fetch and cancel vaccine/health record reminders for this pet
+            let records: [IDFetcher] = (try? await client
+                .from("vaccines")
+                .select("id")
+                .eq("pet_id", value: id.uuidString.lowercased())
+                .execute()
+                .value) ?? []
+            for record in records {
+                await NotificationManager.shared.cancelReminders(for: record.id)
+            }
+
             try await client
                 .from("pets")
                 .delete()

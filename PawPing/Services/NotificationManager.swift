@@ -307,4 +307,11 @@ actor NotificationManager {
         let identifiersToCancel = requests.filter { $0.identifier.hasPrefix(prefix) }.map { $0.identifier }
         center.removePendingNotificationRequests(withIdentifiers: identifiersToCancel)
     }
+    
+    /// Cancels all scheduled/pending and delivered notifications on the device.
+    func cancelAllReminders() async {
+        let center = UNUserNotificationCenter.current()
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
+    }
 }
