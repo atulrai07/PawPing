@@ -53,6 +53,14 @@ struct ProfileView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
             }
+            .refreshable {
+                await petStore.fetchUserProfile()
+                await petStore.fetchPets()
+                if let petId = petStore.activePetId {
+                    await healthStore.fetchVaccines(for: petId)
+                    await petStore.fetchSavedVets()
+                }
+            }
             .background(LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea())
             .task {
                 if petStore.currentUserProfile == nil || petStore.currentUserProfile?.id != authStore.appState?.currentUserId {
