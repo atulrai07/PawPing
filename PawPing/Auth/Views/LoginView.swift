@@ -152,24 +152,6 @@ struct LoginView: View {
                         .background(Color(.systemGray6))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    
-                    Button {
-                        // Google Login
-                    } label: {
-                        HStack {
-                            Image("google_logo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 20, height: 20)
-                            Text("Continue with Google")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundStyle(.black)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
                 }
                 
                 Spacer(minLength: 20)
@@ -188,7 +170,7 @@ struct LoginView: View {
                     .foregroundStyle(Color("baseColor"))
                     Spacer()
                 }
-                .padding(.bottom, 20)
+                .padding(.bottom, 45)
             }
             .padding(.horizontal, 24)
         }

@@ -24,9 +24,10 @@ struct SignupView: View {
                 // Header (Logo)
                 HStack {
                     Spacer()
-                    Text("PawPing")
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color("baseColor"))
+                    Image("pawPing_text_Image")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 60)
                     Spacer()
                 }
                 .padding(.top, 20)
@@ -125,24 +126,6 @@ struct SignupView: View {
                                 .font(.system(size: 20))
                                 .foregroundStyle(.black)
                             Text("Continue with Apple")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundStyle(.black)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                    
-                    Button {
-                        // Google Login
-                    } label: {
-                        HStack {
-                            Image("google_logo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 20, height: 20)
-                            Text("Continue with Google")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundStyle(.black)
                         }
