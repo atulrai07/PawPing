@@ -213,6 +213,31 @@ struct DistanceSummaryView: View {
         }.count
     }
     
+    private var weeklyGoalBannerContent: (title: String, message: String, color: Color) {
+        let petName = store.activePet?.name ?? "Sheru"
+        let goalDays = daysMeetingGoal
+        
+        if goalDays == 0 {
+            return (
+                title: "Let's get moving! 🐾",
+                message: "\(petName) has not met the daily goal yet this week.",
+                color: .homePurple
+            )
+        } else if goalDays == 7 {
+            return (
+                title: "Perfect week! 🏆",
+                message: "\(petName) met the daily goal every single day!",
+                color: .homeGreen
+            )
+        } else {
+            return (
+                title: "Keep it up! ✨",
+                message: "\(petName) met the goal on \(goalDays) \(goalDays == 1 ? "day" : "days") this week.",
+                color: .homePurple
+            )
+        }
+    }
+    
     private var bestDayOfMonth: (dateLabel: String, distance: Double) {
         let sorted = currentMonthData.filter { $0.distanceInKm > 0 }.sorted(by: { $0.distanceInKm > $1.distanceInKm })
         if let best = sorted.first {
@@ -393,6 +418,7 @@ struct DistanceSummaryView: View {
                 // MARK: - Highlight Banner
                 if selectedRange == 0 {
                     // Weekly Goal Banner
+                    let bannerContent = weeklyGoalBannerContent
                     HStack(spacing: 12) {
                         ZStack {
                             Circle()
@@ -403,12 +429,14 @@ struct DistanceSummaryView: View {
                                 .foregroundColor(.white)
                         }
                         
-                        let goalDays = daysMeetingGoal
-                        let petName = store.activePet?.name ?? "Tommy"
-                        Text(goalDays > 0 ? "Great job!\n\(petName) met the goal on \(goalDays) days this week." : "Keep it up!\n\(petName) has not met the daily goal yet this week.")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
-                            .lineSpacing(2)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(bannerContent.title)
+                                .font(.system(size: 14, weight: .bold))
+                            Text(bannerContent.message)
+                                .font(.system(size: 12, weight: .medium))
+                                .opacity(0.9)
+                        }
+                        .foregroundColor(.white)
                         
                         Spacer()
                         
@@ -420,7 +448,7 @@ struct DistanceSummaryView: View {
                     .padding(.vertical, 14)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.homePurple)
+                            .fill(bannerContent.color)
                     )
                     .padding(.horizontal)
                 } else {
