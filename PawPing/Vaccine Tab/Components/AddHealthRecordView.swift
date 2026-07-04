@@ -63,6 +63,14 @@ struct AddHealthRecordView: View {
     @State private var imageSourceType: UIImagePickerController.SourceType = .photoLibrary
     @State private var isUploadingImage = false
     
+    // OCR fields
+    @State private var batchNumber: String
+    @State private var manufacturer: String
+    @State private var expiryDate: Date?
+    @State private var hasExpiryDate: Bool
+    @State private var showingScanner = false
+    @State private var isCompleted: Bool
+    
     @State private var showingVetSearch = false
     @State private var errorMessage: String? = nil
     @State private var showError = false
@@ -86,6 +94,11 @@ struct AddHealthRecordView: View {
             _vetLatitude = State(initialValue: rec.vetLatitude)
             _vetLongitude = State(initialValue: rec.vetLongitude)
             _imageUrl = State(initialValue: rec.imageUrl)
+            _batchNumber = State(initialValue: rec.batchNumber ?? "")
+            _manufacturer = State(initialValue: rec.manufacturer ?? "")
+            _expiryDate = State(initialValue: rec.expiryDate)
+            _hasExpiryDate = State(initialValue: rec.expiryDate != nil)
+            _isCompleted = State(initialValue: rec.isCompleted)
         } else {
             _recordType = State(initialValue: .vaccine)
             _name = State(initialValue: "")
@@ -100,12 +113,45 @@ struct AddHealthRecordView: View {
             _vetLatitude = State(initialValue: nil)
             _vetLongitude = State(initialValue: nil)
             _imageUrl = State(initialValue: nil)
+            _batchNumber = State(initialValue: "")
+            _manufacturer = State(initialValue: "")
+            _expiryDate = State(initialValue: nil)
+            _hasExpiryDate = State(initialValue: false)
+            _isCompleted = State(initialValue: false)
         }
     }
     
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Button(action: {
+                        showingScanner = true
+                    }) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "doc.viewfinder.fill")
+                                .font(.title3)
+                                .foregroundStyle(Color("baseColor"))
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Scan Vaccine Label")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                Text("Auto-fill details from photo tag")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+                
                 Section("Record Type") {
                     Picker("Type", selection: $recordType) {
                         ForEach(HealthRecordType.allCases, id: \.self) { type in
@@ -153,7 +199,20 @@ struct AddHealthRecordView: View {
                     
                     TextField("Custom Name", text: $name)
                     
-                    DatePicker("Date Given", selection: $dateGiven, in: ...Date(), displayedComponents: .date)
+                    Toggle("Mark as Administered", isOn: $isCompleted)
+                    
+                    TextField("Batch / Serial #", text: $batchNumber)
+                    TextField("Manufacturer", text: $manufacturer)
+                    
+                    Toggle("Set Expiry Date", isOn: $hasExpiryDate)
+                    if hasExpiryDate {
+                        DatePicker("Expiry Date", selection: Binding(
+                            get: { expiryDate ?? Date() },
+                            set: { expiryDate = $0 }
+                        ), displayedComponents: .date)
+                    }
+                    
+                    DatePicker(isCompleted ? "Date Given" : "Scheduled Date", selection: $dateGiven, in: ...Date(), displayedComponents: .date)
                         .onChange(of: dateGiven) { _, _ in updateNextDoseDate() }
                     
                     Toggle("Set Reminder for Next Dose", isOn: $hasNextDose)
@@ -314,6 +373,26 @@ struct AddHealthRecordView: View {
             .sheet(isPresented: $showingImagePicker) {
                 ImagePicker(selectedImage: $pickedImage, sourceType: imageSourceType)
             }
+            .fullScreenCover(isPresented: $showingScanner) {
+                VaccineLabelScannerView { scannedData, scannedImage in
+                    if let valName = scannedData.vaccineName {
+                        name = valName
+                    }
+                    if let batch = scannedData.batchNumber {
+                        batchNumber = batch
+                    }
+                    if let man = scannedData.manufacturer {
+                        manufacturer = man
+                    }
+                    if let exp = scannedData.expiryDate {
+                        expiryDate = exp
+                        hasExpiryDate = true
+                    }
+                    
+                    isCompleted = true
+                    pickedImage = scannedImage
+                }
+            }
             .alert("Error", isPresented: $showError, actions: {
                 Button("OK") { }
             }, message: {
@@ -376,13 +455,16 @@ struct AddHealthRecordView: View {
                 dateGiven: dateGiven,
                 nextDoseDate: hasNextDose ? (nextDoseDate ?? Calendar.current.date(byAdding: .year, value: 1, to: dateGiven)) : nil,
                 notes: notes,
-                isCompleted: recordToEdit?.isCompleted ?? false,
+                isCompleted: isCompleted,
                 vetName: vetName.isEmpty ? nil : vetName,
                 vetAddress: vetAddress.isEmpty ? nil : vetAddress,
                 vetPhone: vetPhone.isEmpty ? nil : vetPhone,
                 vetLatitude: vetLatitude,
                 vetLongitude: vetLongitude,
-                imageUrl: finalImageUrl
+                imageUrl: finalImageUrl,
+                batchNumber: batchNumber.isEmpty ? nil : batchNumber,
+                manufacturer: manufacturer.isEmpty ? nil : manufacturer,
+                expiryDate: hasExpiryDate ? expiryDate : nil
             )
             
             if recordToEdit != nil {
@@ -391,6 +473,32 @@ struct AddHealthRecordView: View {
             } else {
                 print("📝 Attempting to save health record: \(record.name)")
                 await healthStore.addHealthRecord(record)
+                
+                // If the new vaccine is marked as completed (administered) and has a scheduled next dose,
+                // create a separate upcoming reminder record for the next dose
+                if isCompleted && hasNextDose, let nextDate = nextDoseDate {
+                    let upcomingRecord = HealthRecord(
+                        id: UUID(),
+                        petId: petId,
+                        type: recordType.rawValue,
+                        name: name,
+                        dateGiven: dateGiven,
+                        nextDoseDate: nextDate,
+                        notes: "",
+                        isCompleted: false,
+                        vetName: nil,
+                        vetAddress: nil,
+                        vetPhone: nil,
+                        vetLatitude: nil,
+                        vetLongitude: nil,
+                        imageUrl: nil,
+                        batchNumber: nil,
+                        manufacturer: nil,
+                        expiryDate: nil
+                    )
+                    print("📝 Saving associated upcoming reminder for next dose: \(upcomingRecord.name)")
+                    await healthStore.addHealthRecord(upcomingRecord)
+                }
             }
             // Ensure UI is fully refreshed
             await healthStore.fetchVaccines(for: petId)

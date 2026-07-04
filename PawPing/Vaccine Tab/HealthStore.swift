@@ -35,6 +35,8 @@ private struct DBVaccineRecord: Codable {
     var batch_number: String?      // Existing column in DB
     var completed: Bool?           // New requirement
     var image_url: String?         // Vaccine report photo URL
+    var manufacturer: String?
+    var expiry_date: String?       // "yyyy-MM-dd"
 }
 
 // MARK: - HealthStore
@@ -250,6 +252,7 @@ class HealthStore {
     private func toDBRecord(_ record: HealthRecord, ownerId: String) -> DBVaccineRecord {
         let dateStr = Self.dateFormatter.string(from: record.dateGiven)
         let nextDoseStr: String? = record.nextDoseDate.map { Self.dateFormatter.string(from: $0) }
+        let expiryStr: String? = record.expiryDate.map { Self.dateFormatter.string(from: $0) }
 
         return DBVaccineRecord(
             id: record.id,
@@ -266,15 +269,18 @@ class HealthStore {
             vet_latitude: record.vetLatitude,
             vet_longitude: record.vetLongitude,
             status: nil,
-            batch_number: nil,
+            batch_number: record.batchNumber,
             completed: record.isCompleted,
-            image_url: record.imageUrl
+            image_url: record.imageUrl,
+            manufacturer: record.manufacturer,
+            expiry_date: expiryStr
         )
     }
 
     private func toHealthRecord(_ row: DBVaccineRecord, petId: UUID) -> HealthRecord {
         let dateGiven = Self.dateFormatter.date(from: row.date) ?? Date()
         let nextDose: Date? = row.next_dose_date.flatMap { Self.dateFormatter.date(from: $0) }
+        let expiryDate: Date? = row.expiry_date.flatMap { Self.dateFormatter.date(from: $0) }
 
         return HealthRecord(
             id: row.id,
@@ -290,7 +296,10 @@ class HealthStore {
             vetPhone: row.vet_phone,
             vetLatitude: row.vet_latitude,
             vetLongitude: row.vet_longitude,
-            imageUrl: row.image_url
+            imageUrl: row.image_url,
+            batchNumber: row.batch_number,
+            manufacturer: row.manufacturer,
+            expiryDate: expiryDate
         )
     }
 }
