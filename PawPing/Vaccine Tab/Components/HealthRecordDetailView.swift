@@ -37,6 +37,18 @@ struct HealthRecordDetailView: View {
                 if let nextDose = rec.nextDoseDate {
                     detailRow(title: "Next Dose", value: nextDose.formatted(date: .abbreviated, time: .omitted))
                 }
+                
+                if let manufacturer = rec.manufacturer, !manufacturer.isEmpty {
+                    detailRow(title: "Manufacturer", value: manufacturer)
+                }
+                
+                if let batch = rec.batchNumber, !batch.isEmpty {
+                    detailRow(title: "Batch / Serial #", value: batch)
+                }
+                
+                if let expiry = rec.expiryDate {
+                    detailRow(title: "Expiry Date", value: expiry.formatted(date: .abbreviated, time: .omitted))
+                }
             }
             
             if rec.isCompleted || rec.vetName != nil || rec.vetAddress != nil || rec.vetPhone != nil {

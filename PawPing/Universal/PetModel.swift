@@ -21,6 +21,7 @@ struct Pet: Identifiable, Codable, Hashable {
     var birthday: String? = nil    // Stored as "yyyy-MM-dd" to match Supabase date column
     var isNeutered: Bool? = nil
     var walkGoalMinutes: Int? = nil  // User-set custom goal, nil = use breed default
+    var walkCardImageUrl: String? = nil  // Public URL for custom walk card dog image
 
     static let defaultImageName = "profilePhoto"
     
@@ -40,6 +41,7 @@ struct Pet: Identifiable, Codable, Hashable {
         case birthday
         case isNeutered = "is_neutered"
         case walkGoalMinutes = "walk_goal_minutes"
+        case walkCardImageUrl = "walk_card_image_url"
     }
     
     // MARK: - Helpers

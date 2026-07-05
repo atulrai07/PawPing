@@ -348,29 +348,30 @@ struct MealLoggingSheet: View {
         let innerIconBg = isSelected ? (Color(hex: "FFF1D6") ?? Color.orange.opacity(0.2)) : Color("secondaryCardBackground")
 
         return ZStack(alignment: .topTrailing) {
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 // Image Container
                 ZStack {
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 14)
                         .fill(innerIconBg)
-                        .frame(width: 56, height: 56)
+                        .frame(width: 48, height: 48)
                     
                     Image(imageName)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 44, height: 44)
+                        .frame(width: 36, height: 36)
                 }
                 
                 Text(food.displayName)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(isSelected ? .primary : Color("secondaryText"))
-                    .lineLimit(2)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.8)
                     .multilineTextAlignment(.leading)
                 
                 Spacer()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
+            .padding(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 8))
             .background(
                 RoundedRectangle(cornerRadius: 24)
                     .fill(isSelected ? selectionBg : Color("cardBackground"))

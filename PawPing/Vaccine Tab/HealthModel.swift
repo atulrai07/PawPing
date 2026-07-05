@@ -54,6 +54,11 @@ struct HealthRecord: Identifiable, Codable, Equatable {
     var vetLatitude: Double?
     var vetLongitude: Double?
     var imageUrl: String? // URL for vaccine report / certificate photo
+    
+    // OCR Scanning fields
+    var batchNumber: String? = nil
+    var manufacturer: String? = nil
+    var expiryDate: Date? = nil
 
     enum CodingKeys: String, CodingKey {
         case id, type, name, notes
@@ -67,6 +72,9 @@ struct HealthRecord: Identifiable, Codable, Equatable {
         case vetLatitude = "vet_latitude"
         case vetLongitude = "vet_longitude"
         case imageUrl = "image_url"
+        case batchNumber = "batch_number"
+        case manufacturer
+        case expiryDate = "expiry_date"
     }
 
     // MARK: - Computed Properties
