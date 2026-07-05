@@ -16,6 +16,7 @@ struct ActivityView: View {
     @Environment(DietAssistantStore.self) var dietAssistantStore
     @Environment(MedicationStore.self) var medicationStore
     @Environment(AppState.self) var appState
+    @Environment(WalkCardImageStore.self) var walkCardImageStore
 
     @State private var showWalkFlow = false
     @State private var countdownFinished = false
@@ -28,6 +29,10 @@ struct ActivityView: View {
     
     @State private var showMealLogSheet = false
     @State private var selectedMealType: MealType = .breakfast
+    
+    // Dog image capture flow
+    @State private var showDogImageFlow = false
+    @State private var capturedDogImage: UIImage? = nil
 
     var body: some View {
         NavigationStack {
@@ -54,6 +59,16 @@ struct ActivityView: View {
                         // Pre-warm the Lottie WKWebView so it's ready
                         // before the user taps "Let's Go"
                         LottiePreloader.shared.warmUp()
+                        
+                        // Sync walk card image from Supabase if needed
+                        if let pet = petStore.activePet {
+                            Task {
+                                await walkCardImageStore.syncFromSupabase(
+                                    for: pet.id,
+                                    imageUrl: pet.walkCardImageUrl
+                                )
+                            }
+                        }
                     }
                     .customNavigationScroll(
                         title: "Home",
@@ -93,6 +108,13 @@ struct ActivityView: View {
                 }
             }
         }
+        .fullScreenCover(isPresented: $showDogImageFlow) {
+            DogImageCaptureFlow(
+                petId: petStore.activePetId ?? UUID(),
+                walkCardImageStore: walkCardImageStore,
+                onDismiss: { showDogImageFlow = false }
+            )
+        }
         .fullScreenCover(isPresented: $showWalkFlow) {
             WalkFlowContainer(
                 store: store,
@@ -106,15 +128,19 @@ struct ActivityView: View {
 
     // MARK: - Hero Section (Today's Walk)
     private var heroSection: some View {
-        ZStack {
-            Image("card_bg")
+        let activePetId = petStore.activePetId
+        
+        return ZStack {
+            // Layer 1: Background (nature scene without dog)
+            Image("card_bg_clean")
                 .resizable()
                 .scaledToFill()
-                .frame(height: 200) // Increased height for breathing room
+                .frame(height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 24))
             
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 14) { // Increased spacing
+            HStack(spacing: 0) {
+                // Layer 2: Text content (left side)
+                VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 8) {
                         Text("Today's Walk")
                             .font(.system(size: 14, weight: .medium))
@@ -123,7 +149,7 @@ struct ActivityView: View {
                     
                     HStack(alignment: .lastTextBaseline, spacing: 4) {
                         Text("\(store.liveWalkedMinutes)")
-                            .font(.system(size: 38, weight: .bold)) // Slightly larger
+                            .font(.system(size: 38, weight: .bold))
                             .foregroundColor(.homePurple)
                         
                         Text("/\(store.walkActivity.goalMinutes) min")
@@ -136,7 +162,7 @@ struct ActivityView: View {
                         ZStack(alignment: .leading) {
                             Capsule()
                                 .fill(Color.homePurple.opacity(0.2))
-                                .frame(height: 8) // Slightly thicker
+                                .frame(height: 8)
                             
                             let rawProgress = CGFloat(store.liveWalkedMinutes) / CGFloat(max(store.walkActivity.goalMinutes, 1))
                             let progress = min(max(rawProgress, 0.0), 1.0)
@@ -158,7 +184,6 @@ struct ActivityView: View {
                     } label: {
                         HStack {
                             Text(store.isWalking ? "Resume" : "Let's go!")
-                        
                         }
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.white)
@@ -170,13 +195,46 @@ struct ActivityView: View {
                     }
                 }
                 .padding(.leading, 24)
-                .padding(.vertical, 24) // Added vertical padding
+                .padding(.vertical, 24)
                 
-                Spacer(minLength: 170)
+                Spacer(minLength: 10)
+                
+                // Layer 3: Dog image (custom or default)
+                Group {
+                    if let petId = activePetId,
+                       let customImage = walkCardImageStore.loadImage(for: petId) {
+                        Image(uiImage: customImage)
+                            .resizable()
+                            .scaledToFit()
+                    } else {
+                        Image("hero_dog")
+                            .resizable()
+                            .scaledToFit()
+                    }
+                }
+                .frame(width: 165, height: 185)
+                .clipped()
             }
         }
         .padding(.horizontal)
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        .contextMenu {
+            Button {
+                showDogImageFlow = true
+            } label: {
+                Label("Change Dog Image", systemImage: "camera.fill")
+            }
+            
+            if let petId = activePetId, walkCardImageStore.hasCustomImage(for: petId) {
+                Button(role: .destructive) {
+                    Task {
+                        await walkCardImageStore.resetToDefault(for: petId)
+                    }
+                } label: {
+                    Label("Reset to Default", systemImage: "arrow.counterclockwise")
+                }
+            }
+        }
     }
 
     // MARK: - Meals Section
@@ -732,6 +790,7 @@ struct ActivityViewPreviewWrapper: View {
     @State private var authStore = AuthStore()
     @State private var appState = AppState()
     @State private var dietAssistantStore = DietAssistantStore()
+    @State private var walkCardImageStore = WalkCardImageStore()
     
     var body: some View {
         ActivityView()
@@ -741,6 +800,7 @@ struct ActivityViewPreviewWrapper: View {
             .environment(authStore)
             .environment(appState)
             .environment(dietAssistantStore)
+            .environment(walkCardImageStore)
     }
 }
 
