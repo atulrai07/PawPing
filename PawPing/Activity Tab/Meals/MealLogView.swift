@@ -34,8 +34,7 @@ struct MealLogView: View {
     @State private var showDatePicker = false
 
     // Sheet states
-    @State private var showMealSheet = false
-    @State private var selectedMealType: MealType = .breakfast
+    @State private var selectedMealTypeForSheet: MealType? = nil
     @State private var showDietSetup = false
     @State private var showWeightSheet = false
     
@@ -86,8 +85,7 @@ struct MealLogView: View {
                 VStack(spacing: 14) {
                     ForEach(displayedMeals, id: \.id) { meal in
                         Button {
-                            selectedMealType = meal.mealType
-                            showMealSheet = true
+                            selectedMealTypeForSheet = meal.mealType
                         } label: {
                             mealCard(meal: meal)
                         }
@@ -124,8 +122,8 @@ struct MealLogView: View {
         .onAppear {
             selectedDate = Calendar.current.startOfDay(for: Date())
         }
-        .sheet(isPresented: $showMealSheet) {
-            MealLoggingSheet(store: store, mealType: selectedMealType, logDate: selectedDate, isReadOnly: !isToday)
+        .sheet(item: $selectedMealTypeForSheet) { mealType in
+            MealLoggingSheet(store: store, mealType: mealType, logDate: selectedDate, isReadOnly: !isToday)
                 .presentationDetents([.large])
         }
         .sheet(isPresented: $showDatePicker) {

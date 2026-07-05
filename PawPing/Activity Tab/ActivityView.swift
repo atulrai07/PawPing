@@ -27,8 +27,7 @@ struct ActivityView: View {
     @State private var showMemoriesGallery = false
     @State private var selectedDetailMemory: PetMemory? = nil
     
-    @State private var showMealLogSheet = false
-    @State private var selectedMealType: MealType = .breakfast
+    @State private var selectedMealTypeForSheet: MealType? = nil
     
     // Dog image capture flow
     @State private var showDogImageFlow = false
@@ -101,8 +100,8 @@ struct ActivityView: View {
                             selectedDetailMemory = nil
                         }
                     }
-                    .sheet(isPresented: $showMealLogSheet) {
-                        MealLoggingSheet(store: store, mealType: selectedMealType, logDate: Date(), isReadOnly: false)
+                    .sheet(item: $selectedMealTypeForSheet) { mealType in
+                        MealLoggingSheet(store: store, mealType: mealType, logDate: Date(), isReadOnly: false)
                             .presentationDetents([.large])
                     }
                 }
@@ -271,8 +270,7 @@ struct ActivityView: View {
                     imageName: "bowl_pink", 
                     isCompleted: b?.isTaken ?? false
                 ) {
-                    selectedMealType = .breakfast
-                    showMealLogSheet = true
+                    selectedMealTypeForSheet = .breakfast
                 }
                 MealCardView(
                     title: "Lunch", 
@@ -282,8 +280,7 @@ struct ActivityView: View {
                     imageName: "bowl_yellow", 
                     isCompleted: l?.isTaken ?? false
                 ) {
-                    selectedMealType = .lunch
-                    showMealLogSheet = true
+                    selectedMealTypeForSheet = .lunch
                 }
                 MealCardView(
                     title: "Dinner", 
@@ -293,8 +290,7 @@ struct ActivityView: View {
                     imageName: "bowl_blue", 
                     isCompleted: d?.isTaken ?? false
                 ) {
-                    selectedMealType = .dinner
-                    showMealLogSheet = true
+                    selectedMealTypeForSheet = .dinner
                 }
             }
             .padding(.horizontal)
