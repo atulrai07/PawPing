@@ -12,7 +12,7 @@ import Foundation
 
 // MARK: - Health Record Type
 
-enum HealthRecordType: String, Codable, CaseIterable, Equatable {
+enum HealthRecordType: String, Codable, CaseIterable, Equatable { //Equatable to compare old changes with the new changes
     case vaccine   = "vaccine"
     case deworming = "deworming"
     case fleaTick  = "fleaTick"
