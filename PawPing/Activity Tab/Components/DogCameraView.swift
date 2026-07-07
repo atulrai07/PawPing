@@ -116,7 +116,7 @@ struct DogCameraView: View {
             Text("The background will be automatically removed")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.white.opacity(0.6))
-                .padding(.bottom, 100)
+                .padding(.bottom, 130)
         }
     }
     

@@ -426,7 +426,7 @@ private extension ProfileView {
                 Divider().padding(.leading, 56)
                 
                 NavigationLink(destination: AboutView()) {
-                    settingsRow(icon: "info.circle.fill", iconColor: Color(hex: "6E54D7") ?? .purple, title: "Help & Support")
+                    settingsRow(icon: "info.circle.fill", iconColor: Color(hex: "6E54D7") ?? .purple, title: "About Us")
                 }
             }
             .background(

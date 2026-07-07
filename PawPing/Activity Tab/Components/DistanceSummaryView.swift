@@ -219,19 +219,19 @@ struct DistanceSummaryView: View {
         
         if goalDays == 0 {
             return (
-                title: "Let's get moving! 🐾",
+                title: "Let's get moving!",
                 message: "\(petName) has not met the daily goal yet this week.",
                 color: .homePurple
             )
         } else if goalDays == 7 {
             return (
-                title: "Perfect week! 🏆",
+                title: "Perfect week!",
                 message: "\(petName) met the daily goal every single day!",
                 color: .homeGreen
             )
         } else {
             return (
-                title: "Keep it up! ✨",
+                title: "Keep it up!",
                 message: "\(petName) met the goal on \(goalDays) \(goalDays == 1 ? "day" : "days") this week.",
                 color: .homePurple
             )

@@ -80,7 +80,7 @@ struct Pet: Identifiable, Codable, Hashable {
                 return "1 year"
             } else {
                 if let months = components.month, months > 0 {
-                    return "\(years) yrs \(months) mo"
+                    return "\(years) y \(months) m"
                 }
                 return "\(years) years"
             }

@@ -93,7 +93,7 @@ struct HealthView: View {
                                 .padding(.horizontal, 20)
 
                                 VStack(spacing: 0) {
-                                    HealthTimelineView(events: timelineEvents, limit: 5)
+                                    HealthTimelineView(events: timelineEvents, limit: 3)
                                 }
                                 .padding(20)
                                 .background(
@@ -177,7 +177,7 @@ struct HealthView: View {
                 )
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Active Medications")
+                Text("Medications")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Color.textPrimary)
                 

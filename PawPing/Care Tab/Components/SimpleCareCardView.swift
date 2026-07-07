@@ -72,7 +72,7 @@ struct SimpleCareCardView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "star.fill")
                         .font(.system(size: 11))
-                        .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                        .foregroundStyle(item.category.displayColor)
                     
                     Text(mockRating)
                         .font(.system(size: 12, weight: .bold))
@@ -85,7 +85,7 @@ struct SimpleCareCardView: View {
                     
                     Image(systemName: "mappin.and.ellipse")
                         .font(.system(size: 11))
-                        .foregroundStyle(Color(hex: "6E54D7") ?? .purple)
+                        .foregroundStyle(item.category.displayColor)
                     
                     // Removing " away" from the string
                     Text(item.distanceString.replacingOccurrences(of: " away", with: ""))

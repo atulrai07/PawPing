@@ -237,6 +237,10 @@ class PetStore {
             if let dbProfile = profiles.first {
                 self.currentUserProfile = dbProfile
                 
+                if self.currentUserProfile?.email == nil || self.currentUserProfile?.email?.isEmpty == true {
+                    self.currentUserProfile?.email = user.email
+                }
+                
                 // Sync settings from Supabase to local UserDefaults
                 if let settings = dbProfile.mealTimingSettings {
                     settings.save(for: userId)

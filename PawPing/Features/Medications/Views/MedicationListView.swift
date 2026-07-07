@@ -247,6 +247,10 @@ struct MedicationRow: View {
                 }
             }
             Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.gray.opacity(0.8))
         }
         .padding(.vertical, 4)
     }

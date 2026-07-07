@@ -32,7 +32,7 @@ struct AccountManagementView: View {
                 Text("Deleting your account will permanently remove all your data, including pet profiles and health records.")
             }
         }
-        .navigationTitle("Account Management")
+        .navigationTitle("Account Settings")
         .alert("Delete Account?", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete Permanently", role: .destructive) {

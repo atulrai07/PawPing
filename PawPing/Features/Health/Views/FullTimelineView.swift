@@ -154,7 +154,7 @@ struct FullTimelineView: View {
             LinearGradient(colors: [.bgWarmTop, .bgWarmBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
         )
-        .navigationTitle("Full Timeline")
+        .navigationTitle("Health Timeline")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -174,6 +174,7 @@ struct FullTimelineView: View {
                 useDateRange: $useDateRange
             )
         }
+        .presentationDetents([.medium])
     }
 }
 
@@ -236,7 +237,7 @@ struct FilterTimelineSheet: View {
                     }
                 }
             }
-            .navigationTitle("Filter Events")
+            .navigationTitle("Filter Vaccines")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

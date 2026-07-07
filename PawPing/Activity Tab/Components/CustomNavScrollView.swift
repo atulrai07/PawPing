@@ -37,9 +37,11 @@ private struct StickyNavHeader: View {
                             addAction()
                         } label: {
                             Image(systemName: "plus")
-                                .font(.system(size: 22, weight: .medium))
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(Color("baseColor"))
                                 .frame(width: 36, height: 36)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Circle())
                         }
                         .padding(.trailing, 8)
                     }

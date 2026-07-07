@@ -51,7 +51,7 @@ struct PrivacyPolicyView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Privacy Policy")
+                Text("Privacy & Security")
                     .font(.largeTitle.bold())
                     .padding(.bottom, 8)
                 
@@ -63,22 +63,27 @@ struct PrivacyPolicyView: View {
                     Text("Information We Collect")
                         .font(.headline)
                     Text("We collect information you provide directly to us when creating an account, such as your email address and name. We also collect data you enter about your pets, including their breed, age, weight, and medical history.")
+                        .foregroundStyle(.gray)
                     
                     Text("How We Use Information")
                         .font(.headline)
                     Text("We use your information to provide, maintain, and improve PawPing. This includes syncing your data across devices, providing activity insights, and keeping your vet contacts organized.")
+                        .foregroundStyle(.gray)
                     
                     Text("Data Storage & Security")
                         .font(.headline)
                     Text("Your data is securely stored using Supabase. We implement reasonable security measures to protect your information from unauthorized access.")
+                        .foregroundStyle(.gray)
                     
                     Text("Third-Party Services")
                         .font(.headline)
                     Text("We may use third-party services for analytics and infrastructure. These services only have access to the data necessary to perform their functions on our behalf.")
+                        .foregroundStyle(.gray)
                     
                     Text("Your Rights")
                         .font(.headline)
-                    Text("You have the right to access, correct, or delete your personal data at any time. You can delete your account entirely from the Account Management section in the app.")
+                    Text("You have the right to access, correct, or delete your personal data at any time. You can delete your account entirely from the Account Settings section in the app.")
+                        .foregroundStyle(.gray)
                 }
                 
                 Spacer(minLength: 40)

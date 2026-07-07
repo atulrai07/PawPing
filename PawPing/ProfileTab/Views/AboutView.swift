@@ -51,7 +51,7 @@ struct AboutView: View {
                     Divider().padding(.leading, 56)
                     LinkRow(label: "Contact Support", icon: "envelope.fill")
                     Divider().padding(.leading, 56)
-                    LinkRow(label: "Visit our Website", icon: "globe")
+                    LinkRow(label: "Visit our Website", icon: "safari")
                 }
                 .background(Color("cardBackground"))
                 .clipShape(RoundedRectangle(cornerRadius: 20))
