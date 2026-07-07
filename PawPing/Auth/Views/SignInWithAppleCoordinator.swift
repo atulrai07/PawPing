@@ -21,7 +21,10 @@ class SignInWithAppleCoordinator: NSObject, ASAuthorizationControllerDelegate, A
         if let windowScene {
             return windowScene.windows.first(where: { $0.isKeyWindow }) ?? UIWindow(windowScene: windowScene)
         }
-        return UIWindow(frame: .zero)
+        if let fallbackScene = scenes.first as? UIWindowScene {
+            return UIWindow(windowScene: fallbackScene)
+        }
+        return UIWindow()
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
