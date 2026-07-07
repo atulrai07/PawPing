@@ -2,7 +2,7 @@
 //  AppSettingsView.swift
 //  PawPing
 //
-//  Created by Antigravity on 26/06/25.
+//  Created by Atul on 26/06/25.
 //
 
 import SwiftUI

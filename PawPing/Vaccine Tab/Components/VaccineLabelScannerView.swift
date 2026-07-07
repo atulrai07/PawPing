@@ -2,7 +2,7 @@
 //  VaccineLabelScannerView.swift
 //  PawPing
 //
-//  Created by Antigravity on 04/07/26.
+//  Created by Atul on 04/07/26.
 //
 
 import SwiftUI
