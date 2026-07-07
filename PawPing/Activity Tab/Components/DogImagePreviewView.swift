@@ -247,7 +247,6 @@ struct DogImagePreviewView: View {
                 .resizable()
                 .scaledToFill()
                 .frame(height: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
             
             HStack {
                 VStack(alignment: .leading, spacing: 10) {
@@ -279,11 +278,12 @@ struct DogImagePreviewView: View {
                 Image(uiImage: dogImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 130, height: 140)
+                    .frame(width: 130, height: 160, alignment: .bottom)
                     .padding(.trailing, 8)
             }
         }
         .frame(height: 160)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
     }
     

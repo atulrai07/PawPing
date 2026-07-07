@@ -57,6 +57,9 @@ class PetStore {
             if activePetId == nil {
                 activePetId = pets.first?.id
             }
+        } catch is CancellationError {
+            // Task cancellation is a normal Swift concurrency lifecycle event. Ignore it.
+            print("  Fetching pets cancelled.")
         } catch {
             print("  Error fetching pets: \(error)")
             self.lastError = "Failed to fetch pets. \(error.localizedDescription)"

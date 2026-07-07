@@ -52,8 +52,8 @@ struct DogImageEditView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: containerSize.width, height: containerSize.height)
-                            .offset(offset)
                             .scaleEffect(scale)
+                            .offset(offset)
                             .gesture(
                                 DragGesture()
                                     .onChanged { value in

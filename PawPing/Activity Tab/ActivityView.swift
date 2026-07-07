@@ -135,7 +135,6 @@ struct ActivityView: View {
                 .resizable()
                 .scaledToFill()
                 .frame(height: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
             
             HStack(spacing: 0) {
                 // Layer 2: Text content (left side)
@@ -211,10 +210,11 @@ struct ActivityView: View {
                             .scaledToFit()
                     }
                 }
-                .frame(width: 165, height: 185)
-                .clipped()
+                .frame(width: 165, height: 200, alignment: .bottom)
             }
         }
+        .frame(height: 200)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
         .padding(.horizontal)
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
         .contextMenu {
