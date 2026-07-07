@@ -1,12 +1,13 @@
 //
-//  ChatMessage.swift
+//  DietChatMessage.swift
 //  PawPing
 //
 
 import Foundation
 
-struct ChatMessage: Identifiable {
+struct DietChatMessage: Identifiable {
     let id = UUID()
     let text: String
     let isUser: Bool
 }
+

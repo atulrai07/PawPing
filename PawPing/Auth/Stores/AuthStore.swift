@@ -5,7 +5,7 @@
 
 import Foundation
 import SwiftUI
-import Observation
+import Observation //to track read and writes
 import Supabase
 
 @MainActor

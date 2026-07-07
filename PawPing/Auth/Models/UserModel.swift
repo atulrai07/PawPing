@@ -11,7 +11,7 @@ struct UserModel: Identifiable, Codable {
     var email: String?
     var mealTimingSettings: MealTimingSettings?
     
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey { //used coding keys to match swift Camel Case convention
         case id
         case name = "full_name"
         case email

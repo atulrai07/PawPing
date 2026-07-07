@@ -23,7 +23,7 @@ enum ModelAvailability: Equatable {
 class DietAssistantStore {
 
     // MARK: - State
-    var messages: [ChatMessage] = []
+    var messages: [DietChatMessage] = []
     var isTyping: Bool = false
     var availability: ModelAvailability = .unknown
 
@@ -116,7 +116,7 @@ class DietAssistantStore {
             
             // Add initial greeting message
             if messages.isEmpty {
-                messages.append(ChatMessage(
+                messages.append(DietChatMessage(
                     text: "Hi there! 👋 I'm your PawPing Diet Assistant.\n\nI can help you build the perfect meal plan, check if certain human foods are safe, or answer general nutrition questions.\n\nHow can I help your pup today?",
                     isUser: false
                 ))
@@ -147,10 +147,10 @@ class DietAssistantStore {
         guard !trimmed.isEmpty else { return }
         guard availability == .available, let session else { return }
 
-        messages.append(ChatMessage(text: trimmed, isUser: true))
+        messages.append(DietChatMessage(text: trimmed, isUser: true))
 
         guard isQueryRelevant(trimmed) else {
-            messages.append(ChatMessage(
+            messages.append(DietChatMessage(
                 text: "I'm sorry, I cannot answer that question. I can only assist with topics related to dog diet, nutrition, and health.",
                 isUser: false
             ))
@@ -167,18 +167,18 @@ class DietAssistantStore {
             do {
                 let response = try await session.respond(to: trimmed)
                 await MainActor.run {
-                    messages.append(ChatMessage(text: response.content, isUser: false))
+                    messages.append(DietChatMessage(text: response.content, isUser: false))
                 }
 
             } catch let error as LanguageModelSession.GenerationError {
                 await MainActor.run {
-                    messages.append(ChatMessage(text: friendlyError(for: error), isUser: false))
+                    messages.append(DietChatMessage(text: friendlyError(for: error), isUser: false))
                 }
                 print("❌ GenerationError: \(error)")
 
             } catch {
                 await MainActor.run {
-                    messages.append(ChatMessage(
+                    messages.append(DietChatMessage(
                         text: "Something went wrong. Please try again.",
                         isUser: false
                     ))

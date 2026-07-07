@@ -26,7 +26,7 @@ struct ChatBubbleShape: Shape {
 // MARK: - Bubble View
 
 struct ChatBubbleView: View {
-    let message: ChatMessage
+    let message: DietChatMessage
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {

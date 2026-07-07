@@ -15,7 +15,7 @@ import SwiftUI
 // MARK: - Care Type
 
 /// The modes in the Care tab's category selector
-enum CareType: String, CaseIterable {
+enum CareType: String, CaseIterable { //case iterable generates all cases in array.
     case all      = "All"
     case vet      = "Vet"
     case dayCare  = "Day Care"
