@@ -47,11 +47,23 @@ struct AboutView: View {
 
                 // MARK: - Action Links
                 VStack(spacing: 0) {
-                    LinkRow(label: "Rate on the App Store", icon: "star.fill")
+                    LinkRow(
+                        label: "Rate on the App Store",
+                        icon: "star.fill",
+                        urlString: "https://apps.apple.com/us/app/pawping/id6784193390"
+                    )
                     Divider().padding(.leading, 56)
-                    LinkRow(label: "Contact Support", icon: "envelope.fill")
+                    LinkRow(
+                        label: "Contact Support",
+                        icon: "envelope.fill",
+                        urlString: "https://pawping-ios.netlify.app/support"
+                    )
                     Divider().padding(.leading, 56)
-                    LinkRow(label: "Visit our Website", icon: "safari")
+                    LinkRow(
+                        label: "Visit our Website",
+                        icon: "safari",
+                        urlString: "https://pawping-ios.netlify.app/"
+                    )
                 }
                 .background(Color("cardBackground"))
                 .clipShape(RoundedRectangle(cornerRadius: 20))
@@ -79,12 +91,16 @@ struct AboutView: View {
 }
 
 private struct LinkRow: View {
+    @Environment(\.openURL) private var openURL
     let label: String
     let icon: String
+    let urlString: String
     
     var body: some View {
         Button {
-            // Action for link
+            if let url = URL(string: urlString) {
+                openURL(url)
+            }
         } label: {
             HStack(spacing: 16) {
                 Image(systemName: icon)
